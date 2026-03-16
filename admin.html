@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HMI Fashion — Admin Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --pink: #f472b6;
+    --pink-light: #fce7f3;
+    --pink-deep: #db2777;
+    --gold: #d4a843;
+    --dark: #1f1224;
+    --gray: #6b7280;
+    --green: #16a34a;
+    --green-light: #dcfce7;
+    --orange: #ea580c;
+    --orange-light: #ffedd5;
+    --blue: #2563eb;
+    --blue-light: #dbeafe;
+    --red: #dc2626;
+    --red-light: #fee2e2;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Nunito',sans-serif; background:#f8fafc; color:var(--dark); }
+
+  /* LOGIN */
+  .login-page {
+    min-height:100vh;
+    display:flex; align-items:center; justify-content:center;
+    background: linear-gradient(135deg, #fce7f3, #fff9ee);
+  }
+  .login-card {
+    background:white; border-radius:24px; padding:40px 35px;
+    text-align:center; width:100%; max-width:380px;
+    box-shadow: 0 20px 60px rgba(219,39,119,0.15);
+  }
+  .login-logo {
+    font-family:'Playfair Display',serif; font-size:1.8rem; font-weight:700;
+    background: linear-gradient(135deg,var(--pink-deep),var(--gold));
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+    background-clip:text; margin-bottom:6px;
+  }
+  .login-sub { color:var(--gray); font-size:0.85rem; margin-bottom:28px; }
+  .login-input {
+    width:100%; padding:13px 16px; border:2px solid var(--pink-light);
+    border-radius:12px; font-size:1rem; font-family:'Nunito',sans-serif;
+    outline:none; margin-bottom:14px; transition:border 0.2s;
+  }
+  .login-input:focus { border-color:var(--pink); }
+  .login-btn {
+    width:100%; background:linear-gradient(135deg,var(--pink-deep),var(--gold));
+    color:white; border:none; padding:14px; border-radius:12px;
+    font-weight:700; font-size:1rem; cursor:pointer; transition:opacity 0.3s;
+  }
+  .login-btn:hover { opacity:0.9; }
+  .login-err { color:var(--red); font-size:0.85rem; margin-top:10px; }
+
+  /* DASHBOARD */
+  .dashboard { display:none; }
+  .topbar {
+    background:white; padding:0 24px; height:64px;
+    display:flex; align-items:center; justify-content:space-between;
+    box-shadow:0 2px 10px rgba(0,0,0,0.06); position:sticky; top:0; z-index:100;
+  }
+  .topbar-logo {
+    font-family:'Playfair Display',serif; font-size:1.3rem; font-weight:700;
+    background:linear-gradient(135deg,var(--pink-deep),var(--gold));
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+  }
+  .topbar-right { display:flex; align-items:center; gap:12px; }
+  .admin-badge {
+    background:var(--pink-light); color:var(--pink-deep);
+    font-size:0.78rem; font-weight:700; padding:5px 12px; border-radius:20px;
+  }
+  .logout-btn {
+    background:var(--red-light); color:var(--red); border:none;
+    padding:7px 16px; border-radius:20px; font-weight:700;
+    font-size:0.82rem; cursor:pointer;
+  }
+
+  .main { padding:24px; max-width:1200px; margin:0 auto; }
+
+  /* STATS */
+  .stats-grid {
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+    gap:16px; margin-bottom:28px;
+  }
+  .stat-card {
+    background:white; border-radius:16px; padding:20px;
+    box-shadow:0 2px 10px rgba(0,0,0,0.05); border-left:4px solid;
+  }
+  .stat-card.pink { border-color:var(--pink-deep); }
+  .stat-card.green { border-color:var(--green); }
+  .stat-card.orange { border-color:var(--orange); }
+  .stat-card.blue { border-color:var(--blue); }
+  .stat-label { font-size:0.78rem; color:var(--gray); font-weight:600; text-transform:uppercase; letter-spacing:0.5px; }
+  .stat-value { font-size:2rem; font-weight:700; margin:4px 0; }
+  .stat-card.pink .stat-value { color:var(--pink-deep); }
+  .stat-card.green .stat-value { color:var(--green); }
+  .stat-card.orange .stat-value { color:var(--orange); }
+  .stat-card.blue .stat-value { color:var(--blue); }
+
+  /* CONTROLS */
+  .controls {
+    display:flex; gap:12px; margin-bottom:20px; flex-wrap:wrap; align-items:center;
+  }
+  .search-box {
+    flex:1; min-width:200px; padding:10px 16px;
+    border:2px solid #e5e7eb; border-radius:10px;
+    font-size:0.9rem; font-family:'Nunito',sans-serif; outline:none;
+    transition:border 0.2s;
+  }
+  .search-box:focus { border-color:var(--pink); }
+  .filter-btn {
+    padding:10px 18px; border-radius:10px; border:2px solid #e5e7eb;
+    background:white; font-weight:600; font-size:0.85rem;
+    cursor:pointer; transition:all 0.2s; font-family:'Nunito',sans-serif;
+  }
+  .filter-btn.active, .filter-btn:hover {
+    background:var(--pink-deep); color:white; border-color:var(--pink-deep);
+  }
+  .refresh-btn {
+    padding:10px 18px; border-radius:10px; border:none;
+    background:linear-gradient(135deg,var(--pink-deep),var(--gold));
+    color:white; font-weight:700; font-size:0.85rem; cursor:pointer;
+  }
+
+  /* ORDERS TABLE */
+  .orders-card {
+    background:white; border-radius:16px;
+    box-shadow:0 2px 10px rgba(0,0,0,0.05); overflow:hidden;
+  }
+  .orders-header {
+    padding:16px 20px; border-bottom:2px solid #f3f4f6;
+    font-weight:700; font-size:1rem; color:var(--dark);
+    display:flex; justify-content:space-between; align-items:center;
+  }
+  .order-count-badge {
+    background:var(--pink-light); color:var(--pink-deep);
+    font-size:0.78rem; font-weight:700; padding:3px 10px; border-radius:12px;
+  }
+
+  .order-row {
+    padding:16px 20px; border-bottom:1px solid #f3f4f6;
+    display:grid; grid-template-columns:1fr 1.5fr 1fr 1fr 1.2fr auto;
+    gap:12px; align-items:center; transition:background 0.2s;
+  }
+  .order-row:hover { background:#fafafa; }
+  .order-row:last-child { border-bottom:none; }
+
+  .order-no { font-weight:700; color:var(--pink-deep); font-size:0.95rem; }
+  .order-customer h4 { font-weight:700; font-size:0.9rem; margin-bottom:2px; }
+  .order-customer p { font-size:0.78rem; color:var(--gray); }
+  .order-customer a { color:var(--green); font-weight:700; text-decoration:none; font-size:0.78rem; }
+
+  .order-items { font-size:0.8rem; color:var(--gray); }
+  .order-items b { color:var(--dark); font-size:0.85rem; }
+
+  .order-amount { font-weight:700; font-size:1rem; color:var(--dark); }
+
+  .status-badge {
+    display:inline-block; padding:4px 12px; border-radius:20px;
+    font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.3px;
+  }
+  .status-pending { background:#fef3c7; color:#92400e; }
+  .status-confirmed { background:var(--blue-light); color:var(--blue); }
+  .status-shipped { background:var(--orange-light); color:var(--orange); }
+  .status-delivered { background:var(--green-light); color:var(--green); }
+  .status-cancelled { background:var(--red-light); color:var(--red); }
+
+  .action-btns { display:flex; gap:6px; flex-wrap:wrap; }
+  .action-btn {
+    padding:5px 10px; border-radius:8px; border:none;
+    font-size:0.75rem; font-weight:700; cursor:pointer;
+    transition:opacity 0.2s; white-space:nowrap;
+  }
+  .action-btn:hover { opacity:0.8; }
+  .btn-confirm { background:var(--blue-light); color:var(--blue); }
+  .btn-ship { background:var(--orange-light); color:var(--orange); }
+  .btn-deliver { background:var(--green-light); color:var(--green); }
+  .btn-wa { background:#dcfce7; color:#16a34a; }
+  .btn-cancel { background:var(--red-light); color:var(--red); }
+
+  .empty-state {
+    text-align:center; padding:60px 20px; color:var(--gray);
+  }
+  .empty-state .ei { font-size:3rem; margin-bottom:12px; }
+
+  /* ORDER DETAIL MODAL */
+  .detail-overlay {
+    position:fixed; inset:0; background:rgba(0,0,0,0.5);
+    z-index:999; display:none; align-items:center; justify-content:center;
+  }
+  .detail-overlay.open { display:flex; }
+  .detail-modal {
+    background:white; border-radius:20px; padding:28px;
+    width:90%; max-width:500px; max-height:85vh; overflow-y:auto;
+    box-shadow:0 30px 60px rgba(0,0,0,0.2);
+  }
+  .detail-modal h3 {
+    font-family:'Playfair Display',serif; font-size:1.4rem;
+    margin-bottom:16px; color:var(--dark);
+  }
+  .detail-row {
+    display:flex; justify-content:space-between;
+    padding:8px 0; border-bottom:1px solid #f3f4f6;
+    font-size:0.9rem;
+  }
+  .detail-row:last-child { border-bottom:none; }
+  .detail-label { color:var(--gray); font-weight:600; }
+  .detail-value { font-weight:700; }
+  .detail-items { margin:14px 0; }
+  .detail-item {
+    display:flex; justify-content:space-between;
+    background:#f8fafc; padding:8px 12px; border-radius:8px; margin-bottom:6px;
+    font-size:0.85rem;
+  }
+  .close-modal-btn {
+    width:100%; margin-top:16px; padding:11px;
+    background:var(--pink-light); color:var(--pink-deep);
+    border:none; border-radius:10px; font-weight:700; cursor:pointer;
+  }
+  .wa-confirm-btn {
+    width:100%; margin-top:8px; padding:12px;
+    background:linear-gradient(135deg,#25d366,#128c7e);
+    color:white; border:none; border-radius:10px; font-weight:700;
+    cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;
+  }
+
+  @media(max-width:768px) {
+    .order-row { grid-template-columns:1fr 1fr; }
+    .stats-grid { grid-template-columns:1fr 1fr; }
+    .main { padding:14px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- LOGIN PAGE -->
+<div class="login-page" id="loginPage">
+  <div class="login-card">
+    <div class="login-logo">HMI Fashion</div>
+    <div class="login-sub">🔒 Admin Panel — Staff Only</div>
+    <input class="login-input" type="tel" id="loginPhone" placeholder="Enter Admin Phone Number" maxlength="10"/>
+    <input class="login-input" type="password" id="loginPass" placeholder="Enter Password" onkeydown="if(event.key==='Enter')doLogin()"/>
+    <button class="login-btn" onclick="doLogin()">Login to Admin Panel</button>
+    <div class="login-err" id="loginErr"></div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div class="dashboard" id="dashboard">
+  <div class="topbar">
+    <div class="topbar-logo">HMI Fashion — Admin</div>
+    <div class="topbar-right">
+      <span class="admin-badge" id="adminName">👤 Admin</span>
+      <button class="logout-btn" onclick="doLogout()">Logout</button>
+    </div>
+  </div>
+
+  <div class="main">
+    <!-- STATS -->
+    <div class="stats-grid">
+      <div class="stat-card pink">
+        <div class="stat-label">Total Orders</div>
+        <div class="stat-value" id="statTotal">0</div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-label">Revenue</div>
+        <div class="stat-value" id="statRevenue">₹0</div>
+      </div>
+      <div class="stat-card orange">
+        <div class="stat-label">Pending</div>
+        <div class="stat-value" id="statPending">0</div>
+      </div>
+      <div class="stat-card blue">
+        <div class="stat-label">Delivered</div>
+        <div class="stat-value" id="statDelivered">0</div>
+      </div>
+    </div>
+
+    <!-- CONTROLS -->
+    <div class="controls">
+      <input class="search-box" type="text" id="searchBox" placeholder="🔍 Search order, customer, phone..." oninput="renderOrders()"/>
+      <button class="filter-btn active" onclick="setFilter('all',this)">All</button>
+      <button class="filter-btn" onclick="setFilter('Pending',this)">Pending</button>
+      <button class="filter-btn" onclick="setFilter('Confirmed',this)">Confirmed</button>
+      <button class="filter-btn" onclick="setFilter('Shipped',this)">Shipped</button>
+      <button class="filter-btn" onclick="setFilter('Delivered',this)">Delivered</button>
+      <button class="refresh-btn" onclick="loadOrders()">🔄 Refresh</button>
+    </div>
+
+    <!-- ORDERS -->
+    <div class="orders-card">
+      <div class="orders-header">
+        📦 Orders
+        <span class="order-count-badge" id="orderCountBadge">0 orders</span>
+      </div>
+      <div id="ordersContainer">
+        <div class="empty-state"><div class="ei">📦</div><p>No orders yet</p></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ORDER DETAIL MODAL -->
+<div class="detail-overlay" id="detailOverlay">
+  <div class="detail-modal" id="detailContent"></div>
+</div>
+
+<script>
+// ============ CONFIG ============
+const ADMIN_PHONE = "9560291565"; // Admin ka phone number
+const ADMIN_PASS  = "hmi2026";    // Password — change karo!
+const WA_NUM      = "919560291565";
+
+let allOrders = [];
+let currentFilter = 'all';
+
+// ============ LOGIN ============
+function doLogin() {
+  const phone = document.getElementById('loginPhone').value.trim();
+  const pass  = document.getElementById('loginPass').value.trim();
+  if (phone === ADMIN_PHONE && pass === ADMIN_PASS) {
+    document.getElementById('loginPage').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    document.getElementById('adminName').textContent = '👤 ' + phone;
+    loadOrders();
+  } else {
+    document.getElementById('loginErr').textContent = '❌ Wrong phone or password!';
+  }
+}
+
+function doLogout() {
+  document.getElementById('loginPage').style.display = 'flex';
+  document.getElementById('dashboard').style.display = 'none';
+  document.getElementById('loginPhone').value = '';
+  document.getElementById('loginPass').value = '';
+}
+
+// ============ ORDERS ============
+function loadOrders() {
+  try {
+    const raw = localStorage.getItem('hmi_orders');
+    allOrders = raw ? JSON.parse(raw) : [];
+  } catch(e) { allOrders = []; }
+  updateStats();
+  renderOrders();
+}
+
+function updateStats() {
+  const total = allOrders.length;
+  const revenue = allOrders.reduce((s,o) => s + (o.total||0), 0);
+  const pending = allOrders.filter(o => o.status === 'Pending').length;
+  const delivered = allOrders.filter(o => o.status === 'Delivered').length;
+  document.getElementById('statTotal').textContent = total;
+  document.getElementById('statRevenue').textContent = '₹' + revenue.toLocaleString();
+  document.getElementById('statPending').textContent = pending;
+  document.getElementById('statDelivered').textContent = delivered;
+}
+
+function setFilter(f, btn) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderOrders();
+}
+
+function renderOrders() {
+  const q = document.getElementById('searchBox').value.toLowerCase();
+  let list = [...allOrders].reverse(); // newest first
+
+  if (currentFilter !== 'all') {
+    list = list.filter(o => o.status === currentFilter);
+  }
+  if (q) {
+    list = list.filter(o =>
+      (o.orderNo||'').toLowerCase().includes(q) ||
+      (o.customerName||'').toLowerCase().includes(q) ||
+      (o.customerPhone||'').toLowerCase().includes(q)
+    );
+  }
+
+  document.getElementById('orderCountBadge').textContent = list.length + ' orders';
+
+  if (list.length === 0) {
+    document.getElementById('ordersContainer').innerHTML =
+      '<div class="empty-state"><div class="ei">📦</div><p>No orders found</p></div>';
+    return;
+  }
+
+  document.getElementById('ordersContainer').innerHTML = list.map(o => `
+    <div class="order-row">
+      <div>
+        <div class="order-no">${o.orderNo}</div>
+        <div style="font-size:0.72rem;color:var(--gray)">${formatDate(o.date)}</div>
+      </div>
+      <div class="order-customer">
+        <h4>${o.customerName || 'Customer'}</h4>
+        <p>📱 ${o.customerPhone || 'N/A'}</p>
+        <a href="https://wa.me/91${o.customerPhone}?text=Hello%20${encodeURIComponent(o.customerName||'')}%2C%20your%20HMI%20Fashion%20order%20*${o.orderNo}*%20has%20been%20received!" target="_blank">💬 WhatsApp</a>
+      </div>
+      <div class="order-items">
+        <b>${o.items ? o.items.length : 0} items</b><br>
+        ${o.items ? o.items.slice(0,2).map(i=>i.name).join(', ') : ''}
+        ${o.items && o.items.length > 2 ? '...' : ''}
+      </div>
+      <div class="order-amount">₹${(o.total||0).toLocaleString()}</div>
+      <div><span class="status-badge status-${(o.status||'pending').toLowerCase()}">${o.status||'Pending'}</span></div>
+      <div class="action-btns">
+        <button class="action-btn btn-confirm" onclick="updateStatus('${o.orderNo}','Confirmed')">✅ Confirm</button>
+        <button class="action-btn btn-ship" onclick="updateStatus('${o.orderNo}','Shipped')">🚚 Ship</button>
+        <button class="action-btn btn-deliver" onclick="updateStatus('${o.orderNo}','Delivered')">📦 Deliver</button>
+        <button class="action-btn btn-wa" onclick="sendWA('${o.orderNo}')">💬</button>
+        <button class="action-btn" onclick="viewDetail('${o.orderNo}')" style="background:var(--pink-light);color:var(--pink-deep)">👁</button>
+        <button class="action-btn btn-cancel" onclick="updateStatus('${o.orderNo}','Cancelled')">✕</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function updateStatus(orderNo, status) {
+  const idx = allOrders.findIndex(o => o.orderNo === orderNo);
+  if (idx === -1) return;
+  allOrders[idx].status = status;
+  localStorage.setItem('hmi_orders', JSON.stringify(allOrders));
+  updateStats();
+  renderOrders();
+
+  // Auto WhatsApp message on ship/deliver
+  const o = allOrders[idx];
+  if ((status === 'Shipped' || status === 'Delivered') && o.customerPhone) {
+    const msgs = {
+      Shipped: `Hello ${o.customerName||''}! 🚚 Your HMI Fashion order *${orderNo}* has been shipped! You will receive it in 3-5 days. Thank you! 🛍️`,
+      Delivered: `Hello ${o.customerName||''}! 📦 Your HMI Fashion order *${orderNo}* has been delivered! Hope you love it! 😍 Thank you for shopping with us! 🛍️`
+    };
+    const url = `https://wa.me/91${o.customerPhone}?text=${encodeURIComponent(msgs[status])}`;
+    if (confirm(`Send WhatsApp message to customer about ${status}?`)) window.open(url, '_blank');
+  }
+}
+
+function sendWA(orderNo) {
+  const o = allOrders.find(x => x.orderNo === orderNo);
+  if (!o || !o.customerPhone) return alert('No customer phone!');
+  const msg = `Hello ${o.customerName||'Customer'}! 👋\n\nYour HMI Fashion order *${o.orderNo}* is being processed.\nStatus: *${o.status}*\nAmount: ₹${o.total}\n\nThank you for shopping! 🛍️`;
+  window.open(`https://wa.me/91${o.customerPhone}?text=${encodeURIComponent(msg)}`, '_blank');
+}
+
+function viewDetail(orderNo) {
+  const o = allOrders.find(x => x.orderNo === orderNo);
+  if (!o) return;
+  document.getElementById('detailContent').innerHTML = `
+    <h3>📦 Order Details</h3>
+    <div class="detail-row"><span class="detail-label">Order No</span><span class="detail-value" style="color:var(--pink-deep)">${o.orderNo}</span></div>
+    <div class="detail-row"><span class="detail-label">Date</span><span class="detail-value">${formatDate(o.date)}</span></div>
+    <div class="detail-row"><span class="detail-label">Status</span><span class="status-badge status-${(o.status||'pending').toLowerCase()}">${o.status}</span></div>
+    <div class="detail-row"><span class="detail-label">Customer</span><span class="detail-value">${o.customerName||'N/A'}</span></div>
+    <div class="detail-row"><span class="detail-label">Phone</span><span class="detail-value">📱 ${o.customerPhone||'N/A'}</span></div>
+    <div class="detail-row"><span class="detail-label">Address</span><span class="detail-value" style="max-width:200px;text-align:right">${o.address||'Not provided'}</span></div>
+    <div class="detail-row"><span class="detail-label">Payment</span><span class="detail-value">UPI — ${o.app||'N/A'}</span></div>
+    <br>
+    <b style="font-size:0.88rem">Items Ordered:</b>
+    <div class="detail-items">
+      ${(o.items||[]).map(i=>`
+        <div class="detail-item">
+          <span>${i.emoji||''} ${i.name} x${i.qty}</span>
+          <span>₹${(i.price*i.qty).toLocaleString()}</span>
+        </div>
+      `).join('')}
+      <div class="detail-item" style="background:var(--pink-light)">
+        <span>🚚 Shipping</span><span>₹${o.shipping||99}</span>
+      </div>
+      <div class="detail-item" style="background:var(--green-light);font-weight:700">
+        <span>Total</span><span>₹${o.total}</span>
+      </div>
+    </div>
+    <button class="wa-confirm-btn" onclick="sendWA('${o.orderNo}');document.getElementById('detailOverlay').classList.remove('open')">
+      💬 Send WhatsApp Update
+    </button>
+    <button class="close-modal-btn" onclick="document.getElementById('detailOverlay').classList.remove('open')">Close</button>
+  `;
+  document.getElementById('detailOverlay').classList.add('open');
+}
+
+function formatDate(ts) {
+  if (!ts) return 'N/A';
+  const d = new Date(ts);
+  return d.toLocaleDateString('en-IN') + ' ' + d.toLocaleTimeString('en-IN', {hour:'2-digit',minute:'2-digit'});
+}
+
+// Close detail on overlay click
+document.getElementById('detailOverlay').addEventListener('click', function(e) {
+  if (e.target === this) this.classList.remove('open');
+});
+
+// Auto-load if already "logged in" this session
+window.onload = () => {
+  // Press Enter on password
+  document.getElementById('loginPass').addEventListener('keydown', e => {
+    if (e.key === 'Enter') doLogin();
+  });
+};
+</script>
+</body>
+</html>
