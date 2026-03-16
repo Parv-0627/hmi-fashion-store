@@ -12,7 +12,7 @@ const products = [
     cat: "Saree",
     emoji: "🥻",
     bg: "#fce7f3",
-    price: 2499,
+    price: 1,
     old: 3999,
     badge: "Bestseller",
     desc: "Pure Banarasi silk with golden zari work"
