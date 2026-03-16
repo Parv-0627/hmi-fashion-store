@@ -380,6 +380,14 @@
       <div class="summary-row shipping"><span>🚚 Shipping</span><span>₹99</span></div>
       <div class="summary-row total"><span>Total</span><span id="cartTotal">₹0</span></div>
     </div>
+    <!-- CUSTOMER INFO -->
+    <div style="margin-bottom:14px;">
+      <div style="font-size:0.85rem;font-weight:700;margin-bottom:8px;color:var(--dark);">👤 Your Details</div>
+      <input class="upi-input" id="custName" placeholder="Your Full Name *" type="text" style="width:100%;margin-bottom:8px;"/>
+      <input class="upi-input" id="custPhone" placeholder="WhatsApp Number (10 digits) *" type="tel" maxlength="10" style="width:100%;margin-bottom:8px;"/>
+      <input class="upi-input" id="custAddress" placeholder="Delivery Address *" type="text" style="width:100%;"/>
+    </div>
+
     <div class="upi-section">
       <div class="upi-title">💳 Pay via UPI</div>
       <div class="upi-apps">
@@ -576,15 +584,38 @@ function toggleCart(){document.getElementById('cartSidebar').classList.toggle('o
 function selectApp(el,app){document.querySelectorAll('.upi-app-btn').forEach(b=>b.classList.remove('selected'));el.classList.add('selected');selectedApp=app;checkPayReady();}
 function processPayment(){
   if(cart.length===0)return;
+
+  // Validate customer info
+  const name = document.getElementById('custName').value.trim();
+  const phone = document.getElementById('custPhone').value.trim();
+  const address = document.getElementById('custAddress').value.trim();
+
+  if(!name){ alert('Please enter your name!'); document.getElementById('custName').focus(); return; }
+  if(!phone || phone.length !== 10){ alert('Please enter valid 10-digit WhatsApp number!'); document.getElementById('custPhone').focus(); return; }
+  if(!address){ alert('Please enter your delivery address!'); document.getElementById('custAddress').focus(); return; }
+
   const subtotal=cart.reduce((a,c)=>a+c.price*c.qty,0),total=subtotal+SHIPPING;
   const orderNo='ORD'+Math.floor(1000+Math.random()*9000);
   currentOrderNo=orderNo;
-  currentOrderData={orderNo,items:[...cart],subtotal,total,app:selectedApp||'UPI'};
+  currentOrderData={
+    orderNo,
+    date: Date.now(),
+    customerName: name,
+    customerPhone: phone,
+    address: address,
+    items:[...cart],
+    subtotal,
+    shipping: SHIPPING,
+    total,
+    app:selectedApp||'UPI',
+    status:'Pending'
+  };
 
-  // Build UPI payment URL for QR
+  // Save order to localStorage
+  saveOrder(currentOrderData);
+
+  // Build UPI QR
   const upiUrl=`upi://pay?pa=${STORE_UPI}&pn=HMI+Fashion+Store&am=${total}&cu=INR&tn=Order+${orderNo}`;
-
-  // Generate QR using free API
   const qrApiUrl=`https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(upiUrl)}&size=200x200&bgcolor=ffffff&color=000000&margin=10`;
 
   document.getElementById('qrCodeImg').src=qrApiUrl;
@@ -593,13 +624,48 @@ function processPayment(){
   document.getElementById('orderNoDisplay').textContent=orderNo;
   document.getElementById('qrOverlay').classList.add('open');
 }
+
+function saveOrder(order){
+  try{
+    const existing = JSON.parse(localStorage.getItem('hmi_orders')||'[]');
+    // Update if exists, else add
+    const idx = existing.findIndex(o=>o.orderNo===order.orderNo);
+    if(idx>=0) existing[idx]=order; else existing.push(order);
+    localStorage.setItem('hmi_orders', JSON.stringify(existing));
+  }catch(e){console.log('Save error',e);}
+}
 function closeQR(){document.getElementById('qrOverlay').classList.remove('open');}
 function confirmPaymentDone(){
   document.getElementById('qrOverlay').classList.remove('open');
   document.getElementById('successOverlay').classList.add('open');
 }
-function sendWhatsAppConfirmation(){if(!currentOrderData)return;const d=currentOrderData;let msg=`🎉 *Order Confirmed!*%0A%0A📦 *Order No:* ${d.orderNo}%0A💳 *Payment:* UPI (${d.app}) — ₹${d.total}%0A%0A*Items:*%0A`;d.items.forEach(item=>{msg+=`▪️ ${item.name} x${item.qty} — ₹${item.price*item.qty}%0A`;});msg+=`%0ATotal: ₹${d.total}%0A✅ *Your order has been completed!*%0A📲 Tracking ID will be shared soon.%0AThank you! 🛍️`;window.open(`https://wa.me/${WA}?text=${msg}`,'_blank');}
-function closeSuccess(){document.getElementById('successOverlay').classList.remove('open');toggleCart();cart=[];selectedApp='';document.getElementById('upiInput').value='';document.querySelectorAll('.upi-app-btn').forEach(b=>b.classList.remove('selected'));updateCartUI();}
+function sendWhatsAppConfirmation(){
+  if(!currentOrderData)return;
+  const d=currentOrderData;
+  let msg=`🎉 *Order Confirmed — HMI Fashion Store!*%0A%0A`;
+  msg+=`📦 *Order No:* ${d.orderNo}%0A`;
+  msg+=`👤 *Name:* ${d.customerName}%0A`;
+  msg+=`📱 *Phone:* ${d.customerPhone}%0A`;
+  msg+=`📍 *Address:* ${d.address}%0A`;
+  msg+=`💳 *Payment:* UPI — ₹${d.total}%0A%0A`;
+  msg+=`*Items Ordered:*%0A`;
+  d.items.forEach(item=>{msg+=`▪️ ${item.name} x${item.qty} — ₹${item.price*item.qty}%0A`;});
+  msg+=`%0A🚚 Shipping: ₹${d.shipping}%0A`;
+  msg+=`*Total Paid: ₹${d.total}*%0A%0A`;
+  msg+=`✅ *Your order has been placed!*%0A📲 Tracking ID will be shared soon.%0AThank you for shopping! 🛍️`;
+  window.open(`https://wa.me/${WA}?text=${msg}`,'_blank');
+}
+function closeSuccess(){
+  document.getElementById('successOverlay').classList.remove('open');
+  toggleCart();
+  cart=[];selectedApp='';
+  document.getElementById('upiInput').value='';
+  document.getElementById('custName').value='';
+  document.getElementById('custPhone').value='';
+  document.getElementById('custAddress').value='';
+  document.querySelectorAll('.upi-app-btn').forEach(b=>b.classList.remove('selected'));
+  updateCartUI();
+}
 function updateCartUI(){const count=cart.reduce((a,c)=>a+c.qty,0),el=document.getElementById('cartCount');el.textContent=count;el.style.display=count>0?'flex':'none';const subtotal=cart.reduce((a,c)=>a+c.price*c.qty,0),total=subtotal+SHIPPING;document.getElementById('subtotal').textContent='₹'+subtotal.toLocaleString();document.getElementById('cartTotal').textContent='₹'+total.toLocaleString();const footer=document.getElementById('cartFooter'),itemsEl=document.getElementById('cartItems');if(cart.length===0){footer.style.display='none';itemsEl.innerHTML=`<div class="cart-empty"><div class="empty-icon">🛍️</div><p>Your cart is empty!<br>Add some products.</p></div>`;}else{footer.style.display='block';itemsEl.innerHTML=cart.map(item=>`<div class="cart-item"><div class="cart-item-emoji" style="background:${item.bg}">${item.emoji}</div><div class="cart-item-info"><h4>${item.name}</h4><p>${item.cat}</p><div class="cart-item-price">₹${(item.price*item.qty).toLocaleString()}</div><div class="cart-item-qty"><button class="qty-btn" onclick="changeQty(${item.id},-1)">−</button><span class="qty-num">${item.qty}</span><button class="qty-btn" onclick="changeQty(${item.id},1)">+</button></div></div><button class="remove-item" onclick="removeItem(${item.id})">🗑️</button></div>`).join('');}}
 function filterProducts(el,cat){document.querySelectorAll('.category-card').forEach(c=>c.classList.remove('active'));el.classList.add('active');renderProducts(cat==='all'?products:products.filter(p=>p.cat===cat));}
 function renderProducts(list){document.getElementById('productsGrid').innerHTML=list.map(p=>`<div class="product-card"><div class="product-img" style="background:${p.bg}">${p.emoji}<div class="product-badge">${p.badge}</div></div><div class="product-info"><div class="category-tag">${p.cat}</div><h3>${p.name}</h3><div class="product-price"><span class="price-current">₹${p.price.toLocaleString()}</span><span class="price-old">₹${p.old.toLocaleString()}</span><span class="price-discount">${disc(p.price,p.old)}</span></div><div class="product-btns"><button class="btn-cart" onclick="addToCart(${p.id})">🛒 Add to Cart</button><a href="${waLink(p)}" class="btn-order" target="_blank">💬 Order</a></div></div></div>`).join('');}
