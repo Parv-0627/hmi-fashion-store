@@ -70,6 +70,21 @@
   .summary-row.shipping { color: #16a34a; font-weight: 600; }
   .summary-row.total { font-size: 1.1rem; font-weight: 700; color: var(--dark); border-top: 1.5px solid var(--pink-light); padding-top: 10px; margin-top: 5px; }
   .upi-section { margin-top: 14px; }
+
+  /* QR PAYMENT MODAL */
+  .qr-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 1999; display: none; align-items: center; justify-content: center; }
+  .qr-overlay.open { display: flex; }
+  .qr-modal { background: white; border-radius: 24px; padding: 30px 25px; text-align: center; max-width: 360px; width: 90%; box-shadow: 0 30px 60px rgba(0,0,0,0.25); }
+  .qr-modal h3 { font-family: "Playfair Display", serif; font-size: 1.3rem; margin-bottom: 6px; color: var(--dark); }
+  .qr-amount { font-size: 2rem; font-weight: 700; color: var(--pink-deep); margin: 8px 0; }
+  .qr-img-wrap { background: #f9f9f9; border: 2px solid var(--pink-light); border-radius: 16px; padding: 16px; margin: 14px 0; display: inline-block; }
+  .qr-img-wrap img { width: 200px; height: 200px; display: block; }
+  .qr-upi-id { font-size: 0.82rem; color: var(--gray); margin-bottom: 14px; }
+  .qr-upi-id span { font-weight: 700; color: var(--dark); }
+  .qr-steps { background: var(--pink-light); border-radius: 12px; padding: 12px; text-align: left; margin-bottom: 16px; font-size: 0.82rem; color: var(--dark); line-height: 1.8; }
+  .btn-paid { width: 100%; background: linear-gradient(135deg, #16a34a, #15803d); color: white; border: none; padding: 14px; border-radius: 14px; font-weight: 700; font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.3s; margin-bottom: 8px; }
+  .btn-paid:hover { transform: scale(1.02); }
+  .btn-cancel-qr { width: 100%; background: var(--pink-light); color: var(--pink-deep); border: none; padding: 11px; border-radius: 12px; font-weight: 700; font-size: 0.9rem; cursor: pointer; }
   .upi-title { font-size: 0.85rem; font-weight: 700; color: var(--dark); margin-bottom: 10px; text-align: center; }
   .upi-apps { display: flex; gap: 8px; justify-content: center; margin-bottom: 12px; flex-wrap: wrap; }
   .upi-app-btn { display: flex; align-items: center; gap: 5px; padding: 7px 12px; border: 2px solid var(--pink-light); border-radius: 10px; background: white; cursor: pointer; font-size: 0.78rem; font-weight: 700; transition: all 0.2s; font-family: 'Nunito', sans-serif; }
@@ -372,12 +387,10 @@
         <button class="upi-app-btn" onclick="selectApp(this,'phonepe')">💜 PhonePe</button>
         <button class="upi-app-btn" onclick="selectApp(this,'other')">🏦 Other UPI</button>
       </div>
-      <div class="upi-input-row">
-        <input class="upi-input" id="upiInput" placeholder="Enter UPI ID (e.g. name@upi)" type="text"/>
-        <button class="upi-verify-btn" onclick="verifyUPI()">Verify</button>
+      <div style="margin-bottom:10px;">
+        <input class="upi-input" id="upiInput" placeholder="Your UPI ID (e.g. name@upi)" type="text" style="width:100%;"/>
       </div>
-      <div id="upiStatus" style="font-size:0.8rem;text-align:center;margin-bottom:8px;min-height:18px;"></div>
-      <button class="btn-pay-now" id="payNowBtn" onclick="processPayment()" disabled>🔒 Pay & Confirm Order</button>
+      <button class="btn-pay-now" id="payNowBtn" onclick="processPayment()">🔒 Generate QR & Pay</button>
     </div>
   </div>
 </div>
@@ -392,6 +405,27 @@
     <div class="tracking-note">📦 Tracking ID will be shared on WhatsApp soon!</div>
     <button class="btn-success-wa" onclick="sendWhatsAppConfirmation()">💬 View Confirmation on WhatsApp</button>
     <button class="btn-success-close" onclick="closeSuccess()">🛍️ Continue Shopping</button>
+  </div>
+</div>
+
+<!-- QR PAYMENT MODAL -->
+<div class="qr-overlay" id="qrOverlay">
+  <div class="qr-modal">
+    <h3>💳 Scan & Pay</h3>
+    <div class="qr-amount" id="qrAmount">₹0</div>
+    <div class="qr-img-wrap">
+      <img id="qrCodeImg" src="" alt="UPI QR Code"/>
+    </div>
+    <div class="qr-upi-id">Pay to: <span id="qrUpiDisplay">9560291565@upi</span></div>
+    <div class="qr-steps">
+      📱 <b>How to pay:</b><br>
+      1. Open GPay / PhonePe / Any UPI app<br>
+      2. Tap "Scan QR Code"<br>
+      3. Scan this QR & complete payment<br>
+      4. Click "I've Paid" button below
+    </div>
+    <button class="btn-paid" onclick="confirmPaymentDone()">✅ I've Paid — Confirm Order</button>
+    <button class="btn-cancel-qr" onclick="closeQR()">✕ Cancel</button>
   </div>
 </div>
 
@@ -529,9 +563,10 @@
 
 <script src="products.js"></script>
 <script>
-const WA="919560291565", SHIPPING=99;
+const WA="919560291565", SHIPPING=1;
 // Products data loaded from products.js file
-let cart=[],selectedApp='',upiVerified=false,currentOrderNo='',currentOrderData=null;
+let cart=[],selectedApp='',currentOrderNo='',currentOrderData=null;
+const STORE_UPI="9560291565@pthdfc";
 function disc(p,o){return Math.round((1-p/o)*100)+"% OFF";}
 function waLink(p){const msg=`Hello HMI Fashion Store!%0AItem: *${p.name}*%0APrice: ₹${p.price}%0AShipping: ₹99%0ATotal: ₹${p.price+99}`;return `https://wa.me/${WA}?text=${msg}`;}
 function addToCart(id){const p=products.find(x=>x.id===id),ex=cart.find(x=>x.id===id);if(ex)ex.qty++;else cart.push({...p,qty:1});updateCartUI();const f=document.getElementById('addedFlash');f.classList.add('show');setTimeout(()=>f.classList.remove('show'),2000);}
@@ -539,11 +574,32 @@ function changeQty(id,d){const item=cart.find(x=>x.id===id);if(!item)return;item
 function removeItem(id){cart=cart.filter(x=>x.id!==id);updateCartUI();}
 function toggleCart(){document.getElementById('cartSidebar').classList.toggle('open');document.getElementById('cartOverlay').classList.toggle('open');}
 function selectApp(el,app){document.querySelectorAll('.upi-app-btn').forEach(b=>b.classList.remove('selected'));el.classList.add('selected');selectedApp=app;checkPayReady();}
-function verifyUPI(){const val=document.getElementById('upiInput').value.trim(),status=document.getElementById('upiStatus');if(!val){status.innerHTML='<span style="color:#ef4444">❌ Please enter UPI ID</span>';return;}if(!val.includes('@')){status.innerHTML='<span style="color:#ef4444">❌ Enter valid UPI ID (e.g. name@upi)</span>';return;}status.innerHTML='<span style="color:#f59e0b">⏳ Verifying...</span>';setTimeout(()=>{upiVerified=true;status.innerHTML=`<span style="color:#16a34a">✅ UPI Verified: ${val}</span>`;checkPayReady();},1200);}
-function checkPayReady(){document.getElementById('payNowBtn').disabled=!(upiVerified&&selectedApp);}
-function processPayment(){if(!upiVerified||!selectedApp)return;const subtotal=cart.reduce((a,c)=>a+c.price*c.qty,0),total=subtotal+SHIPPING,orderNo='ORD'+Math.floor(1000+Math.random()*9000);currentOrderNo=orderNo;currentOrderData={orderNo,items:[...cart],subtotal,total,upiId:document.getElementById('upiInput').value.trim(),app:selectedApp};const btn=document.getElementById('payNowBtn');btn.innerHTML='⏳ Processing...';btn.disabled=true;setTimeout(()=>{document.getElementById('orderNoDisplay').textContent=orderNo;document.getElementById('successOverlay').classList.add('open');btn.innerHTML='🔒 Pay & Confirm Order';},1800);}
+function processPayment(){
+  if(cart.length===0)return;
+  const subtotal=cart.reduce((a,c)=>a+c.price*c.qty,0),total=subtotal+SHIPPING;
+  const orderNo='ORD'+Math.floor(1000+Math.random()*9000);
+  currentOrderNo=orderNo;
+  currentOrderData={orderNo,items:[...cart],subtotal,total,app:selectedApp||'UPI'};
+
+  // Build UPI payment URL for QR
+  const upiUrl=`upi://pay?pa=${STORE_UPI}&pn=HMI+Fashion+Store&am=${total}&cu=INR&tn=Order+${orderNo}`;
+
+  // Generate QR using free API
+  const qrApiUrl=`https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(upiUrl)}&size=200x200&bgcolor=ffffff&color=000000&margin=10`;
+
+  document.getElementById('qrCodeImg').src=qrApiUrl;
+  document.getElementById('qrAmount').textContent='₹'+total.toLocaleString();
+  document.getElementById('qrUpiDisplay').textContent=STORE_UPI;
+  document.getElementById('orderNoDisplay').textContent=orderNo;
+  document.getElementById('qrOverlay').classList.add('open');
+}
+function closeQR(){document.getElementById('qrOverlay').classList.remove('open');}
+function confirmPaymentDone(){
+  document.getElementById('qrOverlay').classList.remove('open');
+  document.getElementById('successOverlay').classList.add('open');
+}
 function sendWhatsAppConfirmation(){if(!currentOrderData)return;const d=currentOrderData;let msg=`🎉 *Order Confirmed!*%0A%0A📦 *Order No:* ${d.orderNo}%0A💳 *Payment:* UPI (${d.app}) — ₹${d.total}%0A%0A*Items:*%0A`;d.items.forEach(item=>{msg+=`▪️ ${item.name} x${item.qty} — ₹${item.price*item.qty}%0A`;});msg+=`%0ATotal: ₹${d.total}%0A✅ *Your order has been completed!*%0A📲 Tracking ID will be shared soon.%0AThank you! 🛍️`;window.open(`https://wa.me/${WA}?text=${msg}`,'_blank');}
-function closeSuccess(){document.getElementById('successOverlay').classList.remove('open');toggleCart();cart=[];upiVerified=false;selectedApp='';document.getElementById('upiInput').value='';document.getElementById('upiStatus').innerHTML='';document.querySelectorAll('.upi-app-btn').forEach(b=>b.classList.remove('selected'));updateCartUI();}
+function closeSuccess(){document.getElementById('successOverlay').classList.remove('open');toggleCart();cart=[];selectedApp='';document.getElementById('upiInput').value='';document.querySelectorAll('.upi-app-btn').forEach(b=>b.classList.remove('selected'));updateCartUI();}
 function updateCartUI(){const count=cart.reduce((a,c)=>a+c.qty,0),el=document.getElementById('cartCount');el.textContent=count;el.style.display=count>0?'flex':'none';const subtotal=cart.reduce((a,c)=>a+c.price*c.qty,0),total=subtotal+SHIPPING;document.getElementById('subtotal').textContent='₹'+subtotal.toLocaleString();document.getElementById('cartTotal').textContent='₹'+total.toLocaleString();const footer=document.getElementById('cartFooter'),itemsEl=document.getElementById('cartItems');if(cart.length===0){footer.style.display='none';itemsEl.innerHTML=`<div class="cart-empty"><div class="empty-icon">🛍️</div><p>Your cart is empty!<br>Add some products.</p></div>`;}else{footer.style.display='block';itemsEl.innerHTML=cart.map(item=>`<div class="cart-item"><div class="cart-item-emoji" style="background:${item.bg}">${item.emoji}</div><div class="cart-item-info"><h4>${item.name}</h4><p>${item.cat}</p><div class="cart-item-price">₹${(item.price*item.qty).toLocaleString()}</div><div class="cart-item-qty"><button class="qty-btn" onclick="changeQty(${item.id},-1)">−</button><span class="qty-num">${item.qty}</span><button class="qty-btn" onclick="changeQty(${item.id},1)">+</button></div></div><button class="remove-item" onclick="removeItem(${item.id})">🗑️</button></div>`).join('');}}
 function filterProducts(el,cat){document.querySelectorAll('.category-card').forEach(c=>c.classList.remove('active'));el.classList.add('active');renderProducts(cat==='all'?products:products.filter(p=>p.cat===cat));}
 function renderProducts(list){document.getElementById('productsGrid').innerHTML=list.map(p=>`<div class="product-card"><div class="product-img" style="background:${p.bg}">${p.emoji}<div class="product-badge">${p.badge}</div></div><div class="product-info"><div class="category-tag">${p.cat}</div><h3>${p.name}</h3><div class="product-price"><span class="price-current">₹${p.price.toLocaleString()}</span><span class="price-old">₹${p.old.toLocaleString()}</span><span class="price-discount">${disc(p.price,p.old)}</span></div><div class="product-btns"><button class="btn-cart" onclick="addToCart(${p.id})">🛒 Add to Cart</button><a href="${waLink(p)}" class="btn-order" target="_blank">💬 Order</a></div></div></div>`).join('');}
