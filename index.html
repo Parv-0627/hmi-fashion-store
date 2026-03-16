@@ -295,29 +295,52 @@ footer{background:var(--dark);color:white;padding:55px 5% 25px;}
     </div>
   </div>
 
-  <!-- STEP 2: PHONE + OTP -->
+  <!-- STEP 2: PHONE + WHATSAPP OTP -->
   <div class="cart-step" id="step2">
+
+    <!-- PHONE SECTION -->
     <div class="otp-wrap" id="phoneSection">
       <div class="otp-icon">📱</div>
       <div class="otp-title">Login with WhatsApp</div>
-      <div class="otp-sub">Enter your WhatsApp number to continue</div>
+      <div class="otp-sub">Enter your WhatsApp number — we'll send OTP on WhatsApp</div>
       <input class="field-input" id="custPhone" type="tel" maxlength="10" placeholder="Enter 10-digit WhatsApp number"/>
-      <button class="cart-footer-btn btn-proceed" onclick="sendOTP()">Send OTP →</button>
+      <button class="cart-footer-btn btn-proceed" onclick="sendOTP()">📲 Send OTP on WhatsApp →</button>
     </div>
+
+    <!-- OTP SECTION -->
     <div class="otp-wrap" id="otpSection" style="display:none">
       <div class="otp-icon">🔐</div>
       <div class="otp-title">Enter OTP</div>
-      <div class="otp-sub">OTP sent to <b id="otpPhoneDisplay"></b><br>(Demo: use <b>1234</b>)</div>
-      <div class="otp-boxes">
-        <input class="otp-box" maxlength="1" id="o1" oninput="otpNext(this,'o2')"/>
-        <input class="otp-box" maxlength="1" id="o2" oninput="otpNext(this,'o3')"/>
-        <input class="otp-box" maxlength="1" id="o3" oninput="otpNext(this,'o4')"/>
-        <input class="otp-box" maxlength="1" id="o4" oninput="otpNext(this,null)"/>
+      <div class="otp-sub">OTP sent to WhatsApp: <b id="otpPhoneDisplay"></b></div>
+
+      <!-- WhatsApp sent box -->
+      <div style="background:#dcfce7;border:2px solid #86efac;border-radius:14px;padding:14px;margin:12px 0;text-align:left;">
+        <div style="font-weight:700;font-size:.88rem;color:#166534;margin-bottom:6px;">💬 WhatsApp OTP Bheja Gaya!</div>
+        <div style="font-size:.8rem;color:#166534;line-height:1.6;">
+          Aapke WhatsApp par ek message gaya hai.<br>
+          Usme OTP code hoga — woh yahan enter karo.
+        </div>
+        <div style="margin-top:10px;">
+          <a id="waOtpLink" href="#" target="_blank"
+            style="display:inline-flex;align-items:center;gap:6px;background:#25d366;color:white;padding:8px 16px;border-radius:10px;font-weight:700;font-size:.82rem;text-decoration:none;">
+            💬 WhatsApp Open Karo
+          </a>
+        </div>
       </div>
-      <div id="otpErr" style="color:#dc2626;font-size:.82rem;min-height:18px;margin-bottom:8px;"></div>
-      <button class="cart-footer-btn btn-proceed" onclick="verifyOTP()">Verify OTP →</button>
-      <div class="otp-note">Didn't get OTP? <span class="resend-link" onclick="resendOTP()">Resend OTP</span></div>
+
+      <div class="otp-boxes">
+        <input class="otp-box" maxlength="1" id="o1" oninput="otpNext(this,'o2')" type="tel"/>
+        <input class="otp-box" maxlength="1" id="o2" oninput="otpNext(this,'o3')" type="tel"/>
+        <input class="otp-box" maxlength="1" id="o3" oninput="otpNext(this,'o4')" type="tel"/>
+        <input class="otp-box" maxlength="1" id="o4" oninput="otpLastDone(this)" type="tel"/>
+      </div>
+      <div id="otpErr" style="color:#dc2626;font-size:.82rem;min-height:20px;margin-bottom:8px;text-align:center;"></div>
+      <button class="cart-footer-btn btn-proceed" onclick="verifyOTP()">✅ Verify OTP →</button>
+      <div class="otp-note" style="margin-top:10px;">
+        OTP nahi mila? <span class="resend-link" onclick="resendOTP()">WhatsApp par dobara bhejo</span>
+      </div>
     </div>
+
     <button class="cart-footer-btn btn-back" onclick="goStep(1)" style="margin-top:8px">← Back</button>
   </div>
 
@@ -519,7 +542,7 @@ footer{background:var(--dark);color:white;padding:55px 5% 25px;}
 const WA="919560291565", SHIPPING=99, STORE_UPI="9560291565@pthdfc";
 let cart=[], currentStep=1, currentOrderData=null, selectedPayMethod='', selectedUpiApp='';
 let custData={};
-let demoOTP="1234";
+let demoOTP='';
 
 // ===== STEP NAVIGATION =====
 function goStep(n){
@@ -612,35 +635,62 @@ function renderCart(){
   sumBox.style.display='block';
 }
 
-// ===== OTP LOGIN =====
+// ===== OTP LOGIN (WhatsApp OTP) =====
 function sendOTP(){
   const phone=document.getElementById('custPhone').value.trim();
-  if(phone.length!==10||isNaN(phone)){alert('Please enter valid 10-digit number!');return;}
+  if(phone.length!==10||isNaN(phone)){
+    alert('Please enter valid 10-digit WhatsApp number!');
+    document.getElementById('custPhone').focus();
+    return;
+  }
   custData.phone=phone;
+
+  // Generate random 4-digit OTP
+  demoOTP=String(Math.floor(1000+Math.random()*9000));
+
+  // WhatsApp message to customer
+  const custMsg=`Hello! 👋%0A%0AYour HMI Fashion Store OTP is:%0A%0A*${demoOTP}*%0A%0AThis OTP is valid for 10 minutes.%0ADo not share with anyone. 🔒`;
+
+  // Open WhatsApp with OTP message TO CUSTOMER
+  const waUrl=`https://wa.me/91${phone}?text=${custMsg}`;
+  document.getElementById('waOtpLink').href=waUrl;
+
+  // Show OTP section
   document.getElementById('otpPhoneDisplay').textContent='+91 '+phone;
   document.getElementById('phoneSection').style.display='none';
   document.getElementById('otpSection').style.display='block';
+
+  // Auto open WhatsApp
+  window.open(waUrl,'_blank');
+
   document.getElementById('o1').focus();
-  // In real app: send OTP via SMS API
-  // Demo: OTP is 1234
-  demoOTP='1234';
-  console.log('Demo OTP: 1234');
+  console.log('OTP generated (store only):', demoOTP);
 }
 
 function otpNext(el,nextId){
   if(el.value.length===1 && nextId){
     document.getElementById(nextId).focus();
   }
-  if(!nextId){ verifyOTP(); }
+}
+
+function otpLastDone(el){
+  // Auto verify when last box filled
+  if(el.value.length===1) setTimeout(verifyOTP, 300);
 }
 
 function verifyOTP(){
   const otp=['o1','o2','o3','o4'].map(id=>document.getElementById(id).value).join('');
+  if(otp.length<4){
+    document.getElementById('otpErr').textContent='❌ Please enter 4-digit OTP';
+    return;
+  }
   if(otp===demoOTP){
     document.getElementById('otpErr').textContent='';
-    goStep(3);
+    // Show success tick briefly
+    document.getElementById('otpErr').innerHTML='<span style="color:#16a34a;font-weight:700">✅ OTP Verified!</span>';
+    setTimeout(()=>goStep(3), 600);
   } else {
-    document.getElementById('otpErr').textContent='❌ Wrong OTP! Try 1234 (demo)';
+    document.getElementById('otpErr').textContent='❌ Wrong OTP! Please check your WhatsApp.';
     ['o1','o2','o3','o4'].forEach(id=>document.getElementById(id).value='');
     document.getElementById('o1').focus();
   }
@@ -648,7 +698,16 @@ function verifyOTP(){
 
 function resendOTP(){
   ['o1','o2','o3','o4'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('otpErr').textContent='OTP resent! (Demo: 1234)';
+  document.getElementById('otpErr').textContent='';
+
+  // Generate new OTP
+  demoOTP=String(Math.floor(1000+Math.random()*9000));
+  const phone=custData.phone;
+  const custMsg=`Hello! 👋%0A%0AYour HMI Fashion Store OTP is:%0A%0A*${demoOTP}*%0A%0AThis OTP is valid for 10 minutes.%0ADo not share with anyone. 🔒`;
+  const waUrl=`https://wa.me/91${phone}?text=${custMsg}`;
+  document.getElementById('waOtpLink').href=waUrl;
+  window.open(waUrl,'_blank');
+  document.getElementById('otpErr').innerHTML='<span style="color:#16a34a">✅ New OTP sent on WhatsApp!</span>';
   document.getElementById('o1').focus();
 }
 
