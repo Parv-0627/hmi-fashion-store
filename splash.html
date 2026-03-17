@@ -548,21 +548,20 @@ document.head.appendChild(style);
 
 for(let i=0;i<25;i++) createPetal();
 
-// ============ AUTO-ENTER AFTER 4s + ENTER BUTTON ============
+// ============ AUTO-ENTER AFTER 4.5s + ENTER BUTTON ============
+let _entered = false;
 function enterStore(){
+  if(_entered) return;
+  _entered = true;
   const splash = document.getElementById('splash');
   splash.classList.add('exit');
-
-  setTimeout(()=>{
-    // Redirect to main store — change 'index.html' if your file has different name
-    window.location.href = 'index.html';
-  }, 1000);
+  setTimeout(()=>{ window.location.href = 'index.html'; }, 1000);
 }
 
 // Auto enter after 4.5 seconds
 setTimeout(enterStore, 4500);
 
-// Skip on any click/tap
+// Skip on key press
 document.addEventListener('keydown', e => {
   if(e.key === 'Enter' || e.key === ' ' || e.key === 'Escape') enterStore();
 });
