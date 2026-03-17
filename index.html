@@ -812,38 +812,65 @@ window.addEventListener('storage', function(e){
     }catch(err){}
   }
 });
+
+// MOBILE FIX: Jab user tab par wapas aaye toh products refresh karo
+// (Mobile par storage event background mein fire nahi hota)
+document.addEventListener('visibilitychange', function(){
+  if(document.visibilityState === 'visible'){
+    try{
+      const latest = localStorage.getItem(HMI_STORAGE_KEY);
+      if(latest){
+        const parsed = JSON.parse(latest);
+        // Sirf re-render karo agar data change hua ho
+        if(JSON.stringify(parsed) !== JSON.stringify(products)){
+          products = parsed;
+          renderProducts(products);
+        }
+      }
+    }catch(e){}
+  }
+});
 </script>
 <script>
 
 // =============================================
-// GITHUB CONFIG — Cross-device order tracking
+// FIREBASE CONFIG — Yahan apna config paste karo
+// Step 3 mein Firebase Console se milega
 // =============================================
-const GH = {
-  owner: 'Parv-0627',
-  repo:  'hmi-fashion-store',
-  token: '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',
-  file:  'orders.json'
+const FIREBASE_CONFIG = {
+  apiKey:            "AIzaSyBiYMzpLUWNDPIsdQ1UOjeAbDweX9Cv1GM",
+  authDomain:        "hmi-fashion-store.firebaseapp.com",
+  projectId:         "hmi-fashion-store",
+  storageBucket:     "hmi-fashion-store.firebasestorage.app",
+  messagingSenderId: "988891730362",
+  appId:             "1:988891730362:web:40f2c9ee6774df53e24d83"
 };
-const GH_ON = true;
 
-async function ghRead(){
+// Firebase initialize — ek baar hota hai
+let db = null;
+function initFirebase(){
   try{
-    const r=await fetch(`https://api.github.com/repos/${GH.owner}/${GH.repo}/contents/${GH.file}`,
-      {headers:{'Authorization':'token '+GH.token,'Accept':'application/vnd.github.v3+json'},cache:'no-store'});
-    if(r.status===404) return {orders:[],sha:null};
-    const d=await r.json();
-    return {orders:JSON.parse(atob(d.content.replace(/\n/g,''))).orders||[],sha:d.sha};
-  }catch(e){return {orders:[],sha:null};}
+    if(!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+    db = firebase.firestore();
+  }catch(e){ console.error('Firebase init failed:', e); }
 }
 
-async function ghWrite(orders,sha){
+// Order Firebase mein save karo
+async function fbSaveOrder(order){
+  if(!db) return false;
   try{
-    const content=btoa(unescape(encodeURIComponent(JSON.stringify({orders},null,2))));
-    const body={message:'order-'+Date.now(),content,committer:{name:'HMI Store',email:'store@hmi.in'}};
-    if(sha) body.sha=sha;
-    await fetch(`https://api.github.com/repos/${GH.owner}/${GH.repo}/contents/${GH.file}`,
-      {method:'PUT',headers:{'Authorization':'token '+GH.token,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},body:JSON.stringify(body)});
-  }catch(e){}
+    await db.collection('orders').doc(order.orderNo).set(order);
+    return true;
+  }catch(e){ console.error('Firebase save error:', e); return false; }
+}
+
+// Ek order Firebase se padhho (tracker ke liye)
+async function fbGetOrder(orderNo){
+  if(!db) return null;
+  try{
+    const doc = await db.collection('orders').doc(orderNo).get();
+    return doc.exists ? doc.data() : null;
+  }catch(e){ return null; }
 }
 
 const WA="919560291565", SHIPPING=99, STORE_UPI="9560291565@pthdfc";
@@ -1100,10 +1127,18 @@ function payViaUPI(){
   confirmPayment();
 }
 
-function confirmPayment(){
+async function confirmPayment(){
   if(!currentOrderData)return;
   currentOrderData.status='Pending';
-  saveOrder(currentOrderData);
+
+  // Save with feedback — await karo taaki order actually save ho
+  const saveBtn = document.querySelector('#step4 .btn-proceed');
+  if(saveBtn){ saveBtn.textContent='⏳ Saving order...'; saveBtn.disabled=true; }
+
+  const saved = await saveOrder(currentOrderData);
+
+  if(saveBtn){ saveBtn.textContent='✅ Payment Done — Confirm Order'; saveBtn.disabled=false; }
+
   document.getElementById('orderNoDisplay').textContent=currentOrderData.orderNo;
   document.getElementById('successOverlay').classList.add('open');
 }
@@ -1123,20 +1158,28 @@ function prepareOrder(orderNo, total){
 }
 
 async function saveOrder(order){
-  // localStorage first
+  let localOk = false;
+  let firebaseOk = false;
+
+  // Step 1: localStorage mein save karo (backup)
   try{
-    const ex=JSON.parse(localStorage.getItem('hmi_orders')||'[]');
-    const idx=ex.findIndex(o=>o.orderNo===order.orderNo);
-    if(idx>=0)ex[idx]=order; else ex.push(order);
-    localStorage.setItem('hmi_orders',JSON.stringify(ex));
-  }catch(e){}
-  // GitHub — cross device
-  try{
-    const {orders,sha}=await ghRead();
-    const idx=orders.findIndex(o=>o.orderNo===order.orderNo);
-    if(idx>=0)orders[idx]=order; else orders.push(order);
-    await ghWrite(orders,sha);
-  }catch(e){}
+    const ex = JSON.parse(localStorage.getItem('hmi_orders')||'[]');
+    const idx = ex.findIndex(o=>o.orderNo===order.orderNo);
+    if(idx>=0) ex[idx]=order; else ex.push(order);
+    localStorage.setItem('hmi_orders', JSON.stringify(ex));
+    localOk = true;
+  }catch(e){ console.error('localStorage save failed:', e); }
+
+  // Step 2: Firebase mein save karo (main storage — har device pe dikhega)
+  firebaseOk = await fbSaveOrder(order);
+
+  if(!localOk && !firebaseOk){
+    alert('⚠️ Order save nahi ho paya! Internet check karo aur dobara try karo.');
+    return false;
+  }
+
+  console.log(`Order ${order.orderNo} saved — local:${localOk}, firebase:${firebaseOk}`);
+  return true;
 }
 
 function sendWAConfirmation(){
@@ -1523,15 +1566,17 @@ async function trackOrder(){
   if(!input){ errEl.textContent='❌ Please enter your Order ID'; resultEl.style.display='none'; return; }
   errEl.innerHTML='<span style="color:var(--gray);font-size:.8rem;">🔍 Searching...</span>';
   try{
-    // Check GitHub first, then localStorage
-    let orders=[];
-    try{
-      const {orders:ghOrders}=await ghRead();
-      orders=ghOrders;
-    }catch(e){}
-    const local=JSON.parse(localStorage.getItem('hmi_orders')||'[]');
-    local.forEach(lo=>{ if(!orders.find(o=>o.orderNo===lo.orderNo)) orders.push(lo); });
-    const o = orders.find(x=>x.orderNo===input);
+    let o = null;
+
+    // Firebase se dhundho (main — latest status milega)
+    o = await fbGetOrder(input);
+
+    // Firebase mein nahi mila toh localStorage check karo (backup)
+    if(!o){
+      const local = JSON.parse(localStorage.getItem('hmi_orders')||'[]');
+      o = local.find(x=>x.orderNo===input) || null;
+    }
+
     if(!o){ errEl.textContent='❌ Order ID not found. Please check and try again.'; resultEl.style.display='none'; return; }
     errEl.textContent='';
     const statusSteps = [
@@ -1600,6 +1645,17 @@ window.addEventListener('storage', function(e){
     }
   }
 });
+
+// Firebase initialize karo
+initFirebase();
+</script>
+
+<!-- Firebase SDK — internet se load hota hai -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script>
+// Firebase init here too — SDK load hone ke baad
+try{ initFirebase(); }catch(e){}
 </script>
 </body>
 </html>
