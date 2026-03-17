@@ -418,7 +418,7 @@ textarea{resize:vertical;min-height:65px;}
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
         <h2 style="font-family:'Playfair Display',serif;font-size:1.2rem;">📦 Orders Management</h2>
         <div style="display:flex;gap:8px;flex-wrap:wrap;">
-          <button class="btn btn-blue btn-sm" onclick="refreshFromGitHub()">🔄 Refresh from GitHub</button>
+          <button class="btn btn-blue btn-sm" onclick="refreshFromGitHub()">🔄 Refresh from Firebase</button>
           <select class="filter-sel" id="orderStatusFilter" onchange="renderOrders()">
             <option value="all">All Orders</option>
             <option value="Pending">⏳ Pending</option>
@@ -898,34 +898,67 @@ function showToast(msg,type='success'){
 // =============================================
 
 // =============================================
-// GITHUB CONFIG
+// FIREBASE CONFIG — index.html wala hi config yahan bhi daalo
 // =============================================
-const GH = {
-  owner: 'Parv-0627',
-  repo:  'hmi-fashion-store',
-  token: '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',
-  file:  'orders.json'
+const FIREBASE_CONFIG = {
+  apiKey:            "AIzaSyBiYMzpLUWNDPIsdQ1UOjeAbDweX9Cv1GM",
+  authDomain:        "hmi-fashion-store.firebaseapp.com",
+  projectId:         "hmi-fashion-store",
+  storageBucket:     "hmi-fashion-store.firebasestorage.app",
+  messagingSenderId: "988891730362",
+  appId:             "1:988891730362:web:40f2c9ee6774df53e24d83"
 };
 
-async function ghRead(){
+let db = null;
+function initFirebase(){
   try{
-    const r=await fetch(`https://api.github.com/repos/${GH.owner}/${GH.repo}/contents/${GH.file}`,
-      {headers:{'Authorization':'token '+GH.token,'Accept':'application/vnd.github.v3+json'},cache:'no-store'});
-    if(r.status===404) return {orders:[],sha:null};
-    const d=await r.json();
-    return {orders:JSON.parse(atob(d.content.replace(/\n/g,''))).orders||[],sha:d.sha};
-  }catch(e){return {orders:[],sha:null};}
+    if(!firebase.apps || !firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+    db = firebase.firestore();
+    // Real-time listener — naya order aate hi admin ko dikhega
+    db.collection('orders').onSnapshot(snapshot=>{
+      snapshot.docChanges().forEach(change=>{
+        if(change.type==='added'){
+          const o = change.doc.data();
+          // localStorage bhi update karo
+          const local = loadOrders();
+          if(!local.find(x=>x.orderNo===o.orderNo)){
+            local.push(o);
+            try{ localStorage.setItem(ORDERS_KEY, JSON.stringify(local)); }catch(e){}
+            showToast('🔔 Naya order aaya: '+o.orderNo,'success');
+          }
+        }
+        if(change.type==='modified'){
+          const o = change.doc.data();
+          const local = loadOrders();
+          const idx = local.findIndex(x=>x.orderNo===o.orderNo);
+          if(idx>=0) local[idx]=o; else local.push(o);
+          try{ localStorage.setItem(ORDERS_KEY, JSON.stringify(local)); }catch(e){}
+        }
+      });
+      updateOrderCounts();
+      const ordersVisible = document.getElementById('sec-orders')?.style.display!=='none';
+      if(ordersVisible) renderOrders();
+      renderDashboard();
+    }, err=>{ console.log('Firebase listener error:', err); });
+  }catch(e){ console.error('Firebase init failed:', e); }
 }
 
-async function ghWrite(orders,sha){
+// Saare orders Firebase se load karo
+async function fbLoadAllOrders(){
+  if(!db) return [];
   try{
-    const content=btoa(unescape(encodeURIComponent(JSON.stringify({orders},null,2))));
-    const body={message:'admin-order-'+Date.now(),content,committer:{name:'HMI Admin',email:'admin@hmi.in'}};
-    if(sha) body.sha=sha;
-    await fetch(`https://api.github.com/repos/${GH.owner}/${GH.repo}/contents/${GH.file}`,
-      {method:'PUT',headers:{'Authorization':'token '+GH.token,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},body:JSON.stringify(body)});
+    const snap = await db.collection('orders').get();
+    return snap.docs.map(d=>d.data());
+  }catch(e){ return []; }
+}
+
+// Ek order Firebase mein save/update karo
+async function fbSaveOrder(order){
+  if(!db) return false;
+  try{
+    await db.collection('orders').doc(order.orderNo).set(order);
     return true;
-  }catch(e){return false;}
+  }catch(e){ console.error('Firebase write error:', e); return false; }
 }
 
 const ORDERS_KEY = 'hmi_orders';
@@ -936,25 +969,32 @@ function loadOrders(){
 }
 
 async function refreshFromGitHub(){
+  // Ab yeh Firebase se sync karta hai
+  showToast('🔄 Firebase se sync ho raha hai...','success');
   try{
-    const {orders}=await ghRead();
-    if(orders.length>0 || true){
-      localStorage.setItem(ORDERS_KEY,JSON.stringify(orders));
-      updateOrderCounts();
-      renderOrders();
-      renderDashboard();
-      showToast('✅ '+orders.length+' orders loaded from GitHub!','success');
+    const fbOrders = await fbLoadAllOrders();
+    const localOrders = loadOrders();
+    const fbMap = new Map(fbOrders.map(o=>[o.orderNo, o]));
+    const localOnly = localOrders.filter(o=>!fbMap.has(o.orderNo));
+    const merged = [...fbOrders, ...localOnly];
+    if(merged.length > 0){
+      localStorage.setItem(ORDERS_KEY, JSON.stringify(merged));
     }
-  }catch(e){ showToast('❌ GitHub load failed','error'); }
+    updateOrderCounts();
+    renderOrders();
+    renderDashboard();
+    showToast('✅ '+merged.length+' orders synced from Firebase!','success');
+  }catch(e){ showToast('❌ Firebase sync failed — local data safe hai','error'); }
 }
 
 async function saveOrdersData(orders){
-  try{ localStorage.setItem(ORDERS_KEY,JSON.stringify(orders)); }catch(e){}
+  // Pehle localStorage update karo (instant)
+  try{ localStorage.setItem(ORDERS_KEY, JSON.stringify(orders)); }catch(e){}
   updateOrderCounts();
-  try{
-    const {sha}=await ghRead();
-    await ghWrite(orders,sha);
-  }catch(e){}
+  // Firebase par har order update karo
+  for(const order of orders){
+    await fbSaveOrder(order);
+  }
 }
 
 function updateOrderCounts(){
@@ -1180,8 +1220,17 @@ window.addEventListener('storage', function(e){
 loadProducts();
 renderDashboard();
 updateCounts();
-refreshFromGitHub();
+// refreshFromGitHub() — auto-call hatayi: page refresh par orders wipe ho rahe the
+// Manual "Refresh from Firebase" button use karo
 updateOrderCounts();
+</script>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script>
+  // Firebase initialize karo — SDK load hone ke baad
+  initFirebase();
 </script>
 </body>
 </html>
