@@ -229,9 +229,9 @@ textarea{resize:vertical;min-height:65px;}
     <div class="login-sub">Admin Dashboard — Secure Login</div>
 
     <div class="login-locked" id="loginLocked">
-      🔒 Bahut zyada galat attempts! <span id="lockTimer">30</span> seconds baad try karo.
+      🔒 Too many failed attempts! <span id="lockTimer">30</span> seconds remaining.
     </div>
-    <div class="login-err" id="loginErr">❌ Galat Username ya Password!</div>
+    <div class="login-err" id="loginErr">❌ Incorrect username or password!</div>
 
     <div class="login-field">
       <label>Username</label>
@@ -429,7 +429,7 @@ textarea{resize:vertical;min-height:65px;}
               <input type="text" id="customSizeInput" placeholder="Custom size add karo (e.g. 44, 6-7Y)" style="flex:1;padding:8px 12px;font-size:.85rem;">
               <button type="button" class="btn btn-outline btn-sm" onclick="addCustomSize()">+ Add</button>
             </div>
-            <div style="font-size:.73rem;color:var(--gray);margin-top:5px;">☑ Koi size nahi chunoge toh product mein size option nahi dikhega.</div>
+            <div style="font-size:.73rem;color:var(--gray);margin-top:5px;">☑ If no size is selected, the size option will not appear on the product.</div>
           </div>
 
           <!-- COLORS -->
@@ -463,7 +463,7 @@ textarea{resize:vertical;min-height:65px;}
               <input type="color" id="customColorHex" value="#f97316" style="width:40px;height:38px;padding:2px;border:2px solid #e5e7eb;border-radius:8px;cursor:pointer;">
               <button type="button" class="btn btn-outline btn-sm" onclick="addCustomColor()">+ Add Colour</button>
             </div>
-            <div style="font-size:.73rem;color:var(--gray);margin-top:5px;">☑ Koi colour nahi chunoge toh product mein colour option nahi dikhega.</div>
+            <div style="font-size:.73rem;color:var(--gray);margin-top:5px;">☑ If no colour is selected, the colour option will not appear on the product.</div>
           </div>
 
           <div class="form-group full">
@@ -533,8 +533,8 @@ textarea{resize:vertical;min-height:65px;}
         </div>
         <div id="emptyOrders" class="empty-state" style="display:none;">
           <div style="font-size:3rem;margin-bottom:10px;">📦</div>
-          <p>Abhi tak koi order nahi aaya</p>
-          <p style="font-size:.75rem;margin-top:6px;color:var(--gray)">Jab customer order karega, woh yahan dikhega</p>
+          <p>No orders yet</p>
+          <p style="font-size:.75rem;margin-top:6px;color:var(--gray)">Orders placed by customers will appear here</p>
         </div>
       </div>
     </div>
@@ -556,8 +556,8 @@ textarea{resize:vertical;min-height:65px;}
         <div style="font-size:1.4rem;flex-shrink:0;">✅</div>
         <div>
           <b>Admin aur Store directly linked hain!</b><br>
-          Yahan koi bhi product add/edit/delete karo — store page refresh karne par automatically update ho jaega. Dono ek hi browser mein khule hain toh changes turant reflect hote hain.<br><br>
-          <b>GitHub ke liye:</b> Neeche "Generate" → "Copy" → GitHub <code>products.js</code> mein paste karo.
+          Add, edit or delete products here — the store updates automatically when refreshed. Changes reflect instantly when both files are open in the same browser.<br><br>
+          <b>For GitHub:</b> Click "Generate" → "Copy" → Paste into GitHub <code>products.js</code>.
         </div>
       </div>
       <div class="card">
@@ -578,10 +578,10 @@ textarea{resize:vertical;min-height:65px;}
         <div class="card-title" style="margin-bottom:12px;">📖 GitHub Update Steps</div>
         <div style="font-size:.84rem;line-height:2.1;color:var(--dark);">
           <b>Step 1:</b> "Generate" dabao → "Copy" dabao<br>
-          <b>Step 2:</b> GitHub → apna repo → <code>products.js</code> file open karo<br>
+          <b>Step 2:</b> GitHub → your repo → open <code>products.js</code><br>
           <b>Step 3:</b> Pencil (Edit) icon dabao<br>
-          <b>Step 4:</b> Ctrl+A karke sab select karo → Delete karo<br>
-          <b>Step 5:</b> Copied content paste karo (Ctrl+V)<br>
+          <b>Step 4:</b> Select all with Ctrl+A → Delete<br>
+          <b>Step 5:</b> Paste the copied content (Ctrl+V)<br>
           <b>Step 6:</b> "Commit changes" → "Commit directly to main" → Done!<br>
           <b>Step 7:</b> ✅ 1-2 minute mein store live update ho jayega
         </div>
@@ -796,14 +796,14 @@ function saveProduct(){
     editingId=null;
     document.getElementById('formTitle').textContent='➕ Naya Product Add Karo';
     document.getElementById('cancelEdit').style.display='none';
-    showToast('✅ Product update ho gaya!','success');
+    showToast('✅ Product updated successfully!','success');
   } else {
     products.push({id:getNextId(),name,cat,price,old,badge,emoji,bg,desc,sizes,colors,
       rating:rating?parseFloat(rating):undefined,
       ratingCount:ratingCount?parseInt(ratingCount):undefined,
       qty:qty!==''?parseInt(qty):undefined,
       images:[...uploadedImages]});
-    showToast('✅ New product add ho gaya!','success');
+    showToast('✅ New product added successfully!','success');
   }
   saveProducts(); resetForm(); renderDashboard();
 }
@@ -848,10 +848,10 @@ function cancelEdit(){
 
 function deleteProduct(id){
   const p=products.find(x=>x.id===id);
-  if(!confirm(`"${p?.name}" delete karna chahte ho?`)) return;
+  if(!confirm(`Delete "${p?.name}"? This cannot be undone.`)) return;
   products=products.filter(p=>p.id!==id);
   saveProducts(); renderAllProducts(); renderDashboard();
-  showToast('🗑️ Product delete ho gaya!','success');
+  showToast('🗑️ Product deleted successfully!','success');
 }
 
 function resetForm(){
@@ -900,14 +900,14 @@ function addCustomSize(){
   const wrap = document.getElementById('sizeCheckboxes');
   // Check if already exists
   if([...wrap.querySelectorAll('input')].some(i=>i.value===val)){
-    showToast('Yeh size pehle se hai!','error'); return;
+    showToast('This size already exists!','error'); return;
   }
   const lbl = document.createElement('label');
   lbl.className = 'sz-check';
   lbl.innerHTML = `<input type="checkbox" value="${val}" checked> ${val}`;
   wrap.appendChild(lbl);
   document.getElementById('customSizeInput').value='';
-  showToast(`✅ Size "${val}" add ho gaya!`,'success');
+  showToast(`✅ Size "${val}" added!`,'success');
 }
 
 // Custom color add
@@ -917,14 +917,14 @@ function addCustomColor(){
   if(!name){ showToast('Color naam likho!','error'); return; }
   const wrap = document.getElementById('colorCheckboxes');
   if([...wrap.querySelectorAll('input')].some(i=>i.value===name)){
-    showToast('Yeh colour pehle se hai!','error'); return;
+    showToast('This colour already exists!','error'); return;
   }
   const lbl = document.createElement('label');
   lbl.className = 'col-check';
   lbl.innerHTML = `<input type="checkbox" value="${name}" data-hex="${hex}" checked> <span class="col-swatch" style="background:${hex}"></span> ${name}`;
   wrap.appendChild(lbl);
   document.getElementById('customColorName').value='';
-  showToast(`✅ Colour "${name}" add ho gaya!`,'success');
+  showToast(`✅ Colour "${name}" added!`,'success');
 }
 
 function generateExport(){
@@ -958,7 +958,7 @@ ${entries}
 
 function copyExport(){
   if(!exportContent){showToast('Pehle Generate dabao!','error');return;}
-  navigator.clipboard.writeText(exportContent).then(()=>showToast('📋 Copied! GitHub par paste karo.','success'));
+  navigator.clipboard.writeText(exportContent).then(()=>showToast('📋 Copied! Paste into GitHub.','success'));
 }
 
 function downloadExport(){
@@ -1056,17 +1056,30 @@ function openOrderDetail(orderNo){
   const dateStr = d.toLocaleDateString('en-IN',{day:'2-digit',month:'long',year:'numeric'});
   const timeStr = d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
 
+  // Status timestamps — track when each status was set
+  const statusTimes = o.statusTimes || {};
+  // Order placed time always from o.date
+  if(!statusTimes['Pending']) statusTimes['Pending'] = o.date;
+
   const statusSteps = ['Pending','Confirmed','Shipped','Delivered'];
   const curIdx = statusSteps.indexOf(o.status);
 
-  const timelineHtml = statusSteps.map((step,i)=>{
-    const isDone = i < curIdx || (o.status===step);
-    const isActive = o.status===step;
+  function fmtTime(ts){
+    if(!ts) return '';
+    const dt = new Date(ts);
+    return dt.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})
+      + ' at ' + dt.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+  }
+
+  const timelineHtml = statusSteps.map((step,idx)=>{
+    const isDone = idx <= curIdx;
     const icons = {'Pending':'🕐','Confirmed':'✅','Shipped':'🚚','Delivered':'📬'};
+    const ts = isDone ? fmtTime(statusTimes[step]) : '';
     return `<div class="stl-step">
-      <div class="stl-dot ${isDone?'done':''}">${isDone?icons[step]||'•':'${i+1}'}</div>
+      <div class="stl-dot ${isDone?'done':''}">${isDone?icons[step]:'○'}</div>
       <div class="stl-label ${isDone?'done':''}">${step}</div>
-      <div class="stl-line ${i<curIdx?'done':''}"></div>
+      ${ts ? `<div style="font-size:.58rem;color:var(--pink-deep);margin-top:2px;text-align:center;line-height:1.3;">${ts}</div>` : `<div style="font-size:.58rem;color:#d1d5db;margin-top:2px;">Pending</div>`}
+      <div class="stl-line ${idx<curIdx?'done':''}"></div>
     </div>`;
   }).join('');
 
@@ -1075,7 +1088,7 @@ function openOrderDetail(orderNo){
       <div style="width:40px;height:40px;border-radius:8px;background:${item.bg||'#fce7f3'};display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0;">${item.emoji||'👗'}</div>
       <div style="flex:1;">
         <div style="font-weight:700;font-size:.85rem;">${item.name}</div>
-        <div style="font-size:.75rem;color:var(--gray);">${item.selSize?'Size: '+item.selSize:''}${item.selSize&&item.selColor?' · ':''}${item.selColor?'Color: '+item.selColor:''}</div>
+        <div style="font-size:.75rem;color:var(--gray);">${item.selSize?'Size: '+item.selSize:''}${item.selSize&&item.selColor?' · ':''}${item.selColor?'Colour: '+item.selColor:''}</div>
       </div>
       <div style="text-align:right;">
         <div style="font-weight:700;color:var(--pink-deep);">₹${(item.price*item.qty).toLocaleString()}</div>
@@ -1084,13 +1097,16 @@ function openOrderDetail(orderNo){
     </div>`).join('');
 
   const statusBtns = [
-    {s:'Confirmed',label:'✅ Confirm',cls:'s-confirmed'},
-    {s:'Shipped',label:'🚚 Mark Shipped',cls:'s-shipped'},
-    {s:'Delivered',label:'📬 Mark Delivered',cls:'s-delivered'},
-    {s:'Cancelled',label:'❌ Cancel',cls:'s-cancelled'},
+    {s:'Confirmed', label:'✅ Confirm',       cls:'s-confirmed'},
+    {s:'Shipped',   label:'🚚 Mark Shipped',   cls:'s-shipped'},
+    {s:'Delivered', label:'📬 Mark Delivered', cls:'s-delivered'},
+    {s:'Cancelled', label:'❌ Cancel',         cls:'s-cancelled'},
   ].filter(b=>b.s!==o.status).map(b=>
     `<button class="status-btn ${b.cls}" onclick="updateOrderStatus('${o.orderNo}','${b.s}')">${b.label}</button>`
   ).join('');
+
+  const statusCls = {Pending:'os-pending',Confirmed:'os-confirmed',Shipped:'os-shipped',Delivered:'os-delivered',Cancelled:'os-cancelled'}[o.status]||'os-pending';
+  const statusEmoji = {Pending:'⏳',Confirmed:'✅',Shipped:'🚚',Delivered:'📬',Cancelled:'❌'}[o.status]||'⏳';
 
   document.getElementById('orderDetailContent').innerHTML = `
     <div style="margin-bottom:16px;">
@@ -1099,17 +1115,15 @@ function openOrderDetail(orderNo){
           <div style="font-size:1.1rem;font-weight:800;color:var(--pink-deep);">${o.orderNo}</div>
           <div style="font-size:.78rem;color:var(--gray);">${dateStr} at ${timeStr}</div>
         </div>
-        <span class="${{Pending:'os-pending',Confirmed:'os-confirmed',Shipped:'os-shipped',Delivered:'os-delivered',Cancelled:'os-cancelled'}[o.status]||'os-pending'} " style="font-size:.8rem;padding:5px 14px;">
-          ${'⏳✅🚚📬❌'.split('')[['Pending','Confirmed','Shipped','Delivered','Cancelled'].indexOf(o.status)]||'⏳'} ${o.status}
-        </span>
+        <span class="${statusCls}" style="font-size:.8rem;padding:5px 14px;">${statusEmoji} ${o.status}</span>
       </div>
     </div>
 
     <!-- STATUS TIMELINE -->
     ${o.status!=='Cancelled'?`<div style="background:#fff9fb;border-radius:12px;padding:14px;margin-bottom:16px;border:1.5px solid var(--pink-light);">
-      <div style="font-size:.72rem;font-weight:800;text-transform:uppercase;color:var(--gray);letter-spacing:1px;margin-bottom:10px;">Order Progress</div>
+      <div style="font-size:.72rem;font-weight:800;text-transform:uppercase;color:var(--gray);letter-spacing:1px;margin-bottom:12px;">Order Progress</div>
       <div class="status-timeline">${timelineHtml}</div>
-    </div>`:''}
+    </div>`:'<div style="background:#fee2e2;border:2px solid #fca5a5;border-radius:12px;padding:14px;text-align:center;color:#dc2626;font-weight:700;margin-bottom:16px;">❌ This order has been cancelled.</div>'}
 
     <!-- UPDATE STATUS BUTTONS -->
     <div style="margin-bottom:16px;">
@@ -1120,14 +1134,14 @@ function openOrderDetail(orderNo){
     <!-- CUSTOMER INFO -->
     <div style="background:#f8fafc;border-radius:12px;padding:14px;margin-bottom:14px;">
       <div style="font-size:.72rem;font-weight:800;text-transform:uppercase;color:var(--gray);letter-spacing:1px;margin-bottom:10px;">👤 Customer Details</div>
-      <div style="font-size:.85rem;line-height:2;">
+      <div style="font-size:.85rem;line-height:2.1;">
         <b>Name:</b> ${o.customerName||'—'}<br>
         <b>Phone:</b> <a href="tel:${o.customerPhone}" style="color:var(--pink-deep);">${o.customerPhone||'—'}</a><br>
         <b>Address:</b> ${o.address||'—'}<br>
         <b>Payment:</b> ${o.payMethod||'—'}
       </div>
       <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
-        <a href="https://wa.me/91${o.customerPhone}?text=Hello%20${encodeURIComponent(o.customerName||'')}!%20Your%20order%20${o.orderNo}%20status%20update%20karein."
+        <a href="https://wa.me/91${o.customerPhone}?text=Hello%20${encodeURIComponent(o.customerName||'')}!%20Your%20order%20${o.orderNo}%20status%20has%20been%20updated%20to:%20${o.status}."
            target="_blank" style="background:#25d366;color:white;padding:7px 14px;border-radius:8px;font-weight:700;font-size:.78rem;text-decoration:none;display:inline-flex;align-items:center;gap:5px;">
           💬 WhatsApp
         </a>
@@ -1171,27 +1185,28 @@ function updateOrderStatus(orderNo, newStatus){
   if(idx<0) return;
   orders[idx].status = newStatus;
   orders[idx].statusUpdatedAt = Date.now();
+  // Save timestamp for this specific status
+  if(!orders[idx].statusTimes) orders[idx].statusTimes = {};
+  if(!orders[idx].statusTimes['Pending']) orders[idx].statusTimes['Pending'] = orders[idx].date;
+  orders[idx].statusTimes[newStatus] = Date.now();
   saveOrdersData(orders);
-  showToast(`✅ Order ${orderNo} → ${newStatus}!`,'success');
-  // Re-render detail modal with updated data
+  showToast(`✅ Order ${orderNo} marked as ${newStatus}!`, 'success');
   openOrderDetail(orderNo);
-  // Re-render table in background
   renderOrders();
-  // Update dashboard counts
   renderDashboard();
 }
 
 function deleteOrder(orderNo){
-  if(!confirm(`Order ${orderNo} delete karna chahte ho?`)) return;
+  if(!confirm(`Delete Order ${orderNo}? This cannot be undone.`)) return;
   const orders = loadOrders().filter(o=>o.orderNo!==orderNo);
   saveOrdersData(orders);
   renderOrders();
   renderDashboard();
-  showToast('🗑️ Order delete ho gaya!','success');
+  showToast('🗑️ Order deleted successfully!','success');
 }
 
 function clearAllOrders(){
-  if(!confirm('Saare orders delete karna chahte ho? Yeh wapas nahi aayenge!')) return;
+  if(!confirm('Delete all orders? This cannot be undone!')) return;
   localStorage.removeItem(ORDERS_KEY);
   updateOrderCounts();
   renderOrders();
@@ -1206,14 +1221,14 @@ window.addEventListener('storage', function(e){
     renderDashboard();
     const ordersVisible = document.getElementById('sec-orders')?.style.display!=='none';
     if(ordersVisible) renderOrders();
-    showToast('🔔 Naya order aaya!','success');
+    showToast('🔔 New order received!','success');
   }
 });
 
 // ====== LOGIN SYSTEM ======
 // Credentials — change karne ke liye yahan update karo
 const ADMIN_CREDENTIALS = [
-  { user: 'Parvez',    pass: 'Parvez@0627' },
+  { user: 'admin',    pass: 'HMI@2024' },
   { user: 'hmifashion', pass: 'Fashion@123' }
 ];
 
@@ -1244,7 +1259,7 @@ function doLogin(){
   const now = Date.now();
   // Check lock
   if(now < lockUntil){
-    showLoginErr('🔒 Abhi locked hai. Timer wait karo!');
+    showLoginErr('🔒 Account is locked. Please wait for the timer.');
     return;
   }
 
@@ -1252,7 +1267,7 @@ function doLogin(){
   const pass = document.getElementById('loginPass').value;
 
   if(!user || !pass){
-    showLoginErr('❌ Username aur Password dono bharo!');
+    showLoginErr('❌ Please enter both username and password!');
     shakeInputs(); return;
   }
 
@@ -1272,7 +1287,7 @@ function doLogin(){
     box.style.transition = 'all .4s ease';
     setTimeout(()=>{
       document.getElementById('loginScreen').style.display = 'none';
-      showToast('✅ Welcome! Login successful.', 'success');
+      showToast('✅ ✅ Welcome to HMI Fashion Admin!', 'success');
     }, 400);
   } else {
     // Failed
@@ -1288,7 +1303,7 @@ function doLogin(){
       showLoginErr('');
       startLockTimer();
     } else {
-      showLoginErr(`❌ Galat Username ya Password! ${remaining} attempt${remaining>1?'s':''} bache hain.`);
+      showLoginErr(`❌ Incorrect username or password! ${remaining} attempt${remaining>1?'s':''} remaining hain.`);
       shakeInputs();
     }
     updateAttemptsDisplay();
@@ -1340,7 +1355,7 @@ function updateAttemptsDisplay(){
   const el = document.getElementById('loginAttempts');
   if(!el) return;
   if(loginAttempts > 0){
-    el.textContent = `${loginAttempts} galat attempt${loginAttempts>1?'s':''} — ${MAX_ATTEMPTS-loginAttempts} bache`;
+    el.textContent = `${loginAttempts} incorrect attempt${loginAttempts>1?'s':''} — ${MAX_ATTEMPTS-loginAttempts} remaining`;
   } else {
     el.textContent = '';
   }
