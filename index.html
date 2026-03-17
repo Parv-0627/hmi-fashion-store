@@ -817,17 +817,20 @@ window.addEventListener('storage', function(e){
 // (Mobile par storage event background mein fire nahi hota)
 document.addEventListener('visibilitychange', function(){
   if(document.visibilityState === 'visible'){
-    try{
-      const latest = localStorage.getItem(HMI_STORAGE_KEY);
-      if(latest){
-        const parsed = JSON.parse(latest);
-        // Sirf re-render karo agar data change hua ho
-        if(JSON.stringify(parsed) !== JSON.stringify(products)){
-          products = parsed;
-          renderProducts(products);
+    // Firebase se latest products load karo (mobile pe bhi kaam karega)
+    if(db) fbLoadProducts();
+    else {
+      try{
+        const latest = localStorage.getItem(HMI_STORAGE_KEY);
+        if(latest){
+          const parsed = JSON.parse(latest);
+          if(JSON.stringify(parsed) !== JSON.stringify(products)){
+            products = parsed;
+            renderProducts(products);
+          }
         }
-      }
-    }catch(e){}
+      }catch(e){}
+    }
   }
 });
 </script>
@@ -852,7 +855,26 @@ function initFirebase(){
   try{
     if(!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
     db = firebase.firestore();
+    // Products Firebase se load karo — mobile pe latest changes dikhenge
+    fbLoadProducts();
   }catch(e){ console.error('Firebase init failed:', e); }
+}
+
+// Products Firebase se load karo (admin ne jo bhi changes kiye)
+async function fbLoadProducts(){
+  if(!db) return;
+  try{
+    const doc = await db.collection('settings').doc('products').get();
+    if(doc.exists){
+      const fbProds = doc.data().list;
+      if(fbProds && fbProds.length > 0){
+        products = fbProds;
+        // localStorage bhi update karo
+        try{ localStorage.setItem(HMI_STORAGE_KEY, JSON.stringify(products)); }catch(e){}
+        renderProducts(products);
+      }
+    }
+  }catch(e){ console.error('Firebase products load error:', e); }
 }
 
 // Order Firebase mein save karo
