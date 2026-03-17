@@ -123,7 +123,38 @@ nav ul li a:hover{color:var(--pink-deep);}
 .btn-wa-confirm{width:100%;background:linear-gradient(135deg,#25d366,#128c7e);color:white;border:none;padding:13px;border-radius:12px;font-weight:700;font-size:.95rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:12px;}
 .btn-continue{width:100%;background:var(--pink-light);color:var(--pink-deep);border:none;padding:11px;border-radius:12px;font-weight:700;font-size:.9rem;cursor:pointer;margin-top:8px;}
 
-/* FLASH */
+/* ORDER TRACKER */
+.tracker-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:3000;display:none;align-items:center;justify-content:center;padding:16px;}
+.tracker-overlay.open{display:flex;}
+.tracker-modal{background:white;border-radius:22px;width:100%;max-width:480px;max-height:92vh;overflow-y:auto;box-shadow:0 30px 60px rgba(0,0,0,.2);animation:popIn .35s ease;}
+.tracker-header{background:linear-gradient(135deg,var(--pink-deep),var(--gold-dark));color:white;padding:18px 22px;border-radius:22px 22px 0 0;display:flex;align-items:center;justify-content:space-between;}
+.tracker-body{padding:22px;}
+.tracker-input-wrap{display:flex;gap:8px;margin-bottom:6px;}
+.tracker-input{flex:1;padding:12px 16px;border:2px solid var(--pink-light);border-radius:12px;font-family:'Nunito',sans-serif;font-size:.95rem;outline:none;transition:border .2s;}
+.tracker-input:focus{border-color:var(--pink-deep);}
+.tracker-btn{padding:12px 20px;background:linear-gradient(135deg,var(--pink-deep),var(--gold));color:white;border:none;border-radius:12px;font-family:'Nunito',sans-serif;font-weight:700;font-size:.9rem;cursor:pointer;white-space:nowrap;}
+
+/* TRACKER TIMELINE */
+.track-timeline{margin:18px 0;}
+.track-step{display:flex;gap:14px;position:relative;padding-bottom:20px;}
+.track-step:last-child{padding-bottom:0;}
+.track-step:not(:last-child)::before{content:'';position:absolute;left:18px;top:38px;bottom:0;width:2px;background:#e5e7eb;z-index:0;}
+.track-step:not(:last-child).done::before{background:linear-gradient(to bottom,var(--pink-deep),var(--pink-light));}
+.track-icon{width:38px;height:38px;border-radius:50%;border:2.5px solid #e5e7eb;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;background:white;z-index:1;position:relative;}
+.track-step.done .track-icon{border-color:var(--pink-deep);background:linear-gradient(135deg,var(--pink-deep),var(--gold));}
+.track-step.active .track-icon{border-color:var(--pink-deep);background:var(--pink-light);}
+.track-info{flex:1;padding-top:6px;}
+.track-info h4{font-size:.9rem;font-weight:700;color:var(--dark);}
+.track-step.done .track-info h4{color:var(--pink-deep);}
+.track-step.inactive .track-info h4{color:#9ca3af;}
+.track-info p{font-size:.75rem;color:var(--gray);margin-top:2px;}
+.track-step.inactive .track-icon{opacity:.45;}
+.track-step.inactive .track-info p{color:#d1d5db;}
+.order-info-box{background:#fff9fb;border:1.5px solid var(--pink-light);border-radius:14px;padding:14px 16px;margin-bottom:16px;}
+.order-info-row{display:flex;justify-content:space-between;font-size:.83rem;margin-bottom:5px;color:var(--gray);}
+.order-info-row:last-child{margin-bottom:0;}
+.order-info-row span:last-child{font-weight:700;color:var(--dark);}
+.cancelled-box{background:#fee2e2;border:2px solid #fca5a5;border-radius:12px;padding:14px;text-align:center;color:#dc2626;font-weight:700;font-size:.9rem;margin:12px 0;}
 .added-flash{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--pink-deep);color:white;padding:12px 25px;border-radius:30px;font-weight:700;font-size:.9rem;z-index:9999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;}
 .added-flash.show{opacity:1;}
 
@@ -355,6 +386,7 @@ footer{background:var(--dark);color:white;padding:55px 5% 25px;}
     <li><a href="#products">Products</a></li>
     <li><a href="#kids">Kids</a></li>
     <li><a href="#why">Why Us</a></li>
+    <li><a href="#" onclick="openOrderTracker();return false;" style="color:var(--pink-deep);font-weight:700;">📦 Track Order</a></li>
     <li><a href="https://wa.me/919560291565" class="nav-cta">📞 Contact</a></li>
   </ul>
   <div class="nav-right">
@@ -512,6 +544,31 @@ footer{background:var(--dark);color:white;padding:55px 5% 25px;}
 
 </div>
 
+<!-- ORDER TRACKER MODAL -->
+<div class="tracker-overlay" id="trackerOverlay" onclick="closeTrackerOutside(event)">
+  <div class="tracker-modal">
+    <div class="tracker-header">
+      <div>
+        <div style="font-family:'Playfair Display',serif;font-size:1.1rem;">📦 Track Your Order</div>
+        <div style="font-size:.75rem;opacity:.85;margin-top:2px;">Order ID enter karo status dekhne ke liye</div>
+      </div>
+      <button onclick="closeOrderTracker()" style="background:rgba(255,255,255,.2);border:none;color:white;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;">✕</button>
+    </div>
+    <div class="tracker-body">
+      <div class="tracker-input-wrap">
+        <input class="tracker-input" id="trackOrderInput" placeholder="Order ID (e.g. ORD1234)" oninput="this.value=this.value.toUpperCase()"/>
+        <button class="tracker-btn" onclick="trackOrder()">🔍 Track</button>
+      </div>
+      <div id="trackErr" style="font-size:.78rem;color:#dc2626;min-height:16px;margin-bottom:12px;"></div>
+      <div id="trackResult" style="display:none;"></div>
+      <div style="background:#fff0f8;border-radius:10px;padding:10px 14px;font-size:.78rem;color:var(--pink-deep);line-height:1.7;margin-top:4px;">
+        💡 <b>Order ID kahan milega?</b><br>
+        Order place karne ke baad WhatsApp confirmation message mein aapka Order ID hoga (e.g. <b>ORD1234</b>)
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- SUCCESS MODAL -->
 <div class="success-overlay" id="successOverlay">
   <div class="success-modal">
@@ -519,9 +576,10 @@ footer{background:var(--dark);color:white;padding:55px 5% 25px;}
     <h2>Order Placed!</h2>
     <div class="order-no-badge" id="orderNoDisplay">ORD0001</div>
     <p>Your order has been successfully placed!</p>
-    <div class="tracking-note">📦 Tracking ID will be shared on WhatsApp soon!</div>
-    <p style="font-size:.8rem;color:var(--gray)">A confirmation message will be sent to your WhatsApp.</p>
+    <div class="tracking-note">📦 Order ID note kar lo — Track Order se status check karo!</div>
+    <p style="font-size:.8rem;color:var(--gray)">WhatsApp par confirmation message aayega.</p>
     <button class="btn-wa-confirm" onclick="sendWAConfirmation()">💬 View on WhatsApp</button>
+    <button class="btn-continue" style="background:var(--pink-light);color:var(--pink-deep);margin-top:8px;" onclick="openOrderTracker();closeSuccess();">📦 Track My Order</button>
     <button class="btn-continue" onclick="closeSuccess()">🛍️ Continue Shopping</button>
   </div>
 </div>
@@ -1401,6 +1459,97 @@ function closePDPBtn(){
 }
 
 renderProducts(products);
-</script>
+
+// ===== ORDER STATUS TRACKER =====
+function openOrderTracker(){
+  document.getElementById('trackerOverlay').classList.add('open');
+  document.body.style.overflow='hidden';
+  if(currentOrderData && currentOrderData.orderNo){
+    document.getElementById('trackOrderInput').value = currentOrderData.orderNo;
+    setTimeout(trackOrder, 100);
+  }
+}
+function closeOrderTracker(){
+  document.getElementById('trackerOverlay').classList.remove('open');
+  document.body.style.overflow='';
+}
+function closeTrackerOutside(e){
+  if(e.target===document.getElementById('trackerOverlay')) closeOrderTracker();
+}
+function trackOrder(){
+  const input = document.getElementById('trackOrderInput').value.trim().toUpperCase();
+  const errEl = document.getElementById('trackErr');
+  const resultEl = document.getElementById('trackResult');
+  if(!input){ errEl.textContent='❌ Order ID enter karo'; resultEl.style.display='none'; return; }
+  try{
+    const orders = JSON.parse(localStorage.getItem('hmi_orders')||'[]');
+    const o = orders.find(x=>x.orderNo===input);
+    if(!o){ errEl.textContent='❌ Order ID nahi mila. Please check karo.'; resultEl.style.display='none'; return; }
+    errEl.textContent='';
+    const statusSteps = [
+      {key:'Pending',   icon:'🕐', label:'Order Placed',    desc:'Aapka order successfully place ho gaya hai'},
+      {key:'Confirmed', icon:'✅', label:'Order Confirmed',  desc:'HMI Fashion ne aapka order confirm kar diya'},
+      {key:'Shipped',   icon:'🚚', label:'Shipped',          desc:'Aapka parcel courier ko de diya gaya hai'},
+      {key:'Delivered', icon:'📬', label:'Delivered',        desc:'Order aapke paas pahunch gaya — Enjoy! 🎉'},
+    ];
+    const isCancelled = o.status==='Cancelled';
+    const curIdx = statusSteps.findIndex(s=>s.key===o.status);
+    const d = new Date(o.date);
+    const dateStr = d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+    const timeStr = d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+    const itemsHtml = (o.items||[]).map(item=>`
+      <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:#fff9fb;border-radius:8px;margin-bottom:6px;border:1px solid var(--pink-light);">
+        <span style="font-size:1.3rem;">${item.emoji||'👗'}</span>
+        <div style="flex:1;">
+          <div style="font-weight:700;font-size:.82rem;">${item.name}</div>
+          <div style="font-size:.72rem;color:var(--gray);">${item.selSize?'Size: '+item.selSize:''}${item.selSize&&item.selColor?' · ':''}${item.selColor?'Colour: '+item.selColor:''}</div>
+        </div>
+        <div style="font-weight:700;font-size:.82rem;color:var(--pink-deep);">x${item.qty}</div>
+      </div>`).join('');
+    const timelineHtml = isCancelled
+      ? `<div class="cancelled-box">❌ Yeh order cancel ho gaya hai<br><span style="font-size:.78rem;font-weight:400;">Help ke liye WhatsApp karo</span></div>`
+      : statusSteps.map((step,i)=>{
+          const isDone = i<=curIdx;
+          const cls = isDone ? 'done' : 'inactive';
+          return `<div class="track-step ${cls}">
+            <div class="track-icon">${isDone?step.icon:'○'}</div>
+            <div class="track-info"><h4>${step.label}</h4><p>${isDone?step.desc:'Abhi nahi hua'}</p></div>
+          </div>`;
+        }).join('');
+    resultEl.innerHTML = `
+      <div class="order-info-box">
+        <div class="order-info-row"><span>📋 Order ID</span><span style="color:var(--pink-deep);">${o.orderNo}</span></div>
+        <div class="order-info-row"><span>👤 Name</span><span>${o.customerName||'—'}</span></div>
+        <div class="order-info-row"><span>📅 Date</span><span>${dateStr} ${timeStr}</span></div>
+        <div class="order-info-row"><span>💳 Payment</span><span>${o.payMethod||'—'}</span></div>
+        <div class="order-info-row"><span>💰 Total</span><span style="color:var(--pink-deep);">₹${(o.total||0).toLocaleString()}</span></div>
+      </div>
+      <div style="margin-bottom:14px;">
+        <div style="font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--gray);margin-bottom:12px;">📍 Order Status</div>
+        <div class="track-timeline">${timelineHtml}</div>
+      </div>
+      <div style="margin-bottom:16px;">
+        <div style="font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--gray);margin-bottom:8px;">🛍️ Items</div>
+        ${itemsHtml}
+      </div>
+      <a href="https://wa.me/${WA}?text=Hello%20HMI%20Fashion!%20Mera%20order%20${o.orderNo}%20ka%20status%20janana%20hai."
+         target="_blank"
+         style="display:flex;align-items:center;justify-content:center;gap:8px;background:linear-gradient(135deg,#25d366,#128c7e);color:white;padding:13px;border-radius:12px;font-weight:700;font-size:.92rem;text-decoration:none;">
+        💬 WhatsApp par Help Lein
+      </a>`;
+    resultEl.style.display='block';
+  } catch(e){ errEl.textContent='❌ Kuch error aaya. Dobara try karo.'; }
+}
+
+// Live update — jab admin status change kare toh tracker refresh ho
+window.addEventListener('storage', function(e){
+  if(e.key==='hmi_orders'){
+    const overlay = document.getElementById('trackerOverlay');
+    if(overlay && overlay.classList.contains('open')){
+      const input = document.getElementById('trackOrderInput').value.trim();
+      if(input) setTimeout(trackOrder, 200);
+    }
+  }
+});
 </body>
 </html>
