@@ -637,12 +637,32 @@ function loadProducts(){
     if(!saved) saveProducts();
   } catch(e){ products=[...SEED_PRODUCTS]; }
 }
-function saveProducts(){
+
+async function saveProducts(){
+  // 1. localStorage — instant
   try{
     localStorage.setItem(STORAGE_KEY,JSON.stringify(products));
-    // Store tab mein bhi automatically update ho jaega (storage event)
-  } catch(e){}
+  }catch(e){}
   updateCounts();
+  // 2. GitHub — cross-device sync
+  if(GH_ON){
+    try{
+      const r = await fetch(
+        `https://api.github.com/repos/${GH.owner}/${GH.repo}/contents/products.json`,
+        {headers:{'Authorization':'token '+GH.token,'Accept':'application/vnd.github.v3+json'},cache:'no-store'}
+      );
+      let sha = null;
+      if(r.ok){ const d=await r.json(); sha=d.sha; }
+      const content = btoa(unescape(encodeURIComponent(JSON.stringify({products},null,2))));
+      const body = {message:'products-update-'+Date.now(),content,committer:{name:'HMI Admin',email:'admin@hmi.in'}};
+      if(sha) body.sha=sha;
+      await fetch(
+        `https://api.github.com/repos/${GH.owner}/${GH.repo}/contents/products.json`,
+        {method:'PUT',headers:{'Authorization':'token '+GH.token,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},body:JSON.stringify(body)}
+      );
+      showToast('✅ Products saved to GitHub!','success');
+    }catch(e){ console.log('GitHub products save failed',e); }
+  }
 }
 function getNextId(){ return products.length>0?Math.max(...products.map(p=>p.id))+1:1; }
 
