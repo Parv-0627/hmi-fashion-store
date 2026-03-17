@@ -232,7 +232,7 @@ nav ul li a:hover{color:var(--pink-deep);}
 /* SPLASH SCREEN */
 #splash{position:fixed;inset:0;background:linear-gradient(135deg,#1f1224 0%,#3d0a2e 45%,#1a0a0f 100%);z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;transition:opacity .7s ease,visibility .7s ease;}
 #splash.hide{opacity:0;visibility:hidden;pointer-events:none;}
-.splash-logo{font-family:'Playfair Display',serif;font-size:clamp(2rem,8vw,4.5rem);font-weight:700;background:linear-gradient(135deg,#f9a8d4,#d4a843,#f472b6);background-size:200%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:shimmer 2s linear infinite,splashPop .7s cubic-bezier(.175,.885,.32,1.275) both;position:relative;z-index:2;}
+.splash-logo{font-family:'Playfair Display',serif;font-size:clamp(2rem,8vw,4.5rem);font-weight:700;background:linear-gradient(135deg,#f9a8d4,#d4a843,#f472b6);background-size:200%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:shimmer 2s linear infinite;position:relative;z-index:2;}
 @keyframes shimmer{0%{background-position:0%}100%{background-position:200%}}
 @keyframes splashPop{from{transform:scale(.4);opacity:0}to{transform:scale(1);opacity:1}}
 .splash-tagline{color:rgba(255,255,255,.6);font-size:clamp(.78rem,2vw,.95rem);letter-spacing:4px;text-transform:uppercase;margin-top:10px;animation:fadeUp .7s ease .35s both;position:relative;z-index:2;}
@@ -1298,9 +1298,16 @@ function showFlash(msg, color){
 }
 
 // ===== SPLASH SCREEN =====
-setTimeout(()=>{
-  document.getElementById('splash').classList.add('hide');
-}, 2500);
+function hideSplash(){
+  const s = document.getElementById('splash');
+  if(s){ s.classList.add('hide'); }
+}
+// Primary: hide after 2.5s
+setTimeout(hideSplash, 2500);
+// Fallback: hide immediately if page already loaded
+if(document.readyState==='complete') hideSplash();
+// Fallback 2: hide on window load
+window.addEventListener('load', function(){ setTimeout(hideSplash, 800); });
 
 // ===== PRODUCT DETAIL PAGE (PDP Modal) =====
 let pdpCurrentProduct = null;
