@@ -461,11 +461,11 @@ window.addEventListener('load',function(){setTimeout(doHideSplash,500);});
       <div style="background:#eff6ff;border:2px solid #93c5fd;border-radius:14px;padding:14px;margin:12px 0;text-align:left;">
         <div style="font-weight:700;font-size:.88rem;color:#1e40af;margin-bottom:6px;">📩 OTP Sent!</div>
         <div style="font-size:.8rem;color:#1e40af;line-height:1.6;">
-          An OTP has been sent to your mobile number.<br>
-          Enter the 4-digit OTP code below.
+          Aapke mobile number par ek SMS gaya hai.<br>
+          Usme 4-digit OTP code hoga — woh yahan enter karo.
         </div>
         <div style="margin-top:8px;font-size:.75rem;color:#6b7280;">
-          ⏱️ OTP is valid for 10 minutes. Do not share with anyone.
+          ⏱️ OTP 10 minute tak valid rahega. Kisi se share mat karo.
         </div>
       </div>
 
@@ -555,7 +555,7 @@ window.addEventListener('load',function(){setTimeout(doHideSplash,500);});
     <div class="tracker-header">
       <div>
         <div style="font-family:'Playfair Display',serif;font-size:1.1rem;">📦 Track Your Order</div>
-        <div style="font-size:.75rem;opacity:.85;margin-top:2px;">Order ID enter karo status dekhne ke liye</div>
+        <div style="font-size:.75rem;opacity:.85;margin-top:2px;">Enter your Order ID to check status</div>
       </div>
       <button onclick="closeOrderTracker()" style="background:rgba(255,255,255,.2);border:none;color:white;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;">✕</button>
     </div>
@@ -568,7 +568,7 @@ window.addEventListener('load',function(){setTimeout(doHideSplash,500);});
       <div id="trackResult" style="display:none;"></div>
       <div style="background:#fff0f8;border-radius:10px;padding:10px 14px;font-size:.78rem;color:var(--pink-deep);line-height:1.7;margin-top:4px;">
         💡 <b>Where to find your Order ID?</b><br>
-        You will find your Order ID in the WhatsApp confirmation message (e.g. <b>ORD1234</b>)
+        Your Order ID will be in the WhatsApp confirmation message (e.g. <b>ORD1234</b>)
       </div>
     </div>
   </div>
@@ -580,8 +580,8 @@ window.addEventListener('load',function(){setTimeout(doHideSplash,500);});
     <div class="success-icon">🎉</div>
     <h2>Order Placed!</h2>
     <div class="order-no-badge" id="orderNoDisplay">ORD0001</div>
-    <p>Your order has been placed successfully!</p>
-    <div class="tracking-note">📦 Note your Order ID — use Track Order to check status!</div>
+    <p>Your order has been successfully placed!</p>
+    <div class="tracking-note">📦 Note your Order ID — use Track Order to check your status!</div>
     <p style="font-size:.8rem;color:var(--gray)">WhatsApp par confirmation message aayega.</p>
     <button class="btn-wa-confirm" onclick="sendWAConfirmation()">💬 View on WhatsApp</button>
     <button class="btn-continue" style="background:var(--pink-light);color:var(--pink-deep);margin-top:8px;" onclick="openOrderTracker();closeSuccess();">📦 Track My Order</button>
@@ -775,6 +775,7 @@ function loadSharedProducts(){
     const saved = localStorage.getItem(HMI_STORAGE_KEY);
     if(saved){
       const parsed = JSON.parse(saved);
+      // Agar saved products mein rating nahi hai toh default se merge karo
       const needsMerge = parsed.some(p => p.rating === undefined);
       if(needsMerge){
         const merged = parsed.map(p => {
@@ -794,30 +795,13 @@ function loadSharedProducts(){
   } catch(e){ return DEFAULT_PRODUCTS; }
 }
 
-// Load products from GitHub (cross-device sync)
-async function loadProductsFromGitHub(){
-  if(!GH_ON) return;
-  try{
-    const r = await fetch(
-      `https://api.github.com/repos/${GH.owner}/${GH.repo}/contents/products.json`,
-      {headers:{'Authorization':'token '+GH.token,'Accept':'application/vnd.github.v3+json'},cache:'no-store'}
-    );
-    if(!r.ok) return;
-    const d = await r.json();
-    const data = JSON.parse(atob(d.content.replace(/\n/g,'')));
-    if(data.products && data.products.length > 0){
-      products = data.products;
-      try{ localStorage.setItem(HMI_STORAGE_KEY, JSON.stringify(products)); }catch(e){}
-      renderProducts(products);
-    }
-  }catch(e){}
-}
-
-// Store mein products array — localStorage first, then GitHub
+// Store mein products array — admin se sync
 let products = loadSharedProducts();
 
-// Load from GitHub in background (updates page when ready)
-loadProductsFromGitHub();
+// Agar koi shared data nahi hai toh default save kar do
+if(!localStorage.getItem(HMI_STORAGE_KEY)){
+  try{ localStorage.setItem(HMI_STORAGE_KEY, JSON.stringify(DEFAULT_PRODUCTS)); }catch(e){}
+}
 
 // Admin tab mein changes detect karo aur store refresh karo
 window.addEventListener('storage', function(e){
@@ -830,21 +814,17 @@ window.addEventListener('storage', function(e){
 });
 </script>
 <script>
-const WA="919560291565", SHIPPING=99, STORE_UPI="9560291565@pthdfc";
-let cart=[], currentStep=1, currentOrderData=null, selectedPayMethod='', selectedUpiApp='';
-let custData={};
-let demoOTP='';
 
 // =============================================
-// GITHUB CONFIG — Sirf yahan apna data bharo
+// GITHUB CONFIG — Cross-device order tracking
 // =============================================
 const GH = {
-  owner: 'Parv-0627',  // e.g. hmifashion
-  repo:  'hmi-fashion-store',        // e.g. hmifashion.github.io
-  token: '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',     // GitHub Personal Access Token
+  owner: 'Parv-0627',
+  repo:  'hmi-fashion-store',
+  token: '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',
   file:  'orders.json'
 };
-const GH_ON = GH.token !== 'YOUR_GITHUB_TOKEN';
+const GH_ON = true;
 
 async function ghRead(){
   try{
@@ -859,14 +839,17 @@ async function ghRead(){
 async function ghWrite(orders,sha){
   try{
     const content=btoa(unescape(encodeURIComponent(JSON.stringify({orders},null,2))));
-    const body={message:'orders-'+Date.now(),content,committer:{name:'HMI Store',email:'store@hmi.in'}};
+    const body={message:'order-'+Date.now(),content,committer:{name:'HMI Store',email:'store@hmi.in'}};
     if(sha) body.sha=sha;
-    const r=await fetch(`https://api.github.com/repos/${GH.owner}/${GH.repo}/contents/${GH.file}`,
+    await fetch(`https://api.github.com/repos/${GH.owner}/${GH.repo}/contents/${GH.file}`,
       {method:'PUT',headers:{'Authorization':'token '+GH.token,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},body:JSON.stringify(body)});
-    return r.ok;
-  }catch(e){return false;}
+  }catch(e){}
 }
 
+const WA="919560291565", SHIPPING=99, STORE_UPI="9560291565@pthdfc";
+let cart=[], currentStep=1, currentOrderData=null, selectedPayMethod='', selectedUpiApp='';
+let custData={};
+let demoOTP='';
 
 // ===== STEP NAVIGATION =====
 function goStep(n){
@@ -1007,7 +990,7 @@ function sendOTP(){
   // TESTING ONLY - remove in production
   setTimeout(()=>{
     const testNote=document.getElementById('otpErr');
-    testNote.innerHTML=`<span style="color:#92650a;font-size:.75rem;">🧪 Testing mode — OTP is <b>${demoOTP}</b></span>`;
+    testNote.innerHTML=`<span style="color:#92650a;font-size:.75rem;">🧪 Testing mode: OTP is <b>${demoOTP}</b></span>`;
   }, 500);
 }
 
@@ -1051,11 +1034,11 @@ function resendOTP(){
   // NOTE: Real SMS gateway se bhejo
   console.log('Resend OTP (testing):', demoOTP);
 
-  document.getElementById('otpErr').innerHTML=`<span style="color:#16a34a">✅ New OTP sent successfully!</span>`;
+  document.getElementById('otpErr').innerHTML=`<span style="color:#16a34a">✅ Naya OTP SMS par bheja gaya!</span>`;
 
   // TESTING ONLY
   setTimeout(()=>{
-    document.getElementById('otpErr').innerHTML=`<span style="color:#92650a;font-size:.75rem;">🧪 Testing — OTP is <b>${demoOTP}</b></span>`;
+    document.getElementById('otpErr').innerHTML=`<span style="color:#92650a;font-size:.75rem;">🧪 Testing: OTP is <b>${demoOTP}</b></span>`;
   },1500);
 
   document.getElementById('o1').focus();
@@ -1140,22 +1123,20 @@ function prepareOrder(orderNo, total){
 }
 
 async function saveOrder(order){
-  // 1. localStorage — same device instant
+  // localStorage first
   try{
     const ex=JSON.parse(localStorage.getItem('hmi_orders')||'[]');
     const idx=ex.findIndex(o=>o.orderNo===order.orderNo);
     if(idx>=0)ex[idx]=order; else ex.push(order);
     localStorage.setItem('hmi_orders',JSON.stringify(ex));
   }catch(e){}
-  // 2. GitHub — cross-device (any phone/browser)
-  if(GH_ON){
-    try{
-      const {orders,sha}=await ghRead();
-      const idx=orders.findIndex(o=>o.orderNo===order.orderNo);
-      if(idx>=0)orders[idx]=order; else orders.push(order);
-      await ghWrite(orders,sha);
-    }catch(e){}
-  }
+  // GitHub — cross device
+  try{
+    const {orders,sha}=await ghRead();
+    const idx=orders.findIndex(o=>o.orderNo===order.orderNo);
+    if(idx>=0)orders[idx]=order; else orders.push(order);
+    await ghWrite(orders,sha);
+  }catch(e){}
 }
 
 function sendWAConfirmation(){
@@ -1536,61 +1517,55 @@ function closeTrackerOutside(e){
   if(e.target===document.getElementById('trackerOverlay')) closeOrderTracker();
 }
 async function trackOrder(){
-  const input=document.getElementById('trackOrderInput').value.trim().toUpperCase();
-  const errEl=document.getElementById('trackErr');
-  const resultEl=document.getElementById('trackResult');
-  if(!input){errEl.textContent='❌ Please enter your Order ID';resultEl.style.display='none';return;}
-
-  // Show loading
-  errEl.innerHTML='<span style="color:var(--gray)">🔍 Searching...</span>';
-  resultEl.style.display='none';
-
+  const input = document.getElementById('trackOrderInput').value.trim().toUpperCase();
+  const errEl = document.getElementById('trackErr');
+  const resultEl = document.getElementById('trackResult');
+  if(!input){ errEl.textContent='❌ Please enter your Order ID'; resultEl.style.display='none'; return; }
+  errEl.innerHTML='<span style="color:var(--gray);font-size:.8rem;">🔍 Searching...</span>';
   try{
-    // 1. Check GitHub first (cross-device)
+    // Check GitHub first, then localStorage
     let orders=[];
-    if(GH_ON){
+    try{
       const {orders:ghOrders}=await ghRead();
       orders=ghOrders;
-    }
-    // 2. Merge with localStorage (in case GitHub not configured)
+    }catch(e){}
     const local=JSON.parse(localStorage.getItem('hmi_orders')||'[]');
-    local.forEach(lo=>{
-      if(!orders.find(o=>o.orderNo===lo.orderNo)) orders.push(lo);
-    });
-
-    const o=orders.find(x=>x.orderNo===input);
-    if(!o){errEl.textContent='❌ Order ID not found. Please check and try again.';resultEl.style.display='none';return;}
+    local.forEach(lo=>{ if(!orders.find(o=>o.orderNo===lo.orderNo)) orders.push(lo); });
+    const o = orders.find(x=>x.orderNo===input);
+    if(!o){ errEl.textContent='❌ Order ID not found. Please check and try again.'; resultEl.style.display='none'; return; }
     errEl.textContent='';
-    const statusSteps=[
-      {key:'Pending',  icon:'🕐',label:'Order Placed',   desc:'Your order has been successfully placed.'},
-      {key:'Confirmed',icon:'✅',label:'Order Confirmed', desc:'HMI Fashion has confirmed your order.'},
-      {key:'Shipped',  icon:'🚚',label:'Shipped',         desc:'Your parcel has been handed over to the courier.'},
-      {key:'Delivered',icon:'📬',label:'Delivered',       desc:'Your order has been delivered. Enjoy! 🎉'},
+    const statusSteps = [
+      {key:'Pending',   icon:'🕐', label:'Order Placed',    desc:'Your order has been successfully placed.'},
+      {key:'Confirmed', icon:'✅', label:'Order Confirmed',  desc:'HMI Fashion has confirmed your order.'},
+      {key:'Shipped',   icon:'🚚', label:'Shipped',          desc:'Your parcel has been handed over to the courier.'},
+      {key:'Delivered', icon:'📬', label:'Delivered',        desc:'Your order has been delivered. Enjoy! 🎉'},
     ];
-    const isCancelled=o.status==='Cancelled';
-    const curIdx=statusSteps.findIndex(s=>s.key===o.status);
-    const d=new Date(o.date);
-    const dateStr=d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
-    const timeStr=d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
     const statusTimes=o.statusTimes||{};
     if(!statusTimes['Pending']) statusTimes['Pending']=o.date;
     function fmtTs(ts){if(!ts)return'';const dt=new Date(ts);return dt.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})+' at '+dt.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});}
-    const itemsHtml=(o.items||[]).map(item=>`
+    const isCancelled = o.status==='Cancelled';
+    const curIdx = statusSteps.findIndex(s=>s.key===o.status);
+    const d = new Date(o.date);
+    const dateStr = d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+    const timeStr = d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+    const itemsHtml = (o.items||[]).map(item=>`
       <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:#fff9fb;border-radius:8px;margin-bottom:6px;border:1px solid var(--pink-light);">
         <span style="font-size:1.3rem;">${item.emoji||'👗'}</span>
-        <div style="flex:1;"><div style="font-weight:700;font-size:.82rem;">${item.name}</div>
-        <div style="font-size:.72rem;color:var(--gray);">${item.selSize?'Size: '+item.selSize:''}${item.selSize&&item.selColor?' · ':''}${item.selColor?'Colour: '+item.selColor:''}</div></div>
+        <div style="flex:1;">
+          <div style="font-weight:700;font-size:.82rem;">${item.name}</div>
+          <div style="font-size:.72rem;color:var(--gray);">${item.selSize?'Size: '+item.selSize:''}${item.selSize&&item.selColor?' · ':''}${item.selColor?'Colour: '+item.selColor:''}</div>
+        </div>
         <div style="font-weight:700;font-size:.82rem;color:var(--pink-deep);">x${item.qty}</div>
       </div>`).join('');
-    const timelineHtml=isCancelled
-      ?`<div class="cancelled-box">❌ This order has been cancelled.<br><span style="font-size:.78rem;font-weight:400;">Please contact us on WhatsApp for assistance.</span></div>`
-      :statusSteps.map((step,i)=>{
-        const isDone=i<=curIdx;
-        const cls=isDone?'done':'inactive';
-        const ts=isDone&&statusTimes[step.key]?`<span style="font-size:.68rem;color:var(--pink-deep);font-weight:600;display:block;margin-top:2px;">${fmtTs(statusTimes[step.key])}</span>`:'';
-        return`<div class="track-step ${cls}"><div class="track-icon">${isDone?step.icon:'○'}</div><div class="track-info"><h4>${step.label}</h4><p>${isDone?step.desc:'Not yet'}</p>${ts}</div></div>`;
-      }).join('');
-    resultEl.innerHTML=`
+    const timelineHtml = isCancelled
+      ? `<div class="cancelled-box">❌ This order has been cancelled.<br><span style="font-size:.78rem;font-weight:400;">Please contact us on WhatsApp.</span></div>`
+      : statusSteps.map((step,i)=>{
+          const isDone = i<=curIdx;
+          const cls = isDone ? 'done' : 'inactive';
+          const ts=isDone&&statusTimes[step.key]?`<span style="font-size:.68rem;color:var(--pink-deep);font-weight:600;display:block;margin-top:2px;">${fmtTs(statusTimes[step.key])}</span>`:'';
+          return `<div class="track-step ${cls}"><div class="track-icon">${isDone?step.icon:'○'}</div><div class="track-info"><h4>${step.label}</h4><p>${isDone?step.desc:'Not yet'}</p>${ts}</div></div>`;
+        }).join('');
+    resultEl.innerHTML = `
       <div class="order-info-box">
         <div class="order-info-row"><span>📋 Order ID</span><span style="color:var(--pink-deep);">${o.orderNo}</span></div>
         <div class="order-info-row"><span>👤 Name</span><span>${o.customerName||'—'}</span></div>
@@ -1606,15 +1581,7 @@ async function trackOrder(){
         <div style="font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--gray);margin-bottom:8px;">🛍️ Items</div>
         ${itemsHtml}
       </div>
-      <a href="https://wa.me/${WA}?text=Hello%20HMI%20Fashion!%20I%20need%20help%20with%20my%20order%20${o.orderNo}." target="_blank"
-         style="display:flex;align-items:center;justify-content:center;gap:8px;background:linear-gradient(135deg,#25d366,#128c7e);color:white;padding:13px;border-radius:12px;font-weight:700;font-size:.92rem;text-decoration:none;">
-        💬 Contact Us on WhatsApp
-      </a>`;
-    resultEl.style.display='block';
-  }catch(e){errEl.textContent='❌ Something went wrong. Please try again.';}
-}
-      </div>
-      <a href="https://wa.me/${WA}?text=Hello%20HMI%20Fashion!%20I%20need%20help%20with%20my%20order%20${o.orderNo}."
+      <a href="https://wa.me/${WA}?text=Hello%20HMI%20Fashion!%20Mera%20order%20${o.orderNo}%20ka%20status%20janana%20hai."
          target="_blank"
          style="display:flex;align-items:center;justify-content:center;gap:8px;background:linear-gradient(135deg,#25d366,#128c7e);color:white;padding:13px;border-radius:12px;font-weight:700;font-size:.92rem;text-decoration:none;">
         💬 Contact Us on WhatsApp
