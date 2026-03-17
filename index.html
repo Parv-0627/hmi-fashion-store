@@ -301,30 +301,27 @@ footer{background:var(--dark);color:white;padding:55px 5% 25px;}
     <!-- PHONE SECTION -->
     <div class="otp-wrap" id="phoneSection">
       <div class="otp-icon">📱</div>
-      <div class="otp-title">Login with WhatsApp</div>
-      <div class="otp-sub">Enter your WhatsApp number — we'll send OTP on WhatsApp</div>
-      <input class="field-input" id="custPhone" type="tel" maxlength="10" placeholder="Enter 10-digit WhatsApp number"/>
-      <button class="cart-footer-btn btn-proceed" onclick="sendOTP()">📲 Send OTP on WhatsApp →</button>
+      <div class="otp-title">Login with Mobile Number</div>
+      <div class="otp-sub">Apna mobile number enter karo — OTP SMS par aayega</div>
+      <input class="field-input" id="custPhone" type="tel" maxlength="10" placeholder="Enter 10-digit mobile number"/>
+      <button class="cart-footer-btn btn-proceed" onclick="sendOTP()">📲 SMS par OTP Bhejo →</button>
     </div>
 
     <!-- OTP SECTION -->
     <div class="otp-wrap" id="otpSection" style="display:none">
       <div class="otp-icon">🔐</div>
       <div class="otp-title">Enter OTP</div>
-      <div class="otp-sub">OTP sent to WhatsApp: <b id="otpPhoneDisplay"></b></div>
+      <div class="otp-sub">OTP SMS bheja gaya: <b id="otpPhoneDisplay"></b></div>
 
-      <!-- WhatsApp sent box -->
-      <div style="background:#dcfce7;border:2px solid #86efac;border-radius:14px;padding:14px;margin:12px 0;text-align:left;">
-        <div style="font-weight:700;font-size:.88rem;color:#166534;margin-bottom:6px;">💬 WhatsApp OTP Bheja Gaya!</div>
-        <div style="font-size:.8rem;color:#166534;line-height:1.6;">
-          Aapke WhatsApp par ek message gaya hai.<br>
-          Usme OTP code hoga — woh yahan enter karo.
+      <!-- SMS sent box -->
+      <div style="background:#eff6ff;border:2px solid #93c5fd;border-radius:14px;padding:14px;margin:12px 0;text-align:left;">
+        <div style="font-weight:700;font-size:.88rem;color:#1e40af;margin-bottom:6px;">📩 SMS OTP Bheja Gaya!</div>
+        <div style="font-size:.8rem;color:#1e40af;line-height:1.6;">
+          Aapke mobile number par ek SMS gaya hai.<br>
+          Usme 4-digit OTP code hoga — woh yahan enter karo.
         </div>
-        <div style="margin-top:10px;">
-          <a id="waOtpLink" href="#" target="_blank"
-            style="display:inline-flex;align-items:center;gap:6px;background:#25d366;color:white;padding:8px 16px;border-radius:10px;font-weight:700;font-size:.82rem;text-decoration:none;">
-            💬 WhatsApp Open Karo
-          </a>
+        <div style="margin-top:8px;font-size:.75rem;color:#6b7280;">
+          ⏱️ OTP 10 minute tak valid rahega. Kisi se share mat karo.
         </div>
       </div>
 
@@ -337,7 +334,7 @@ footer{background:var(--dark);color:white;padding:55px 5% 25px;}
       <div id="otpErr" style="color:#dc2626;font-size:.82rem;min-height:20px;margin-bottom:8px;text-align:center;"></div>
       <button class="cart-footer-btn btn-proceed" onclick="verifyOTP()">✅ Verify OTP →</button>
       <div class="otp-note" style="margin-top:10px;">
-        OTP nahi mila? <span class="resend-link" onclick="resendOTP()">WhatsApp par dobara bhejo</span>
+        OTP nahi mila? <span class="resend-link" onclick="resendOTP()">SMS dobara bhejo</span>
       </div>
     </div>
 
@@ -539,7 +536,7 @@ footer{background:var(--dark);color:white;padding:55px 5% 25px;}
 
 <script src="products.js"></script>
 <script>
-const WA="919560291565", SHIPPING=0, STORE_UPI="9560291565@pthdfc";
+const WA="919560291565", SHIPPING=99, STORE_UPI="9560291565@pthdfc";
 let cart=[], currentStep=1, currentOrderData=null, selectedPayMethod='', selectedUpiApp='';
 let custData={};
 let demoOTP='';
@@ -635,11 +632,11 @@ function renderCart(){
   sumBox.style.display='block';
 }
 
-// ===== OTP LOGIN (WhatsApp OTP) =====
+// ===== OTP LOGIN (SMS OTP) =====
 function sendOTP(){
   const phone=document.getElementById('custPhone').value.trim();
   if(phone.length!==10||isNaN(phone)){
-    alert('Please enter valid 10-digit WhatsApp number!');
+    alert('Please enter valid 10-digit mobile number!');
     document.getElementById('custPhone').focus();
     return;
   }
@@ -648,23 +645,24 @@ function sendOTP(){
   // Generate random 4-digit OTP
   demoOTP=String(Math.floor(1000+Math.random()*9000));
 
-  // WhatsApp message to customer
-  const custMsg=`Hello! 👋%0A%0AYour HMI Fashion Store OTP is:%0A%0A*${demoOTP}*%0A%0AThis OTP is valid for 10 minutes.%0ADo not share with anyone. 🔒`;
-
-  // Open WhatsApp with OTP message TO CUSTOMER
-  const waUrl=`https://wa.me/91${phone}?text=${custMsg}`;
-  document.getElementById('waOtpLink').href=waUrl;
+  // NOTE: Real SMS gateway integrate karo yahan (e.g. Fast2SMS, MSG91, TextLocal)
+  // Example Fast2SMS API call:
+  // fetch(`https://www.fast2sms.com/dev/bulkV2?authorization=YOUR_API_KEY&route=otp&variables_values=${demoOTP}&flash=0&numbers=${phone}`)
+  // For now OTP is shown in console for testing:
+  console.log('SMS OTP (testing):', demoOTP);
 
   // Show OTP section
   document.getElementById('otpPhoneDisplay').textContent='+91 '+phone;
   document.getElementById('phoneSection').style.display='none';
   document.getElementById('otpSection').style.display='block';
 
-  // Auto open WhatsApp
-  window.open(waUrl,'_blank');
-
   document.getElementById('o1').focus();
-  console.log('OTP generated (store only):', demoOTP);
+
+  // TESTING ONLY - remove in production
+  setTimeout(()=>{
+    const testNote=document.getElementById('otpErr');
+    testNote.innerHTML=`<span style="color:#92650a;font-size:.75rem;">🧪 Testing mode: OTP is <b>${demoOTP}</b></span>`;
+  }, 500);
 }
 
 function otpNext(el,nextId){
@@ -703,11 +701,17 @@ function resendOTP(){
   // Generate new OTP
   demoOTP=String(Math.floor(1000+Math.random()*9000));
   const phone=custData.phone;
-  const custMsg=`Hello! 👋%0A%0AYour HMI Fashion Store OTP is:%0A%0A*${demoOTP}*%0A%0AThis OTP is valid for 10 minutes.%0ADo not share with anyone. 🔒`;
-  const waUrl=`https://wa.me/91${phone}?text=${custMsg}`;
-  document.getElementById('waOtpLink').href=waUrl;
-  window.open(waUrl,'_blank');
-  document.getElementById('otpErr').innerHTML='<span style="color:#16a34a">✅ New OTP sent on WhatsApp!</span>';
+
+  // NOTE: Real SMS gateway se bhejo
+  console.log('Resend OTP (testing):', demoOTP);
+
+  document.getElementById('otpErr').innerHTML=`<span style="color:#16a34a">✅ Naya OTP SMS par bheja gaya!</span>`;
+
+  // TESTING ONLY
+  setTimeout(()=>{
+    document.getElementById('otpErr').innerHTML=`<span style="color:#92650a;font-size:.75rem;">🧪 Testing: OTP is <b>${demoOTP}</b></span>`;
+  },1500);
+
   document.getElementById('o1').focus();
 }
 
@@ -859,7 +863,6 @@ function renderProducts(list){
         </div>
         <div class="product-btns">
           <button class="btn-cart" onclick="addToCart(${p.id})">🛒 Add to Cart</button>
-          <a href="${waLink(p)}" class="btn-order" target="_blank">💬 Order</a>
         </div>
       </div>
     </div>`).join('');
