@@ -170,7 +170,8 @@ nav ul li a:hover{color:var(--pink-deep);}
 .products-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:25px;max-width:1200px;margin:0 auto;}
 .product-card{background:white;border-radius:20px;overflow:hidden;border:2px solid var(--pink-light);transition:all .3s ease;box-shadow:0 4px 15px rgba(0,0,0,.05);}
 .product-card:hover{transform:translateY(-8px);box-shadow:0 20px 40px rgba(219,39,119,.15);border-color:var(--pink);}
-.product-img{height:200px;display:flex;align-items:center;justify-content:center;font-size:5rem;position:relative;}
+.product-img{height:220px;display:flex;align-items:center;justify-content:center;font-size:5rem;position:relative;overflow:hidden;}
+.product-img img{width:100%;height:100%;object-fit:cover;}
 .product-badge{position:absolute;top:12px;left:12px;background:linear-gradient(135deg,var(--pink-deep),var(--gold));color:white;font-size:.7rem;font-weight:700;padding:3px 10px;border-radius:12px;}
 .product-info{padding:18px;}
 .product-info h3{font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:600;margin-bottom:5px;}
@@ -182,6 +183,19 @@ nav ul li a:hover{color:var(--pink-deep);}
 .product-btns{display:flex;gap:8px;}
 .btn-cart{flex:1;background:linear-gradient(135deg,var(--pink-light),#fef9c3);color:var(--pink-deep);border:2px solid var(--pink);padding:10px;border-radius:12px;font-weight:700;font-size:.85rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;transition:all .3s;}
 .btn-order{flex:1;background:linear-gradient(135deg,#25d366,#128c7e);color:white;border:none;padding:10px;border-radius:12px;font-weight:700;font-size:.85rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;transition:all .3s;text-decoration:none;}
+
+/* SIZE & COLOR */
+.variant-label{font-size:.72rem;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;display:block;}
+.size-opts{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;}
+.size-btn{min-width:36px;height:32px;padding:0 9px;border:2px solid #e5e7eb;border-radius:8px;background:white;font-size:.78rem;font-weight:700;cursor:pointer;color:var(--dark);transition:all .2s;font-family:'Nunito',sans-serif;}
+.size-btn:hover{border-color:var(--pink);color:var(--pink-deep);}
+.size-btn.selected{border-color:var(--pink-deep);background:var(--pink-deep);color:white;}
+.color-opts-store{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center;}
+.color-dot{width:24px;height:24px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:all .2s;flex-shrink:0;}
+.color-dot:hover{transform:scale(1.18);}
+.color-dot.selected{border-color:var(--dark);box-shadow:0 0 0 2px white,0 0 0 4px var(--dark);}
+.color-name-tag{font-size:.72rem;color:var(--gray);font-weight:600;}
+.cart-variant-tag{font-size:.7rem;background:var(--pink-light);color:var(--pink-deep);padding:2px 8px;border-radius:8px;display:inline-block;margin-top:3px;margin-right:3px;font-weight:700;}
 
 /* KIDS */
 .kids-section{background:linear-gradient(135deg,#fce7f3,#fff9ee);padding:65px 5%;}
@@ -534,7 +548,60 @@ footer{background:var(--dark);color:white;padding:55px 5% 25px;}
 
 <a href="https://wa.me/919560291565" class="whatsapp-float">💬</a>
 
-<script src="products.js"></script>
+<script>
+// =============================================
+// SHARED PRODUCTS — Admin se sync hota hai
+// localStorage key: hmi_products_shared
+// =============================================
+const HMI_STORAGE_KEY = 'hmi_products_shared';
+
+const DEFAULT_PRODUCTS = [
+  {id:1,name:"Banarasi Silk Saree",cat:"Saree",emoji:"🥻",bg:"#fce7f3",price:2499,old:3999,badge:"Bestseller",desc:"Pure Banarasi silk with golden zari work",images:[]},
+  {id:2,name:"Chiffon Printed Saree",cat:"Saree",emoji:"🌸",bg:"#fef9c3",price:1199,old:1999,badge:"New 2026",desc:"Light & breezy chiffon with floral prints",images:[]},
+  {id:3,name:"Cotton Handloom Saree",cat:"Saree",emoji:"🪡",bg:"#dcfce7",price:899,old:1499,badge:"Sale",desc:"Comfortable daily wear cotton saree",images:[]},
+  {id:4,name:"Designer Anarkali Suit",cat:"Suit",emoji:"👗",bg:"#ede9fe",price:1899,old:2999,badge:"Popular",desc:"Elegant Anarkali with embroidery work",images:[]},
+  {id:5,name:"Cotton Salwar Set",cat:"Suit",emoji:"🌿",bg:"#dcfce7",price:999,old:1499,badge:"Sale",desc:"Comfortable daily wear salwar set",images:[]},
+  {id:6,name:"Punjabi Patiala Suit",cat:"Suit",emoji:"💐",bg:"#fce7f3",price:1299,old:1999,badge:"New 2026",desc:"Vibrant Punjabi style Patiala with dupatta",images:[]},
+  {id:7,name:"Embroidered Kurti",cat:"Kurti",emoji:"👘",bg:"#fff0f8",price:699,old:1099,badge:"New 2026",desc:"Beautiful hand embroidered kurti",images:[]},
+  {id:8,name:"Printed Rayon Kurti",cat:"Kurti",emoji:"🌺",bg:"#fef3c7",price:499,old:799,badge:"Sale",desc:"Trendy rayon kurti with digital print",images:[]},
+  {id:9,name:"Long Flared Kurti",cat:"Kurti",emoji:"🌼",bg:"#ede9fe",price:849,old:1299,badge:"Popular",desc:"Stylish long flared kurti for all occasions",images:[]},
+  {id:10,name:"Bridal Lehenga",cat:"Lehenga",emoji:"💃",bg:"#fce7f3",price:7999,old:12999,badge:"Premium",desc:"Stunning bridal lehenga with heavy zari work",images:[]},
+  {id:11,name:"Party Wear Lehenga",cat:"Lehenga",emoji:"✨",bg:"#ede9fe",price:3499,old:5999,badge:"Popular",desc:"Gorgeous party wear lehenga with sequence",images:[]},
+  {id:12,name:"Casual Lehenga Skirt",cat:"Lehenga",emoji:"🎀",bg:"#fef9c3",price:1599,old:2499,badge:"New 2026",desc:"Lightweight casual lehenga skirt with kurti",images:[]},
+  {id:13,name:"Ethnic Kurta Pajama",cat:"Men",emoji:"👔",bg:"#dbeafe",price:1299,old:1999,badge:"New 2026",desc:"Classic ethnic kurta pajama set",images:[]},
+  {id:14,name:"Sherwani Set",cat:"Men",emoji:"🤵",bg:"#fef9c3",price:5999,old:8999,badge:"Premium",desc:"Royal sherwani set for weddings & parties",images:[]},
+  {id:15,name:"Nehru Jacket Set",cat:"Men",emoji:"🎩",bg:"#dcfce7",price:1899,old:2999,badge:"Popular",desc:"Stylish Nehru jacket with kurta",images:[]},
+  {id:16,name:"Girls Lehenga Choli",cat:"Kids",emoji:"🎀",bg:"#fce7f3",price:899,old:1499,badge:"Cute",desc:"Adorable lehenga choli for little girls",images:[]},
+  {id:17,name:"Boys Kurta Set",cat:"Kids",emoji:"🧒",bg:"#dbeafe",price:699,old:999,badge:"New 2026",desc:"Cute ethnic kurta set for boys",images:[]},
+  {id:18,name:"Kids Party Frock",cat:"Kids",emoji:"👸",bg:"#ede9fe",price:799,old:1299,badge:"Popular",desc:"Beautiful party frock for girls",images:[]},
+  {id:19,name:"Kids Casual Set",cat:"Kids",emoji:"🌈",bg:"#dcfce7",price:549,old:899,badge:"Sale",desc:"Comfortable everyday casual set for kids",images:[]}
+];
+
+function loadSharedProducts(){
+  try {
+    const saved = localStorage.getItem(HMI_STORAGE_KEY);
+    return saved ? JSON.parse(saved) : DEFAULT_PRODUCTS;
+  } catch(e){ return DEFAULT_PRODUCTS; }
+}
+
+// Store mein products array — admin se sync
+let products = loadSharedProducts();
+
+// Agar koi shared data nahi hai toh default save kar do
+if(!localStorage.getItem(HMI_STORAGE_KEY)){
+  try{ localStorage.setItem(HMI_STORAGE_KEY, JSON.stringify(DEFAULT_PRODUCTS)); }catch(e){}
+}
+
+// Admin tab mein changes detect karo aur store refresh karo
+window.addEventListener('storage', function(e){
+  if(e.key === HMI_STORAGE_KEY && e.newValue){
+    try{
+      products = JSON.parse(e.newValue);
+      renderProducts(products);
+    }catch(err){}
+  }
+});
+</script>
 <script>
 const WA="919560291565", SHIPPING=99, STORE_UPI="9560291565@pthdfc";
 let cart=[], currentStep=1, currentOrderData=null, selectedPayMethod='', selectedUpiApp='';
@@ -611,26 +678,45 @@ function renderCart(){
     wrap.innerHTML='<div style="text-align:center;padding:50px 20px;color:var(--gray)"><div style="font-size:3.5rem;margin-bottom:12px">🛍️</div><p>Your cart is empty!<br>Add some products.</p></div>';
     sumBox.style.display='none'; return;
   }
-  wrap.innerHTML=cart.map(item=>`
+  wrap.innerHTML=cart.map((item,idx)=>{
+    const imgCell = (item.images && item.images.length>0)
+      ? `<img src="${item.images[0]}" style="width:56px;height:56px;border-radius:10px;object-fit:cover;flex-shrink:0;" alt="${item.name}">`
+      : `<div class="cart-item-emoji" style="background:${item.bg}">${item.emoji||'👗'}</div>`;
+    const variantTags = [
+      item.selSize ? `<span class="cart-variant-tag">📐 ${item.selSize}</span>` : '',
+      item.selColor ? `<span class="cart-variant-tag">🎨 ${item.selColor}</span>` : ''
+    ].join('');
+    return `
     <div class="cart-item">
-      <div class="cart-item-emoji" style="background:${item.bg}">${item.emoji}</div>
+      ${imgCell}
       <div class="cart-item-info">
         <h4>${item.name}</h4>
         <p>${item.cat}</p>
+        ${variantTags}
         <div class="cart-item-price">₹${(item.price*item.qty).toLocaleString()}</div>
         <div class="cart-item-qty">
-          <button class="qty-btn" onclick="changeQty(${item.id},-1)">−</button>
+          <button class="qty-btn" onclick="changeQtyByKey('${item.cartKey}',-1)">−</button>
           <span class="qty-num">${item.qty}</span>
-          <button class="qty-btn" onclick="changeQty(${item.id},1)">+</button>
+          <button class="qty-btn" onclick="changeQtyByKey('${item.cartKey}',1)">+</button>
         </div>
       </div>
-      <button class="remove-item" onclick="removeItem(${item.id})">🗑️</button>
-    </div>`).join('');
+      <button class="remove-item" onclick="removeByKey('${item.cartKey}')">🗑️</button>
+    </div>`;
+  }).join('');
   const sub=cart.reduce((a,c)=>a+c.price*c.qty,0);
   document.getElementById('subtotalAmt').textContent='₹'+sub.toLocaleString();
   document.getElementById('totalAmt').textContent='₹'+(sub+SHIPPING).toLocaleString();
   sumBox.style.display='block';
 }
+
+function changeQtyByKey(key,d){
+  const item=cart.find(x=>x.cartKey===key);
+  if(!item)return;
+  item.qty+=d;
+  if(item.qty<=0)cart=cart.filter(x=>x.cartKey!==key);
+  renderCart(); updateCartCount();
+}
+function removeByKey(key){cart=cart.filter(x=>x.cartKey!==key);renderCart();updateCartCount();}
 
 // ===== OTP LOGIN (SMS OTP) =====
 function sendOTP(){
@@ -812,7 +898,13 @@ function sendWAConfirmation(){
   msg+=`📍 *Address:* ${d.address}%0A`;
   msg+=`💳 *Payment:* ${d.payMethod} — ₹${d.total}%0A%0A`;
   msg+=`*Items Ordered:*%0A`;
-  d.items.forEach(i=>{msg+=`▪️ ${i.name} x${i.qty} = ₹${i.price*i.qty}%0A`;});
+  d.items.forEach(i=>{
+    let line=`▪️ ${i.name}`;
+    if(i.selSize) line+=` [Size: ${i.selSize}]`;
+    if(i.selColor) line+=` [Colour: ${i.selColor}]`;
+    line+=` x${i.qty} = ₹${i.price*i.qty}%0A`;
+    msg+=line;
+  });
   msg+=`%0A🚚 Shipping: ₹${d.shipping}%0A*Total: ₹${d.total}*%0A%0A`;
   msg+=`✅ Your order is placed! Tracking ID will be shared soon. Thank you! 🛍️`;
 
@@ -850,9 +942,44 @@ function filterProducts(el,cat){
 }
 
 function renderProducts(list){
-  document.getElementById('productsGrid').innerHTML=list.map(p=>`
-    <div class="product-card">
-      <div class="product-img" style="background:${p.bg}">${p.emoji}<div class="product-badge">${p.badge}</div></div>
+  if(!list || list.length === 0){
+    document.getElementById('productsGrid').innerHTML =
+      '<div style="grid-column:1/-1;text-align:center;padding:60px 20px;color:var(--gray)"><div style="font-size:3rem;margin-bottom:12px">🛍️</div><p>Is category mein abhi koi product nahi hai.</p></div>';
+    return;
+  }
+  document.getElementById('productsGrid').innerHTML=list.map(p=>{
+    const imgContent = (p.images && p.images.length > 0)
+      ? `<img src="${p.images[0]}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover;">`
+      : `<span style="font-size:5rem">${p.emoji||'👗'}</span>`;
+
+    // SIZE options
+    let sizeHtml = '';
+    if(p.sizes && p.sizes.length > 0){
+      sizeHtml = `<span class="variant-label">Size</span>
+        <div class="size-opts" id="sizes-${p.id}">
+          ${p.sizes.map(s=>`<button class="size-btn" onclick="selectSize(${p.id},this,'${s}')">${s}</button>`).join('')}
+        </div>`;
+    }
+
+    // COLOR options
+    let colorHtml = '';
+    if(p.colors && p.colors.length > 0){
+      colorHtml = `<span class="variant-label">Colour</span>
+        <div class="color-opts-store" id="colors-${p.id}">
+          ${p.colors.map(c=>`
+            <div style="text-align:center;">
+              <div class="color-dot" style="background:${c.hex}" title="${c.name}" onclick="selectColor(${p.id},this,'${c.name}')"></div>
+              <div class="color-name-tag">${c.name}</div>
+            </div>`).join('')}
+        </div>`;
+    }
+
+    return `
+    <div class="product-card" id="pcard-${p.id}">
+      <div class="product-img" style="background:${p.bg||'#fce7f3'}">
+        ${imgContent}
+        <div class="product-badge">${p.badge||''}</div>
+      </div>
       <div class="product-info">
         <div class="category-tag">${p.cat}</div>
         <h3>${p.name}</h3>
@@ -861,11 +988,80 @@ function renderProducts(list){
           <span class="price-old">₹${p.old.toLocaleString()}</span>
           <span class="price-discount">${disc(p.price,p.old)}</span>
         </div>
+        ${sizeHtml}
+        ${colorHtml}
         <div class="product-btns">
-          <button class="btn-cart" onclick="addToCart(${p.id})">🛒 Add to Cart</button>
+          <button class="btn-cart" onclick="addToCartVariant(${p.id})">🛒 Add to Cart</button>
         </div>
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
+}
+
+// Track selected variants per product
+const selectedVariants={};
+
+function selectSize(pid, el, size){
+  document.querySelectorAll(`#sizes-${pid} .size-btn`).forEach(b=>b.classList.remove('selected'));
+  el.classList.add('selected');
+  if(!selectedVariants[pid]) selectedVariants[pid]={};
+  selectedVariants[pid].size = size;
+}
+
+function selectColor(pid, el, colorName){
+  document.querySelectorAll(`#colors-${pid} .color-dot`).forEach(d=>d.classList.remove('selected'));
+  el.classList.add('selected');
+  if(!selectedVariants[pid]) selectedVariants[pid]={};
+  selectedVariants[pid].color = colorName;
+}
+
+function addToCartVariant(id){
+  const p = products.find(x=>x.id===id);
+  if(!p) return;
+
+  const variant = selectedVariants[id] || {};
+
+  // Agar sizes hain aur koi select nahi hua
+  if(p.sizes && p.sizes.length > 0 && !variant.size){
+    // Size buttons briefly shake/highlight
+    document.querySelectorAll(`#sizes-${id} .size-btn`).forEach(b=>{
+      b.style.borderColor='#dc2626';
+      setTimeout(()=>b.style.borderColor='',1200);
+    });
+    showFlash('⚠️ Please size select karo!', '#dc2626');
+    return;
+  }
+  // Agar colors hain aur koi select nahi hua
+  if(p.colors && p.colors.length > 0 && !variant.color){
+    document.querySelectorAll(`#colors-${id} .color-dot`).forEach(d=>{
+      d.style.outline='2px solid #dc2626';
+      setTimeout(()=>d.style.outline='',1200);
+    });
+    showFlash('⚠️ Please colour select karo!', '#dc2626');
+    return;
+  }
+
+  // Cart key = id + size + color (same product alag variant alag entry)
+  const cartKey = `${id}_${variant.size||''}_${variant.color||''}`;
+  const ex = cart.find(x=>x.cartKey===cartKey);
+  if(ex){ ex.qty++; }
+  else { cart.push({...p, qty:1, cartKey, selSize: variant.size||null, selColor: variant.color||null}); }
+
+  // Reset selection for this product
+  selectedVariants[id] = {};
+  document.querySelectorAll(`#sizes-${id} .size-btn`).forEach(b=>b.classList.remove('selected'));
+  document.querySelectorAll(`#colors-${id} .color-dot`).forEach(d=>d.classList.remove('selected'));
+
+  updateCartCount();
+  showFlash('✅ Cart mein add ho gaya!', 'var(--pink-deep)');
+}
+
+function showFlash(msg, color){
+  const f=document.getElementById('addedFlash');
+  f.textContent = msg;
+  f.style.background = color;
+  f.classList.add('show');
+  setTimeout(()=>{ f.classList.remove('show'); f.textContent='✅ Added to cart!'; f.style.background=''; }, 2000);
 }
 
 renderProducts(products);
