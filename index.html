@@ -446,26 +446,26 @@ window.addEventListener('load',function(){setTimeout(doHideSplash,500);});
     <div class="otp-wrap" id="phoneSection">
       <div class="otp-icon">📱</div>
       <div class="otp-title">Login with Mobile Number</div>
-      <div class="otp-sub">Apna mobile number enter karo — OTP SMS par aayega</div>
+      <div class="otp-sub">Enter your mobile number — OTP will be sent via SMS</div>
       <input class="field-input" id="custPhone" type="tel" maxlength="10" placeholder="Enter 10-digit mobile number"/>
-      <button class="cart-footer-btn btn-proceed" onclick="sendOTP()">📲 SMS par OTP Bhejo →</button>
+      <button class="cart-footer-btn btn-proceed" onclick="sendOTP()">📲 Send OTP via SMS →</button>
     </div>
 
     <!-- OTP SECTION -->
     <div class="otp-wrap" id="otpSection" style="display:none">
       <div class="otp-icon">🔐</div>
       <div class="otp-title">Enter OTP</div>
-      <div class="otp-sub">OTP SMS bheja gaya: <b id="otpPhoneDisplay"></b></div>
+      <div class="otp-sub">OTP sent to: <b id="otpPhoneDisplay"></b></div>
 
       <!-- SMS sent box -->
       <div style="background:#eff6ff;border:2px solid #93c5fd;border-radius:14px;padding:14px;margin:12px 0;text-align:left;">
-        <div style="font-weight:700;font-size:.88rem;color:#1e40af;margin-bottom:6px;">📩 SMS OTP Bheja Gaya!</div>
+        <div style="font-weight:700;font-size:.88rem;color:#1e40af;margin-bottom:6px;">📩 OTP Sent!</div>
         <div style="font-size:.8rem;color:#1e40af;line-height:1.6;">
-          Aapke mobile number par ek SMS gaya hai.<br>
-          Usme 4-digit OTP code hoga — woh yahan enter karo.
+          An OTP has been sent to your mobile number.<br>
+          Enter the 4-digit OTP code below.
         </div>
         <div style="margin-top:8px;font-size:.75rem;color:#6b7280;">
-          ⏱️ OTP 10 minute tak valid rahega. Kisi se share mat karo.
+          ⏱️ OTP is valid for 10 minutes. Do not share with anyone.
         </div>
       </div>
 
@@ -567,8 +567,8 @@ window.addEventListener('load',function(){setTimeout(doHideSplash,500);});
       <div id="trackErr" style="font-size:.78rem;color:#dc2626;min-height:16px;margin-bottom:12px;"></div>
       <div id="trackResult" style="display:none;"></div>
       <div style="background:#fff0f8;border-radius:10px;padding:10px 14px;font-size:.78rem;color:var(--pink-deep);line-height:1.7;margin-top:4px;">
-        💡 <b>Order ID kahan milega?</b><br>
-        Order place karne ke baad WhatsApp confirmation message mein aapka Order ID hoga (e.g. <b>ORD1234</b>)
+        💡 <b>Where to find your Order ID?</b><br>
+        You will find your Order ID in the WhatsApp confirmation message (e.g. <b>ORD1234</b>)
       </div>
     </div>
   </div>
@@ -580,8 +580,8 @@ window.addEventListener('load',function(){setTimeout(doHideSplash,500);});
     <div class="success-icon">🎉</div>
     <h2>Order Placed!</h2>
     <div class="order-no-badge" id="orderNoDisplay">ORD0001</div>
-    <p>Your order has been successfully placed!</p>
-    <div class="tracking-note">📦 Order ID note kar lo — Track Order se status check karo!</div>
+    <p>Your order has been placed successfully!</p>
+    <div class="tracking-note">📦 Note your Order ID — use Track Order to check status!</div>
     <p style="font-size:.8rem;color:var(--gray)">WhatsApp par confirmation message aayega.</p>
     <button class="btn-wa-confirm" onclick="sendWAConfirmation()">💬 View on WhatsApp</button>
     <button class="btn-continue" style="background:var(--pink-light);color:var(--pink-deep);margin-top:8px;" onclick="openOrderTracker();closeSuccess();">📦 Track My Order</button>
@@ -958,7 +958,7 @@ function sendOTP(){
   // TESTING ONLY - remove in production
   setTimeout(()=>{
     const testNote=document.getElementById('otpErr');
-    testNote.innerHTML=`<span style="color:#92650a;font-size:.75rem;">🧪 Testing mode: OTP is <b>${demoOTP}</b></span>`;
+    testNote.innerHTML=`<span style="color:#92650a;font-size:.75rem;">🧪 Testing mode — OTP is <b>${demoOTP}</b></span>`;
   }, 500);
 }
 
@@ -1002,11 +1002,11 @@ function resendOTP(){
   // NOTE: Real SMS gateway se bhejo
   console.log('Resend OTP (testing):', demoOTP);
 
-  document.getElementById('otpErr').innerHTML=`<span style="color:#16a34a">✅ Naya OTP SMS par bheja gaya!</span>`;
+  document.getElementById('otpErr').innerHTML=`<span style="color:#16a34a">✅ New OTP sent successfully!</span>`;
 
   // TESTING ONLY
   setTimeout(()=>{
-    document.getElementById('otpErr').innerHTML=`<span style="color:#92650a;font-size:.75rem;">🧪 Testing: OTP is <b>${demoOTP}</b></span>`;
+    document.getElementById('otpErr').innerHTML=`<span style="color:#92650a;font-size:.75rem;">🧪 Testing — OTP is <b>${demoOTP}</b></span>`;
   },1500);
 
   document.getElementById('o1').focus();
@@ -1266,7 +1266,7 @@ function addToCartVariant(id){
       b.style.borderColor='#dc2626';
       setTimeout(()=>b.style.borderColor='',1200);
     });
-    showFlash('⚠️ Please size select karo!', '#dc2626');
+    showFlash('⚠️ Please select a size!', '#dc2626');
     return;
   }
   // Agar colors hain aur koi select nahi hua
@@ -1275,7 +1275,7 @@ function addToCartVariant(id){
       d.style.outline='2px solid #dc2626';
       setTimeout(()=>d.style.outline='',1200);
     });
-    showFlash('⚠️ Please colour select karo!', '#dc2626');
+    showFlash('⚠️ Please select a colour!', '#dc2626');
     return;
   }
 
@@ -1291,7 +1291,7 @@ function addToCartVariant(id){
   document.querySelectorAll(`#colors-${id} .color-dot`).forEach(d=>d.classList.remove('selected'));
 
   updateCartCount();
-  showFlash('✅ Cart mein add ho gaya!', 'var(--pink-deep)');
+  showFlash('✅ Added to cart!', 'var(--pink-deep)');
 }
 
 function showFlash(msg, color){
@@ -1446,7 +1446,7 @@ function pdpAddToCart(){
     cart.push({...p, qty:1, cartKey, selSize:pdpSelectedSize||null, selColor:pdpSelectedColor||null});
   }
   updateCartCount();
-  showFlash('✅ Cart mein add ho gaya!', 'var(--pink-deep)');
+  showFlash('✅ Added to cart!', 'var(--pink-deep)');
   closePDPBtn();
 }
 
@@ -1480,23 +1480,29 @@ function trackOrder(){
   const input = document.getElementById('trackOrderInput').value.trim().toUpperCase();
   const errEl = document.getElementById('trackErr');
   const resultEl = document.getElementById('trackResult');
-  if(!input){ errEl.textContent='❌ Order ID enter karo'; resultEl.style.display='none'; return; }
+  if(!input){ errEl.textContent='❌ Please enter your Order ID'; resultEl.style.display='none'; return; }
   try{
     const orders = JSON.parse(localStorage.getItem('hmi_orders')||'[]');
     const o = orders.find(x=>x.orderNo===input);
-    if(!o){ errEl.textContent='❌ Order ID nahi mila. Please check karo.'; resultEl.style.display='none'; return; }
+    if(!o){ errEl.textContent='❌ Order ID not found. Please check and try again.'; resultEl.style.display='none'; return; }
     errEl.textContent='';
     const statusSteps = [
-      {key:'Pending',   icon:'🕐', label:'Order Placed',    desc:'Aapka order successfully place ho gaya hai'},
-      {key:'Confirmed', icon:'✅', label:'Order Confirmed',  desc:'HMI Fashion ne aapka order confirm kar diya'},
-      {key:'Shipped',   icon:'🚚', label:'Shipped',          desc:'Aapka parcel courier ko de diya gaya hai'},
-      {key:'Delivered', icon:'📬', label:'Delivered',        desc:'Order aapke paas pahunch gaya — Enjoy! 🎉'},
+      {key:'Pending',   icon:'🕐', label:'Order Placed',    desc:'Your order has been successfully placed.'},
+      {key:'Confirmed', icon:'✅', label:'Order Confirmed',  desc:'HMI Fashion has confirmed your order.'},
+      {key:'Shipped',   icon:'🚚', label:'Shipped',          desc:'Your parcel has been handed over to the courier.'},
+      {key:'Delivered', icon:'📬', label:'Delivered',        desc:'Your order has been delivered. Enjoy! 🎉'},
     ];
     const isCancelled = o.status==='Cancelled';
     const curIdx = statusSteps.findIndex(s=>s.key===o.status);
     const d = new Date(o.date);
     const dateStr = d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
     const timeStr = d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+
+    // Status timestamps
+    const statusTimes = o.statusTimes || {};
+    if(!statusTimes['Pending']) statusTimes['Pending'] = o.date;
+    function fmtTs(ts){ if(!ts)return ''; const dt=new Date(ts); return dt.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})+' at '+dt.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}); }
+
     const itemsHtml = (o.items||[]).map(item=>`
       <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:#fff9fb;border-radius:8px;margin-bottom:6px;border:1px solid var(--pink-light);">
         <span style="font-size:1.3rem;">${item.emoji||'👗'}</span>
@@ -1506,16 +1512,19 @@ function trackOrder(){
         </div>
         <div style="font-weight:700;font-size:.82rem;color:var(--pink-deep);">x${item.qty}</div>
       </div>`).join('');
+
     const timelineHtml = isCancelled
-      ? `<div class="cancelled-box">❌ Yeh order cancel ho gaya hai<br><span style="font-size:.78rem;font-weight:400;">Help ke liye WhatsApp karo</span></div>`
+      ? `<div class="cancelled-box">❌ This order has been cancelled.<br><span style="font-size:.78rem;font-weight:400;">Please contact us on WhatsApp for assistance.</span></div>`
       : statusSteps.map((step,i)=>{
           const isDone = i<=curIdx;
           const cls = isDone ? 'done' : 'inactive';
+          const ts = isDone && statusTimes[step.key] ? `<span style="font-size:.68rem;color:var(--pink-deep);font-weight:600;display:block;margin-top:2px;">${fmtTs(statusTimes[step.key])}</span>` : '';
           return `<div class="track-step ${cls}">
             <div class="track-icon">${isDone?step.icon:'○'}</div>
-            <div class="track-info"><h4>${step.label}</h4><p>${isDone?step.desc:'Abhi nahi hua'}</p></div>
+            <div class="track-info"><h4>${step.label}</h4><p>${isDone?step.desc:'Not yet'}</p>${ts}</div>
           </div>`;
         }).join('');
+
     resultEl.innerHTML = `
       <div class="order-info-box">
         <div class="order-info-row"><span>📋 Order ID</span><span style="color:var(--pink-deep);">${o.orderNo}</span></div>
@@ -1532,13 +1541,13 @@ function trackOrder(){
         <div style="font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--gray);margin-bottom:8px;">🛍️ Items</div>
         ${itemsHtml}
       </div>
-      <a href="https://wa.me/${WA}?text=Hello%20HMI%20Fashion!%20Mera%20order%20${o.orderNo}%20ka%20status%20janana%20hai."
+      <a href="https://wa.me/${WA}?text=Hello%20HMI%20Fashion!%20I%20need%20help%20with%20my%20order%20${o.orderNo}."
          target="_blank"
          style="display:flex;align-items:center;justify-content:center;gap:8px;background:linear-gradient(135deg,#25d366,#128c7e);color:white;padding:13px;border-radius:12px;font-weight:700;font-size:.92rem;text-decoration:none;">
-        💬 WhatsApp par Help Lein
+        💬 Contact Us on WhatsApp
       </a>`;
     resultEl.style.display='block';
-  } catch(e){ errEl.textContent='❌ Kuch error aaya. Dobara try karo.'; }
+  } catch(e){ errEl.textContent='❌ Something went wrong. Please try again.'; }
 }
 
 // Live update — jab admin status change kare toh tracker refresh ho
