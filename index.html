@@ -775,7 +775,6 @@ function loadSharedProducts(){
     const saved = localStorage.getItem(HMI_STORAGE_KEY);
     if(saved){
       const parsed = JSON.parse(saved);
-      // Agar saved products mein rating nahi hai toh default se merge karo
       const needsMerge = parsed.some(p => p.rating === undefined);
       if(needsMerge){
         const merged = parsed.map(p => {
@@ -795,13 +794,30 @@ function loadSharedProducts(){
   } catch(e){ return DEFAULT_PRODUCTS; }
 }
 
-// Store mein products array — admin se sync
+// Load products from GitHub (cross-device sync)
+async function loadProductsFromGitHub(){
+  if(!GH_ON) return;
+  try{
+    const r = await fetch(
+      `https://api.github.com/repos/${GH.owner}/${GH.repo}/contents/products.json`,
+      {headers:{'Authorization':'token '+GH.token,'Accept':'application/vnd.github.v3+json'},cache:'no-store'}
+    );
+    if(!r.ok) return;
+    const d = await r.json();
+    const data = JSON.parse(atob(d.content.replace(/\n/g,'')));
+    if(data.products && data.products.length > 0){
+      products = data.products;
+      try{ localStorage.setItem(HMI_STORAGE_KEY, JSON.stringify(products)); }catch(e){}
+      renderProducts(products);
+    }
+  }catch(e){}
+}
+
+// Store mein products array — localStorage first, then GitHub
 let products = loadSharedProducts();
 
-// Agar koi shared data nahi hai toh default save kar do
-if(!localStorage.getItem(HMI_STORAGE_KEY)){
-  try{ localStorage.setItem(HMI_STORAGE_KEY, JSON.stringify(DEFAULT_PRODUCTS)); }catch(e){}
-}
+// Load from GitHub in background (updates page when ready)
+loadProductsFromGitHub();
 
 // Admin tab mein changes detect karo aur store refresh karo
 window.addEventListener('storage', function(e){
@@ -818,6 +834,39 @@ const WA="919560291565", SHIPPING=99, STORE_UPI="9560291565@pthdfc";
 let cart=[], currentStep=1, currentOrderData=null, selectedPayMethod='', selectedUpiApp='';
 let custData={};
 let demoOTP='';
+
+// =============================================
+// GITHUB CONFIG — Sirf yahan apna data bharo
+// =============================================
+const GH = {
+  owner: 'Parv-0627',  // e.g. hmifashion
+  repo:  'hmi-fashion-store',        // e.g. hmifashion.github.io
+  token: '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',     // GitHub Personal Access Token
+  file:  'orders.json'
+};
+const GH_ON = GH.token !== 'YOUR_GITHUB_TOKEN';
+
+async function ghRead(){
+  try{
+    const r=await fetch(`https://api.github.com/repos/${GH.owner}/${GH.repo}/contents/${GH.file}`,
+      {headers:{'Authorization':'token '+GH.token,'Accept':'application/vnd.github.v3+json'},cache:'no-store'});
+    if(r.status===404) return {orders:[],sha:null};
+    const d=await r.json();
+    return {orders:JSON.parse(atob(d.content.replace(/\n/g,''))).orders||[],sha:d.sha};
+  }catch(e){return {orders:[],sha:null};}
+}
+
+async function ghWrite(orders,sha){
+  try{
+    const content=btoa(unescape(encodeURIComponent(JSON.stringify({orders},null,2))));
+    const body={message:'orders-'+Date.now(),content,committer:{name:'HMI Store',email:'store@hmi.in'}};
+    if(sha) body.sha=sha;
+    const r=await fetch(`https://api.github.com/repos/${GH.owner}/${GH.repo}/contents/${GH.file}`,
+      {method:'PUT',headers:{'Authorization':'token '+GH.token,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},body:JSON.stringify(body)});
+    return r.ok;
+  }catch(e){return false;}
+}
+
 
 // ===== STEP NAVIGATION =====
 function goStep(n){
@@ -1090,13 +1139,23 @@ function prepareOrder(orderNo, total){
   };
 }
 
-function saveOrder(order){
+async function saveOrder(order){
+  // 1. localStorage — same device instant
   try{
     const ex=JSON.parse(localStorage.getItem('hmi_orders')||'[]');
     const idx=ex.findIndex(o=>o.orderNo===order.orderNo);
     if(idx>=0)ex[idx]=order; else ex.push(order);
     localStorage.setItem('hmi_orders',JSON.stringify(ex));
   }catch(e){}
+  // 2. GitHub — cross-device (any phone/browser)
+  if(GH_ON){
+    try{
+      const {orders,sha}=await ghRead();
+      const idx=orders.findIndex(o=>o.orderNo===order.orderNo);
+      if(idx>=0)orders[idx]=order; else orders.push(order);
+      await ghWrite(orders,sha);
+    }catch(e){}
+  }
 }
 
 function sendWAConfirmation(){
@@ -1476,56 +1535,62 @@ function closeOrderTracker(){
 function closeTrackerOutside(e){
   if(e.target===document.getElementById('trackerOverlay')) closeOrderTracker();
 }
-function trackOrder(){
-  const input = document.getElementById('trackOrderInput').value.trim().toUpperCase();
-  const errEl = document.getElementById('trackErr');
-  const resultEl = document.getElementById('trackResult');
-  if(!input){ errEl.textContent='❌ Please enter your Order ID'; resultEl.style.display='none'; return; }
+async function trackOrder(){
+  const input=document.getElementById('trackOrderInput').value.trim().toUpperCase();
+  const errEl=document.getElementById('trackErr');
+  const resultEl=document.getElementById('trackResult');
+  if(!input){errEl.textContent='❌ Please enter your Order ID';resultEl.style.display='none';return;}
+
+  // Show loading
+  errEl.innerHTML='<span style="color:var(--gray)">🔍 Searching...</span>';
+  resultEl.style.display='none';
+
   try{
-    const orders = JSON.parse(localStorage.getItem('hmi_orders')||'[]');
-    const o = orders.find(x=>x.orderNo===input);
-    if(!o){ errEl.textContent='❌ Order ID not found. Please check and try again.'; resultEl.style.display='none'; return; }
+    // 1. Check GitHub first (cross-device)
+    let orders=[];
+    if(GH_ON){
+      const {orders:ghOrders}=await ghRead();
+      orders=ghOrders;
+    }
+    // 2. Merge with localStorage (in case GitHub not configured)
+    const local=JSON.parse(localStorage.getItem('hmi_orders')||'[]');
+    local.forEach(lo=>{
+      if(!orders.find(o=>o.orderNo===lo.orderNo)) orders.push(lo);
+    });
+
+    const o=orders.find(x=>x.orderNo===input);
+    if(!o){errEl.textContent='❌ Order ID not found. Please check and try again.';resultEl.style.display='none';return;}
     errEl.textContent='';
-    const statusSteps = [
-      {key:'Pending',   icon:'🕐', label:'Order Placed',    desc:'Your order has been successfully placed.'},
-      {key:'Confirmed', icon:'✅', label:'Order Confirmed',  desc:'HMI Fashion has confirmed your order.'},
-      {key:'Shipped',   icon:'🚚', label:'Shipped',          desc:'Your parcel has been handed over to the courier.'},
-      {key:'Delivered', icon:'📬', label:'Delivered',        desc:'Your order has been delivered. Enjoy! 🎉'},
+    const statusSteps=[
+      {key:'Pending',  icon:'🕐',label:'Order Placed',   desc:'Your order has been successfully placed.'},
+      {key:'Confirmed',icon:'✅',label:'Order Confirmed', desc:'HMI Fashion has confirmed your order.'},
+      {key:'Shipped',  icon:'🚚',label:'Shipped',         desc:'Your parcel has been handed over to the courier.'},
+      {key:'Delivered',icon:'📬',label:'Delivered',       desc:'Your order has been delivered. Enjoy! 🎉'},
     ];
-    const isCancelled = o.status==='Cancelled';
-    const curIdx = statusSteps.findIndex(s=>s.key===o.status);
-    const d = new Date(o.date);
-    const dateStr = d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
-    const timeStr = d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
-
-    // Status timestamps
-    const statusTimes = o.statusTimes || {};
-    if(!statusTimes['Pending']) statusTimes['Pending'] = o.date;
-    function fmtTs(ts){ if(!ts)return ''; const dt=new Date(ts); return dt.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})+' at '+dt.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}); }
-
-    const itemsHtml = (o.items||[]).map(item=>`
+    const isCancelled=o.status==='Cancelled';
+    const curIdx=statusSteps.findIndex(s=>s.key===o.status);
+    const d=new Date(o.date);
+    const dateStr=d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+    const timeStr=d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+    const statusTimes=o.statusTimes||{};
+    if(!statusTimes['Pending']) statusTimes['Pending']=o.date;
+    function fmtTs(ts){if(!ts)return'';const dt=new Date(ts);return dt.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})+' at '+dt.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});}
+    const itemsHtml=(o.items||[]).map(item=>`
       <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:#fff9fb;border-radius:8px;margin-bottom:6px;border:1px solid var(--pink-light);">
         <span style="font-size:1.3rem;">${item.emoji||'👗'}</span>
-        <div style="flex:1;">
-          <div style="font-weight:700;font-size:.82rem;">${item.name}</div>
-          <div style="font-size:.72rem;color:var(--gray);">${item.selSize?'Size: '+item.selSize:''}${item.selSize&&item.selColor?' · ':''}${item.selColor?'Colour: '+item.selColor:''}</div>
-        </div>
+        <div style="flex:1;"><div style="font-weight:700;font-size:.82rem;">${item.name}</div>
+        <div style="font-size:.72rem;color:var(--gray);">${item.selSize?'Size: '+item.selSize:''}${item.selSize&&item.selColor?' · ':''}${item.selColor?'Colour: '+item.selColor:''}</div></div>
         <div style="font-weight:700;font-size:.82rem;color:var(--pink-deep);">x${item.qty}</div>
       </div>`).join('');
-
-    const timelineHtml = isCancelled
-      ? `<div class="cancelled-box">❌ This order has been cancelled.<br><span style="font-size:.78rem;font-weight:400;">Please contact us on WhatsApp for assistance.</span></div>`
-      : statusSteps.map((step,i)=>{
-          const isDone = i<=curIdx;
-          const cls = isDone ? 'done' : 'inactive';
-          const ts = isDone && statusTimes[step.key] ? `<span style="font-size:.68rem;color:var(--pink-deep);font-weight:600;display:block;margin-top:2px;">${fmtTs(statusTimes[step.key])}</span>` : '';
-          return `<div class="track-step ${cls}">
-            <div class="track-icon">${isDone?step.icon:'○'}</div>
-            <div class="track-info"><h4>${step.label}</h4><p>${isDone?step.desc:'Not yet'}</p>${ts}</div>
-          </div>`;
-        }).join('');
-
-    resultEl.innerHTML = `
+    const timelineHtml=isCancelled
+      ?`<div class="cancelled-box">❌ This order has been cancelled.<br><span style="font-size:.78rem;font-weight:400;">Please contact us on WhatsApp for assistance.</span></div>`
+      :statusSteps.map((step,i)=>{
+        const isDone=i<=curIdx;
+        const cls=isDone?'done':'inactive';
+        const ts=isDone&&statusTimes[step.key]?`<span style="font-size:.68rem;color:var(--pink-deep);font-weight:600;display:block;margin-top:2px;">${fmtTs(statusTimes[step.key])}</span>`:'';
+        return`<div class="track-step ${cls}"><div class="track-icon">${isDone?step.icon:'○'}</div><div class="track-info"><h4>${step.label}</h4><p>${isDone?step.desc:'Not yet'}</p>${ts}</div></div>`;
+      }).join('');
+    resultEl.innerHTML=`
       <div class="order-info-box">
         <div class="order-info-row"><span>📋 Order ID</span><span style="color:var(--pink-deep);">${o.orderNo}</span></div>
         <div class="order-info-row"><span>👤 Name</span><span>${o.customerName||'—'}</span></div>
@@ -1540,6 +1605,14 @@ function trackOrder(){
       <div style="margin-bottom:16px;">
         <div style="font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--gray);margin-bottom:8px;">🛍️ Items</div>
         ${itemsHtml}
+      </div>
+      <a href="https://wa.me/${WA}?text=Hello%20HMI%20Fashion!%20I%20need%20help%20with%20my%20order%20${o.orderNo}." target="_blank"
+         style="display:flex;align-items:center;justify-content:center;gap:8px;background:linear-gradient(135deg,#25d366,#128c7e);color:white;padding:13px;border-radius:12px;font-weight:700;font-size:.92rem;text-decoration:none;">
+        💬 Contact Us on WhatsApp
+      </a>`;
+    resultEl.style.display='block';
+  }catch(e){errEl.textContent='❌ Something went wrong. Please try again.';}
+}
       </div>
       <a href="https://wa.me/${WA}?text=Hello%20HMI%20Fashion!%20I%20need%20help%20with%20my%20order%20${o.orderNo}."
          target="_blank"
