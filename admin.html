@@ -554,9 +554,10 @@ function loadProducts(){
 function saveProducts(){
   try{
     localStorage.setItem(STORAGE_KEY,JSON.stringify(products));
-    // Store tab mein bhi automatically update ho jaega (storage event)
   } catch(e){}
   updateCounts();
+  // Firebase mein bhi save karo — mobile pe turant dikhega
+  fbSaveProducts(products);
 }
 function getNextId(){ return products.length>0?Math.max(...products.map(p=>p.id))+1:1; }
 
@@ -959,6 +960,19 @@ async function fbSaveOrder(order){
     await db.collection('orders').doc(order.orderNo).set(order);
     return true;
   }catch(e){ console.error('Firebase write error:', e); return false; }
+}
+
+// =============================================
+// FIREBASE PRODUCTS SYNC
+// =============================================
+
+// Products Firebase mein save karo (admin se change hone par)
+async function fbSaveProducts(prods){
+  if(!db) return false;
+  try{
+    await db.collection('settings').doc('products').set({ list: prods, updatedAt: Date.now() });
+    return true;
+  }catch(e){ console.error('Firebase products save error:', e); return false; }
 }
 
 const ORDERS_KEY = 'hmi_orders';
