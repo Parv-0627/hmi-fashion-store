@@ -161,9 +161,94 @@ textarea{resize:vertical;min-height:65px;}
   .stats-grid{grid-template-columns:1fr 1fr;}
   .form-grid{grid-template-columns:1fr;}
 }
+
+/* ====== LOGIN SCREEN ====== */
+#loginScreen{
+  position:fixed;inset:0;z-index:99999;
+  background:linear-gradient(135deg,#0d0508 0%,#1f0a14 50%,#0d0508 100%);
+  display:flex;align-items:center;justify-content:center;
+  padding:20px;
+}
+.login-box{
+  background:white;border-radius:24px;
+  padding:40px 36px;width:100%;max-width:400px;
+  box-shadow:0 30px 60px rgba(0,0,0,.4);
+  animation:loginPop .4s cubic-bezier(.16,1,.3,1);
+}
+@keyframes loginPop{from{transform:scale(.85);opacity:0}to{transform:scale(1);opacity:1}}
+.login-logo{
+  font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:700;
+  background:linear-gradient(135deg,var(--pink-deep),var(--gold-dark));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  text-align:center;margin-bottom:4px;
+}
+.login-sub{text-align:center;font-size:.78rem;color:var(--gray);margin-bottom:28px;letter-spacing:.5px;}
+.login-field{display:flex;flex-direction:column;gap:5px;margin-bottom:14px;}
+.login-field label{font-size:.72rem;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:.5px;}
+.login-input{
+  padding:12px 16px;border:2px solid #e5e7eb;border-radius:12px;
+  font-size:.95rem;font-family:'Nunito',sans-serif;outline:none;
+  transition:border .2s;width:100%;
+}
+.login-input:focus{border-color:var(--pink);}
+.login-input.error{border-color:var(--red);background:#fff5f5;}
+.login-btn{
+  width:100%;padding:14px;border:none;border-radius:12px;
+  background:linear-gradient(135deg,var(--pink-deep),var(--gold-dark));
+  color:white;font-family:'Nunito',sans-serif;font-weight:700;
+  font-size:1rem;cursor:pointer;margin-top:6px;
+  box-shadow:0 6px 20px rgba(219,39,119,.3);transition:all .2s;
+}
+.login-btn:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(219,39,119,.4);}
+.login-err{
+  background:#fee2e2;color:var(--red);border-radius:10px;
+  padding:10px 14px;font-size:.82rem;font-weight:600;
+  margin-bottom:14px;display:none;text-align:center;
+}
+.login-err.show{display:block;}
+.login-attempts{font-size:.72rem;color:var(--gray);text-align:center;margin-top:12px;}
+.pw-wrap{position:relative;}
+.pw-toggle{
+  position:absolute;right:12px;top:50%;transform:translateY(-50%);
+  background:none;border:none;cursor:pointer;font-size:1rem;color:var(--gray);
+}
+.login-locked{
+  background:#fef9c3;border:2px solid #fde68a;color:#92650a;
+  border-radius:12px;padding:14px;text-align:center;
+  font-size:.82rem;font-weight:600;display:none;margin-bottom:14px;
+}
+.login-locked.show{display:block;}
 </style>
 </head>
 <body>
+
+<!-- ====== LOGIN SCREEN ====== -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">👗 HMI Fashion</div>
+    <div class="login-sub">Admin Dashboard — Secure Login</div>
+
+    <div class="login-locked" id="loginLocked">
+      🔒 Bahut zyada galat attempts! <span id="lockTimer">30</span> seconds baad try karo.
+    </div>
+    <div class="login-err" id="loginErr">❌ Galat Username ya Password!</div>
+
+    <div class="login-field">
+      <label>Username</label>
+      <input type="text" class="login-input" id="loginUser" placeholder="Admin username" autocomplete="username" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <div class="login-field">
+      <label>Password</label>
+      <div class="pw-wrap">
+        <input type="password" class="login-input" id="loginPass" placeholder="Password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+        <button class="pw-toggle" type="button" onclick="togglePw()" id="pwToggle">👁️</button>
+      </div>
+    </div>
+
+    <button class="login-btn" onclick="doLogin()" id="loginBtn">🔐 Login</button>
+    <div class="login-attempts" id="loginAttempts"></div>
+  </div>
+</div>
 
 <div class="topbar">
   <div class="topbar-logo">👗 HMI Fashion — Admin Dashboard</div>
@@ -171,6 +256,7 @@ textarea{resize:vertical;min-height:65px;}
     <span class="badge-count" id="totalCount">Loading...</span>
     <span class="badge-count" id="orderCountBadge" style="background:rgba(22,163,74,.4);cursor:pointer;" onclick="showSection('orders')">📦 0 Orders</span>
     <a href="index.html" class="topbar-link">🌐 Store Dekho</a>
+    <button onclick="doLogout()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:white;padding:6px 14px;border-radius:20px;font-family:'Nunito',sans-serif;font-weight:700;font-size:.82rem;cursor:pointer;transition:all .2s;" onmouseover="this.style.background='rgba(220,38,38,.5)'" onmouseout="this.style.background='rgba(255,255,255,.15)'">🚪 Logout</button>
   </div>
 </div>
 
@@ -1124,11 +1210,171 @@ window.addEventListener('storage', function(e){
   }
 });
 
+// ====== LOGIN SYSTEM ======
+// Credentials — change karne ke liye yahan update karo
+const ADMIN_CREDENTIALS = [
+  { user: 'admin',    pass: 'HMI@2024' },
+  { user: 'hmifashion', pass: 'Fashion@123' }
+];
+
+const MAX_ATTEMPTS = 5;
+const LOCK_SECONDS = 30;
+const SESSION_KEY = 'hmi_admin_session';
+
+let loginAttempts = parseInt(sessionStorage.getItem('hmi_login_attempts')||'0');
+let lockUntil = parseInt(sessionStorage.getItem('hmi_lock_until')||'0');
+
+function checkSession(){
+  const session = sessionStorage.getItem(SESSION_KEY);
+  if(session === 'authenticated'){
+    document.getElementById('loginScreen').style.display = 'none';
+    return true;
+  }
+  // Check if locked
+  if(Date.now() < lockUntil){
+    startLockTimer();
+  }
+  updateAttemptsDisplay();
+  // Focus username field
+  setTimeout(()=>{ const u=document.getElementById('loginUser'); if(u)u.focus(); }, 300);
+  return false;
+}
+
+function doLogin(){
+  const now = Date.now();
+  // Check lock
+  if(now < lockUntil){
+    showLoginErr('🔒 Abhi locked hai. Timer wait karo!');
+    return;
+  }
+
+  const user = document.getElementById('loginUser').value.trim();
+  const pass = document.getElementById('loginPass').value;
+
+  if(!user || !pass){
+    showLoginErr('❌ Username aur Password dono bharo!');
+    shakeInputs(); return;
+  }
+
+  const valid = ADMIN_CREDENTIALS.some(c => c.user === user && c.pass === pass);
+
+  if(valid){
+    // Success
+    loginAttempts = 0;
+    sessionStorage.setItem('hmi_login_attempts','0');
+    sessionStorage.removeItem('hmi_lock_until');
+    sessionStorage.setItem(SESSION_KEY, 'authenticated');
+
+    // Animate out
+    const box = document.querySelector('.login-box');
+    box.style.transform = 'scale(1.05)';
+    box.style.opacity = '0';
+    box.style.transition = 'all .4s ease';
+    setTimeout(()=>{
+      document.getElementById('loginScreen').style.display = 'none';
+      showToast('✅ Welcome! Login successful.', 'success');
+    }, 400);
+  } else {
+    // Failed
+    loginAttempts++;
+    sessionStorage.setItem('hmi_login_attempts', loginAttempts);
+    const remaining = MAX_ATTEMPTS - loginAttempts;
+
+    if(loginAttempts >= MAX_ATTEMPTS){
+      lockUntil = Date.now() + LOCK_SECONDS * 1000;
+      sessionStorage.setItem('hmi_lock_until', lockUntil);
+      loginAttempts = 0;
+      sessionStorage.setItem('hmi_login_attempts','0');
+      showLoginErr('');
+      startLockTimer();
+    } else {
+      showLoginErr(`❌ Galat Username ya Password! ${remaining} attempt${remaining>1?'s':''} bache hain.`);
+      shakeInputs();
+    }
+    updateAttemptsDisplay();
+  }
+}
+
+function startLockTimer(){
+  const lockedEl = document.getElementById('loginLocked');
+  const timerEl = document.getElementById('lockTimer');
+  const btnEl = document.getElementById('loginBtn');
+  lockedEl.classList.add('show');
+  document.getElementById('loginErr').classList.remove('show');
+  if(btnEl){ btnEl.disabled=true; btnEl.style.opacity='.5'; }
+
+  const interval = setInterval(()=>{
+    const left = Math.ceil((lockUntil - Date.now()) / 1000);
+    if(left <= 0){
+      clearInterval(interval);
+      lockedEl.classList.remove('show');
+      if(btnEl){ btnEl.disabled=false; btnEl.style.opacity='1'; }
+      lockUntil = 0;
+      sessionStorage.removeItem('hmi_lock_until');
+      updateAttemptsDisplay();
+    } else {
+      if(timerEl) timerEl.textContent = left;
+    }
+  }, 1000);
+}
+
+function showLoginErr(msg){
+  const el = document.getElementById('loginErr');
+  el.textContent = msg;
+  if(msg){ el.classList.add('show'); }
+  else { el.classList.remove('show'); }
+}
+
+function shakeInputs(){
+  ['loginUser','loginPass'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el){
+      el.classList.add('error');
+      el.style.animation = 'shake .4s ease';
+      setTimeout(()=>{ el.classList.remove('error'); el.style.animation=''; }, 1500);
+    }
+  });
+}
+
+function updateAttemptsDisplay(){
+  const el = document.getElementById('loginAttempts');
+  if(!el) return;
+  if(loginAttempts > 0){
+    el.textContent = `${loginAttempts} galat attempt${loginAttempts>1?'s':''} — ${MAX_ATTEMPTS-loginAttempts} bache`;
+  } else {
+    el.textContent = '';
+  }
+}
+
+function togglePw(){
+  const inp = document.getElementById('loginPass');
+  const btn = document.getElementById('pwToggle');
+  if(inp.type==='password'){ inp.type='text'; btn.textContent='🙈'; }
+  else { inp.type='password'; btn.textContent='👁️'; }
+}
+
+function doLogout(){
+  sessionStorage.removeItem(SESSION_KEY);
+  window.location.reload();
+}
+
+// Add shake animation
+const shakeStyle = document.createElement('style');
+shakeStyle.textContent = `@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}`;
+document.head.appendChild(shakeStyle);
+
 // INIT
-loadProducts();
-renderDashboard();
-updateCounts();
-updateOrderCounts();
+if(checkSession()){
+  loadProducts();
+  renderDashboard();
+  updateCounts();
+  updateOrderCounts();
+} else {
+  // Load in background so dashboard is ready after login
+  loadProducts();
+  updateCounts();
+  updateOrderCounts();
+}
 </script>
 </body>
 </html>
