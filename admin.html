@@ -34,7 +34,7 @@ body{font-family:'Nunito',sans-serif;background:#f8fafc;color:var(--dark);min-he
 .cat-cnt{margin-left:auto;background:var(--pink-light);color:var(--pink-deep);font-size:.68rem;font-weight:800;padding:2px 7px;border-radius:10px;}
 .side-btn.active .cat-cnt{background:rgba(255,255,255,.3);color:white;}
 
-.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;}
+.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px;}
 .stat-card{background:white;border-radius:14px;padding:16px 18px;border:1.5px solid #f1f5f9;box-shadow:0 2px 8px rgba(0,0,0,.05);}
 .stat-icon{font-size:1.5rem;margin-bottom:5px;}
 .stat-num{font-size:1.7rem;font-weight:800;background:linear-gradient(135deg,var(--pink-deep),var(--gold-dark));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
@@ -129,6 +129,32 @@ textarea{resize:vertical;min-height:65px;}
 
 .empty-state{text-align:center;padding:50px 20px;color:var(--gray);}
 
+/* ORDER STATUS BADGES */
+.os-pending{background:#fef9c3;color:#854d0e;padding:4px 10px;border-radius:20px;font-size:.72rem;font-weight:700;white-space:nowrap;}
+.os-confirmed{background:#dbeafe;color:#1e40af;padding:4px 10px;border-radius:20px;font-size:.72rem;font-weight:700;white-space:nowrap;}
+.os-shipped{background:#ede9fe;color:#6d28d9;padding:4px 10px;border-radius:20px;font-size:.72rem;font-weight:700;white-space:nowrap;}
+.os-delivered{background:#dcfce7;color:#16a34a;padding:4px 10px;border-radius:20px;font-size:.72rem;font-weight:700;white-space:nowrap;}
+.os-cancelled{background:#fee2e2;color:#dc2626;padding:4px 10px;border-radius:20px;font-size:.72rem;font-weight:700;white-space:nowrap;}
+
+/* ORDER STATUS TIMELINE */
+.status-timeline{display:flex;align-items:center;gap:0;margin:16px 0;}
+.stl-step{display:flex;flex-direction:column;align-items:center;flex:1;position:relative;}
+.stl-dot{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.9rem;border:2px solid #e5e7eb;background:white;z-index:1;}
+.stl-dot.done{background:var(--pink-deep);border-color:var(--pink-deep);}
+.stl-dot.active{background:var(--pink-light);border-color:var(--pink-deep);}
+.stl-label{font-size:.65rem;font-weight:700;color:var(--gray);margin-top:4px;text-align:center;}
+.stl-label.done{color:var(--pink-deep);}
+.stl-line{position:absolute;top:16px;left:50%;right:-50%;height:2px;background:#e5e7eb;z-index:0;}
+.stl-line.done{background:var(--pink-deep);}
+.stl-step:last-child .stl-line{display:none;}
+
+.status-btn{padding:7px 12px;border-radius:10px;border:2px solid #e5e7eb;font-family:'Nunito',sans-serif;font-weight:700;font-size:.78rem;cursor:pointer;transition:all .2s;}
+.status-btn:hover{transform:translateY(-1px);}
+.status-btn.s-confirmed{background:#dbeafe;color:#1e40af;border-color:#93c5fd;}
+.status-btn.s-shipped{background:#ede9fe;color:#6d28d9;border-color:#c4b5fd;}
+.status-btn.s-delivered{background:#dcfce7;color:#16a34a;border-color:#86efac;}
+.status-btn.s-cancelled{background:#fee2e2;color:#dc2626;border-color:#fca5a5;}
+
 @media(max-width:900px){
   .layout{grid-template-columns:1fr;}
   .sidebar{display:none;}
@@ -143,6 +169,7 @@ textarea{resize:vertical;min-height:65px;}
   <div class="topbar-logo">👗 HMI Fashion — Admin Dashboard</div>
   <div class="topbar-right">
     <span class="badge-count" id="totalCount">Loading...</span>
+    <span class="badge-count" id="orderCountBadge" style="background:rgba(22,163,74,.4);cursor:pointer;" onclick="showSection('orders')">📦 0 Orders</span>
     <a href="index.html" class="topbar-link">🌐 Store Dekho</a>
   </div>
 </div>
@@ -151,6 +178,7 @@ textarea{resize:vertical;min-height:65px;}
   <div class="sidebar">
     <div class="sidebar-title">Navigation</div>
     <button class="side-btn active" id="nav-dashboard" onclick="showSection('dashboard')">📊 Dashboard</button>
+    <button class="side-btn" id="nav-orders" onclick="showSection('orders')">📦 Orders <span class="cat-cnt" id="cnt-orders">0</span></button>
     <button class="side-btn" id="nav-products" onclick="showSection('products')">👗 All Products</button>
     <button class="side-btn" id="nav-addProduct" onclick="showSection('addProduct')">➕ Add Product</button>
     <button class="side-btn" id="nav-export" onclick="showSection('export')">💾 Export products.js</button>
@@ -173,6 +201,8 @@ textarea{resize:vertical;min-height:65px;}
       <div class="stats-grid">
         <div class="stat-card"><div class="stat-icon">👗</div><div class="stat-num" id="st-total">0</div><div class="stat-label">Total Products</div></div>
         <div class="stat-card"><div class="stat-icon">🏷️</div><div class="stat-num" id="st-cats">0</div><div class="stat-label">Categories</div></div>
+        <div class="stat-card"><div class="stat-icon">📦</div><div class="stat-num" id="st-orders">0</div><div class="stat-label">Total Orders</div></div>
+        <div class="stat-card"><div class="stat-icon">⏳</div><div class="stat-num" id="st-pending">0</div><div class="stat-label">Pending Orders</div></div>
         <div class="stat-card"><div class="stat-icon">⭐</div><div class="stat-num" id="st-featured">0</div><div class="stat-label">Bestsellers</div></div>
         <div class="stat-card"><div class="stat-icon">✨</div><div class="stat-num" id="st-new">0</div><div class="stat-label">New Arrivals</div></div>
       </div>
@@ -383,6 +413,57 @@ textarea{resize:vertical;min-height:65px;}
       </div>
     </div>
 
+    <!-- ORDERS SECTION -->
+    <div id="sec-orders" style="display:none">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
+        <h2 style="font-family:'Playfair Display',serif;font-size:1.2rem;">📦 Orders Management</h2>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <select class="filter-sel" id="orderStatusFilter" onchange="renderOrders()">
+            <option value="all">All Orders</option>
+            <option value="Pending">⏳ Pending</option>
+            <option value="Confirmed">✅ Confirmed</option>
+            <option value="Shipped">🚚 Shipped</option>
+            <option value="Delivered">📬 Delivered</option>
+            <option value="Cancelled">❌ Cancelled</option>
+          </select>
+          <button class="btn btn-danger btn-sm" onclick="clearAllOrders()">🗑️ Clear All</button>
+        </div>
+      </div>
+      <div class="card" style="padding:0;overflow:hidden;">
+        <div style="overflow-x:auto;">
+          <table class="prod-table">
+            <thead><tr>
+              <th>Order ID</th>
+              <th>Customer</th>
+              <th>Phone</th>
+              <th>Items</th>
+              <th>Total</th>
+              <th>Date</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr></thead>
+            <tbody id="ordersTableBody"></tbody>
+          </table>
+        </div>
+        <div id="emptyOrders" class="empty-state" style="display:none;">
+          <div style="font-size:3rem;margin-bottom:10px;">📦</div>
+          <p>Abhi tak koi order nahi aaya</p>
+          <p style="font-size:.75rem;margin-top:6px;color:var(--gray)">Jab customer order karega, woh yahan dikhega</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ORDER DETAIL MODAL -->
+    <div id="orderDetailOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:2000;align-items:center;justify-content:center;padding:16px;">
+      <div style="background:white;border-radius:20px;width:100%;max-width:550px;max-height:90vh;overflow-y:auto;box-shadow:0 30px 60px rgba(0,0,0,.2);">
+        <div style="background:linear-gradient(135deg,var(--pink-deep),var(--gold-dark));color:white;padding:18px 22px;border-radius:20px 20px 0 0;display:flex;align-items:center;justify-content:space-between;">
+          <div style="font-family:'Playfair Display',serif;font-size:1.1rem;">📦 Order Details</div>
+          <button onclick="closeOrderDetail()" style="background:rgba(255,255,255,.2);border:none;color:white;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:1rem;">✕</button>
+        </div>
+        <div id="orderDetailContent" style="padding:20px;"></div>
+      </div>
+    </div>
+
     <!-- EXPORT -->
     <div id="sec-export" style="display:none">
       <div class="info-banner">
@@ -479,7 +560,7 @@ function saveProducts(){
 function getNextId(){ return products.length>0?Math.max(...products.map(p=>p.id))+1:1; }
 
 function showSection(name){
-  ['dashboard','products','addProduct','export'].forEach(s=>{
+  ['dashboard','products','addProduct','export','orders'].forEach(s=>{
     document.getElementById('sec-'+s).style.display=s===name?'block':'none';
     const b=document.getElementById('nav-'+s);
     if(b) b.classList.toggle('active',s===name);
@@ -487,6 +568,7 @@ function showSection(name){
   if(name==='dashboard') renderDashboard();
   if(name==='products') renderAllProducts();
   if(name==='export') generateExport();
+  if(name==='orders') renderOrders();
 }
 
 function updateCounts(){
@@ -504,6 +586,10 @@ function renderDashboard(){
   document.getElementById('st-cats').textContent=cats;
   document.getElementById('st-featured').textContent=featured;
   document.getElementById('st-new').textContent=newP;
+  // Order stats
+  const orders=loadOrders();
+  document.getElementById('st-orders').textContent=orders.length;
+  document.getElementById('st-pending').textContent=orders.filter(o=>o.status==='Pending').length;
   document.getElementById('dashTableBody').innerHTML=products.map(p=>miniRow(p)).join('');
 }
 
@@ -806,10 +892,243 @@ function showToast(msg,type='success'){
   setTimeout(()=>t.classList.remove('show'),3000);
 }
 
+// =============================================
+// ORDERS MANAGEMENT
+// =============================================
+const ORDERS_KEY = 'hmi_orders';
+
+function loadOrders(){
+  try{ return JSON.parse(localStorage.getItem(ORDERS_KEY)||'[]'); }
+  catch(e){ return []; }
+}
+
+function saveOrdersData(orders){
+  try{ localStorage.setItem(ORDERS_KEY, JSON.stringify(orders)); }
+  catch(e){}
+  updateOrderCounts();
+}
+
+function updateOrderCounts(){
+  const orders = loadOrders();
+  const cnt = orders.length;
+  const el = document.getElementById('cnt-orders');
+  if(el) el.textContent = cnt;
+  const badge = document.getElementById('orderCountBadge');
+  if(badge) badge.textContent = '📦 '+cnt+' Orders';
+}
+
+function renderOrders(){
+  const orders = loadOrders();
+  const filterVal = document.getElementById('orderStatusFilter')?.value || 'all';
+  let list = filterVal === 'all' ? [...orders] : orders.filter(o=>o.status===filterVal);
+  // Sort newest first
+  list.sort((a,b)=>b.date-a.date);
+
+  const body = document.getElementById('ordersTableBody');
+  const empty = document.getElementById('emptyOrders');
+
+  if(list.length===0){
+    if(body) body.innerHTML='';
+    if(empty) empty.style.display='block';
+    return;
+  }
+  if(empty) empty.style.display='none';
+
+  body.innerHTML = list.map(o=>{
+    const d = new Date(o.date);
+    const dateStr = d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+    const timeStr = d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+    const itemCount = o.items ? o.items.reduce((a,c)=>a+c.qty,0) : '—';
+    const statusCls = {
+      'Pending':'os-pending','Confirmed':'os-confirmed',
+      'Shipped':'os-shipped','Delivered':'os-delivered','Cancelled':'os-cancelled'
+    }[o.status]||'os-pending';
+    const statusEmoji = {'Pending':'⏳','Confirmed':'✅','Shipped':'🚚','Delivered':'📬','Cancelled':'❌'}[o.status]||'⏳';
+
+    return `<tr>
+      <td><b style="color:var(--pink-deep);font-size:.82rem;">${o.orderNo}</b></td>
+      <td><b>${o.customerName||'—'}</b></td>
+      <td style="font-size:.8rem;">${o.customerPhone||'—'}</td>
+      <td style="font-size:.8rem;color:var(--gray);">${itemCount} item${itemCount!==1?'s':''}</td>
+      <td><b style="color:var(--pink-deep);">₹${(o.total||0).toLocaleString()}</b></td>
+      <td style="font-size:.75rem;color:var(--gray);">${dateStr}<br>${timeStr}</td>
+      <td><span class="${statusCls}">${statusEmoji} ${o.status}</span></td>
+      <td style="white-space:nowrap;">
+        <button class="btn btn-outline btn-sm" onclick="openOrderDetail('${o.orderNo}')" style="margin-right:4px;">👁️ View</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteOrder('${o.orderNo}')">🗑️</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function openOrderDetail(orderNo){
+  const orders = loadOrders();
+  const o = orders.find(x=>x.orderNo===orderNo);
+  if(!o) return;
+
+  const d = new Date(o.date);
+  const dateStr = d.toLocaleDateString('en-IN',{day:'2-digit',month:'long',year:'numeric'});
+  const timeStr = d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+
+  const statusSteps = ['Pending','Confirmed','Shipped','Delivered'];
+  const curIdx = statusSteps.indexOf(o.status);
+
+  const timelineHtml = statusSteps.map((step,i)=>{
+    const isDone = i < curIdx || (o.status===step);
+    const isActive = o.status===step;
+    const icons = {'Pending':'🕐','Confirmed':'✅','Shipped':'🚚','Delivered':'📬'};
+    return `<div class="stl-step">
+      <div class="stl-dot ${isDone?'done':''}">${isDone?icons[step]||'•':'${i+1}'}</div>
+      <div class="stl-label ${isDone?'done':''}">${step}</div>
+      <div class="stl-line ${i<curIdx?'done':''}"></div>
+    </div>`;
+  }).join('');
+
+  const itemsHtml = (o.items||[]).map(item=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:10px;background:#fff9fb;border-radius:10px;margin-bottom:8px;border:1.5px solid var(--pink-light);">
+      <div style="width:40px;height:40px;border-radius:8px;background:${item.bg||'#fce7f3'};display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0;">${item.emoji||'👗'}</div>
+      <div style="flex:1;">
+        <div style="font-weight:700;font-size:.85rem;">${item.name}</div>
+        <div style="font-size:.75rem;color:var(--gray);">${item.selSize?'Size: '+item.selSize:''}${item.selSize&&item.selColor?' · ':''}${item.selColor?'Color: '+item.selColor:''}</div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-weight:700;color:var(--pink-deep);">₹${(item.price*item.qty).toLocaleString()}</div>
+        <div style="font-size:.75rem;color:var(--gray);">x${item.qty}</div>
+      </div>
+    </div>`).join('');
+
+  const statusBtns = [
+    {s:'Confirmed',label:'✅ Confirm',cls:'s-confirmed'},
+    {s:'Shipped',label:'🚚 Mark Shipped',cls:'s-shipped'},
+    {s:'Delivered',label:'📬 Mark Delivered',cls:'s-delivered'},
+    {s:'Cancelled',label:'❌ Cancel',cls:'s-cancelled'},
+  ].filter(b=>b.s!==o.status).map(b=>
+    `<button class="status-btn ${b.cls}" onclick="updateOrderStatus('${o.orderNo}','${b.s}')">${b.label}</button>`
+  ).join('');
+
+  document.getElementById('orderDetailContent').innerHTML = `
+    <div style="margin-bottom:16px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+        <div>
+          <div style="font-size:1.1rem;font-weight:800;color:var(--pink-deep);">${o.orderNo}</div>
+          <div style="font-size:.78rem;color:var(--gray);">${dateStr} at ${timeStr}</div>
+        </div>
+        <span class="${{Pending:'os-pending',Confirmed:'os-confirmed',Shipped:'os-shipped',Delivered:'os-delivered',Cancelled:'os-cancelled'}[o.status]||'os-pending'} " style="font-size:.8rem;padding:5px 14px;">
+          ${'⏳✅🚚📬❌'.split('')[['Pending','Confirmed','Shipped','Delivered','Cancelled'].indexOf(o.status)]||'⏳'} ${o.status}
+        </span>
+      </div>
+    </div>
+
+    <!-- STATUS TIMELINE -->
+    ${o.status!=='Cancelled'?`<div style="background:#fff9fb;border-radius:12px;padding:14px;margin-bottom:16px;border:1.5px solid var(--pink-light);">
+      <div style="font-size:.72rem;font-weight:800;text-transform:uppercase;color:var(--gray);letter-spacing:1px;margin-bottom:10px;">Order Progress</div>
+      <div class="status-timeline">${timelineHtml}</div>
+    </div>`:''}
+
+    <!-- UPDATE STATUS BUTTONS -->
+    <div style="margin-bottom:16px;">
+      <div style="font-size:.72rem;font-weight:800;text-transform:uppercase;color:var(--gray);letter-spacing:1px;margin-bottom:8px;">Update Status</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">${statusBtns}</div>
+    </div>
+
+    <!-- CUSTOMER INFO -->
+    <div style="background:#f8fafc;border-radius:12px;padding:14px;margin-bottom:14px;">
+      <div style="font-size:.72rem;font-weight:800;text-transform:uppercase;color:var(--gray);letter-spacing:1px;margin-bottom:10px;">👤 Customer Details</div>
+      <div style="font-size:.85rem;line-height:2;">
+        <b>Name:</b> ${o.customerName||'—'}<br>
+        <b>Phone:</b> <a href="tel:${o.customerPhone}" style="color:var(--pink-deep);">${o.customerPhone||'—'}</a><br>
+        <b>Address:</b> ${o.address||'—'}<br>
+        <b>Payment:</b> ${o.payMethod||'—'}
+      </div>
+      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+        <a href="https://wa.me/91${o.customerPhone}?text=Hello%20${encodeURIComponent(o.customerName||'')}!%20Your%20order%20${o.orderNo}%20status%20update%20karein."
+           target="_blank" style="background:#25d366;color:white;padding:7px 14px;border-radius:8px;font-weight:700;font-size:.78rem;text-decoration:none;display:inline-flex;align-items:center;gap:5px;">
+          💬 WhatsApp
+        </a>
+        <a href="tel:${o.customerPhone}" style="background:var(--blue-light);color:var(--blue);padding:7px 14px;border-radius:8px;font-weight:700;font-size:.78rem;text-decoration:none;display:inline-flex;align-items:center;gap:5px;">
+          📞 Call
+        </a>
+      </div>
+    </div>
+
+    <!-- ITEMS -->
+    <div style="margin-bottom:14px;">
+      <div style="font-size:.72rem;font-weight:800;text-transform:uppercase;color:var(--gray);letter-spacing:1px;margin-bottom:10px;">🛍️ Items Ordered</div>
+      ${itemsHtml}
+    </div>
+
+    <!-- TOTAL -->
+    <div style="background:var(--pink-light);border-radius:12px;padding:12px 14px;">
+      <div style="display:flex;justify-content:space-between;font-size:.85rem;margin-bottom:4px;color:var(--gray);">
+        <span>Subtotal</span><span>₹${(o.subtotal||0).toLocaleString()}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:.85rem;margin-bottom:6px;color:#16a34a;font-weight:700;">
+        <span>🚚 Shipping</span><span>₹${(o.shipping||99).toLocaleString()}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:1.05rem;font-weight:800;border-top:1.5px solid rgba(219,39,119,.2);padding-top:8px;">
+        <span>Total</span><span style="color:var(--pink-deep);">₹${(o.total||0).toLocaleString()}</span>
+      </div>
+    </div>
+  `;
+
+  const overlay = document.getElementById('orderDetailOverlay');
+  overlay.style.display = 'flex';
+}
+
+function closeOrderDetail(){
+  document.getElementById('orderDetailOverlay').style.display='none';
+}
+
+function updateOrderStatus(orderNo, newStatus){
+  const orders = loadOrders();
+  const idx = orders.findIndex(o=>o.orderNo===orderNo);
+  if(idx<0) return;
+  orders[idx].status = newStatus;
+  orders[idx].statusUpdatedAt = Date.now();
+  saveOrdersData(orders);
+  showToast(`✅ Order ${orderNo} → ${newStatus}!`,'success');
+  // Re-render detail modal with updated data
+  openOrderDetail(orderNo);
+  // Re-render table in background
+  renderOrders();
+  // Update dashboard counts
+  renderDashboard();
+}
+
+function deleteOrder(orderNo){
+  if(!confirm(`Order ${orderNo} delete karna chahte ho?`)) return;
+  const orders = loadOrders().filter(o=>o.orderNo!==orderNo);
+  saveOrdersData(orders);
+  renderOrders();
+  renderDashboard();
+  showToast('🗑️ Order delete ho gaya!','success');
+}
+
+function clearAllOrders(){
+  if(!confirm('Saare orders delete karna chahte ho? Yeh wapas nahi aayenge!')) return;
+  localStorage.removeItem(ORDERS_KEY);
+  updateOrderCounts();
+  renderOrders();
+  renderDashboard();
+  showToast('🗑️ Saare orders clear ho gaye!','success');
+}
+
+// Listen for new orders from store tab
+window.addEventListener('storage', function(e){
+  if(e.key===ORDERS_KEY){
+    updateOrderCounts();
+    renderDashboard();
+    const ordersVisible = document.getElementById('sec-orders')?.style.display!=='none';
+    if(ordersVisible) renderOrders();
+    showToast('🔔 Naya order aaya!','success');
+  }
+});
+
 // INIT
 loadProducts();
 renderDashboard();
 updateCounts();
+updateOrderCounts();
 </script>
 </body>
 </html>
