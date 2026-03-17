@@ -212,7 +212,7 @@ textarea{resize:vertical;min-height:65px;}
       <div class="card" style="padding:0;overflow:hidden;">
         <div style="overflow-x:auto;">
           <table class="prod-table">
-            <thead><tr><th>Img</th><th>Name</th><th>Cat</th><th>Price</th><th>MRP</th><th>Off</th><th>Badge</th><th>Description</th><th>Actions</th></tr></thead>
+            <thead><tr><th>Img</th><th>Name</th><th>Cat</th><th>Price</th><th>MRP</th><th>Off</th><th>⭐ Rating</th><th>Qty</th><th>Badge</th><th>Actions</th></tr></thead>
             <tbody id="allProductsBody"></tbody>
           </table>
         </div>
@@ -270,6 +270,18 @@ textarea{resize:vertical;min-height:65px;}
           <div class="form-group">
             <label>Emoji (icon fallback)</label>
             <input type="text" id="p-emoji" placeholder="e.g. 🥻" maxlength="4">
+          </div>
+          <div class="form-group">
+            <label>Rating (0–5) ⭐</label>
+            <input type="number" id="p-rating" placeholder="e.g. 4.5" min="0" max="5" step="0.1">
+          </div>
+          <div class="form-group">
+            <label>Rating Count (reviews)</label>
+            <input type="number" id="p-ratingCount" placeholder="e.g. 128" min="0">
+          </div>
+          <div class="form-group">
+            <label>Stock Quantity (qty)</label>
+            <input type="number" id="p-qty" placeholder="e.g. 50 (0 = out of stock)" min="0">
           </div>
           <div class="form-group full">
             <label>Description</label>
@@ -532,9 +544,18 @@ function renderAllProducts(){
       <td><span class="price-main">₹${p.price.toLocaleString()}</span></td>
       <td><span class="price-old-s">₹${p.old.toLocaleString()}</span></td>
       <td><span class="disc-badge">${disc}%</span></td>
+      <td style="white-space:nowrap;">
+        ${p.rating ? `<b style="color:#92650a">${parseFloat(p.rating).toFixed(1)}</b> <span style="color:#f59e0b;font-size:.8rem;">★</span>
+        ${p.ratingCount?`<span style="font-size:.7rem;color:var(--gray)">(${p.ratingCount})</span>`:''}` : '<span style="color:#d1d5db;font-size:.75rem;">No rating</span>'}
+      </td>
+      <td>
+        ${p.qty===0?'<span style="color:#dc2626;font-weight:700;font-size:.75rem;">Out</span>':
+          p.qty<=5&&p.qty>0?`<span style="color:#92650a;font-weight:700;font-size:.75rem;">${p.qty} left</span>`:
+          p.qty>0?`<span style="color:#16a34a;font-size:.75rem;">${p.qty}</span>`:
+          '<span style="color:#9ca3af;font-size:.75rem;">—</span>'}
+      </td>
       <td>${badgePill(p.badge)}</td>
-      <td class="desc-cell" title="${p.desc||''}">${p.desc||'—'}</td>
-      <td style="white-space:nowrap">
+      <td style="white-space:nowrap;">
         <button class="btn btn-outline btn-sm" onclick="editProduct(${p.id})" style="margin-right:4px">✏️ Edit</button>
         <button class="btn btn-danger btn-sm" onclick="deleteProduct(${p.id})">🗑️</button>
       </td>
@@ -573,6 +594,9 @@ function saveProduct(){
   const emoji=document.getElementById('p-emoji').value.trim()||'👗';
   const bg=document.getElementById('p-bg').value||'#fce7f3';
   const desc=document.getElementById('p-desc').value.trim();
+  const rating=document.getElementById('p-rating').value.trim();
+  const ratingCount=document.getElementById('p-ratingCount').value.trim();
+  const qty=document.getElementById('p-qty').value.trim();
 
   // Collect selected sizes
   const sizes = [];
@@ -593,13 +617,20 @@ function saveProduct(){
   if(editingId!==null){
     const idx=products.findIndex(p=>p.id===editingId);
     if(idx>=0) products[idx]={...products[idx],name,cat,price,old,badge,emoji,bg,desc,sizes,colors,
+      rating:rating?parseFloat(rating):undefined,
+      ratingCount:ratingCount?parseInt(ratingCount):undefined,
+      qty:qty!==''?parseInt(qty):undefined,
       images:uploadedImages.length>0?uploadedImages:products[idx].images};
     editingId=null;
     document.getElementById('formTitle').textContent='➕ Naya Product Add Karo';
     document.getElementById('cancelEdit').style.display='none';
     showToast('✅ Product update ho gaya!','success');
   } else {
-    products.push({id:getNextId(),name,cat,price,old,badge,emoji,bg,desc,sizes,colors,images:[...uploadedImages]});
+    products.push({id:getNextId(),name,cat,price,old,badge,emoji,bg,desc,sizes,colors,
+      rating:rating?parseFloat(rating):undefined,
+      ratingCount:ratingCount?parseInt(ratingCount):undefined,
+      qty:qty!==''?parseInt(qty):undefined,
+      images:[...uploadedImages]});
     showToast('✅ New product add ho gaya!','success');
   }
   saveProducts(); resetForm(); renderDashboard();
@@ -619,6 +650,9 @@ function editProduct(id){
   document.getElementById('p-badge').value=p.badge||'New 2026';
   document.getElementById('p-emoji').value=p.emoji||'';
   document.getElementById('p-desc').value=p.desc||'';
+  document.getElementById('p-rating').value=p.rating||'';
+  document.getElementById('p-ratingCount').value=p.ratingCount||'';
+  document.getElementById('p-qty').value=p.qty!==undefined?p.qty:'';
   selectColorByValue(p.bg||'#fce7f3');
 
   // Restore sizes
@@ -649,7 +683,7 @@ function deleteProduct(id){
 }
 
 function resetForm(){
-  ['p-name','p-price','p-old','p-emoji','p-desc'].forEach(id=>document.getElementById(id).value='');
+  ['p-name','p-price','p-old','p-emoji','p-desc','p-rating','p-ratingCount','p-qty'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('p-cat').value='';
   document.getElementById('p-badge').value='New 2026';
   selectColorByValue('#fce7f3');
