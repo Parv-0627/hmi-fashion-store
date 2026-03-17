@@ -161,94 +161,9 @@ textarea{resize:vertical;min-height:65px;}
   .stats-grid{grid-template-columns:1fr 1fr;}
   .form-grid{grid-template-columns:1fr;}
 }
-
-/* ====== LOGIN SCREEN ====== */
-#loginScreen{
-  position:fixed;inset:0;z-index:99999;
-  background:linear-gradient(135deg,#0d0508 0%,#1f0a14 50%,#0d0508 100%);
-  display:flex;align-items:center;justify-content:center;
-  padding:20px;
-}
-.login-box{
-  background:white;border-radius:24px;
-  padding:40px 36px;width:100%;max-width:400px;
-  box-shadow:0 30px 60px rgba(0,0,0,.4);
-  animation:loginPop .4s cubic-bezier(.16,1,.3,1);
-}
-@keyframes loginPop{from{transform:scale(.85);opacity:0}to{transform:scale(1);opacity:1}}
-.login-logo{
-  font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:700;
-  background:linear-gradient(135deg,var(--pink-deep),var(--gold-dark));
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
-  text-align:center;margin-bottom:4px;
-}
-.login-sub{text-align:center;font-size:.78rem;color:var(--gray);margin-bottom:28px;letter-spacing:.5px;}
-.login-field{display:flex;flex-direction:column;gap:5px;margin-bottom:14px;}
-.login-field label{font-size:.72rem;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:.5px;}
-.login-input{
-  padding:12px 16px;border:2px solid #e5e7eb;border-radius:12px;
-  font-size:.95rem;font-family:'Nunito',sans-serif;outline:none;
-  transition:border .2s;width:100%;
-}
-.login-input:focus{border-color:var(--pink);}
-.login-input.error{border-color:var(--red);background:#fff5f5;}
-.login-btn{
-  width:100%;padding:14px;border:none;border-radius:12px;
-  background:linear-gradient(135deg,var(--pink-deep),var(--gold-dark));
-  color:white;font-family:'Nunito',sans-serif;font-weight:700;
-  font-size:1rem;cursor:pointer;margin-top:6px;
-  box-shadow:0 6px 20px rgba(219,39,119,.3);transition:all .2s;
-}
-.login-btn:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(219,39,119,.4);}
-.login-err{
-  background:#fee2e2;color:var(--red);border-radius:10px;
-  padding:10px 14px;font-size:.82rem;font-weight:600;
-  margin-bottom:14px;display:none;text-align:center;
-}
-.login-err.show{display:block;}
-.login-attempts{font-size:.72rem;color:var(--gray);text-align:center;margin-top:12px;}
-.pw-wrap{position:relative;}
-.pw-toggle{
-  position:absolute;right:12px;top:50%;transform:translateY(-50%);
-  background:none;border:none;cursor:pointer;font-size:1rem;color:var(--gray);
-}
-.login-locked{
-  background:#fef9c3;border:2px solid #fde68a;color:#92650a;
-  border-radius:12px;padding:14px;text-align:center;
-  font-size:.82rem;font-weight:600;display:none;margin-bottom:14px;
-}
-.login-locked.show{display:block;}
 </style>
 </head>
 <body>
-
-<!-- ====== LOGIN SCREEN ====== -->
-<div id="loginScreen">
-  <div class="login-box">
-    <div class="login-logo">👗 HMI Fashion</div>
-    <div class="login-sub">Admin Dashboard — Secure Login</div>
-
-    <div class="login-locked" id="loginLocked">
-      🔒 Too many failed attempts! <span id="lockTimer">30</span> seconds remaining.
-    </div>
-    <div class="login-err" id="loginErr">❌ Incorrect username or password!</div>
-
-    <div class="login-field">
-      <label>Username</label>
-      <input type="text" class="login-input" id="loginUser" placeholder="Admin username" autocomplete="username" onkeydown="if(event.key==='Enter')doLogin()">
-    </div>
-    <div class="login-field">
-      <label>Password</label>
-      <div class="pw-wrap">
-        <input type="password" class="login-input" id="loginPass" placeholder="Password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
-        <button class="pw-toggle" type="button" onclick="togglePw()" id="pwToggle">👁️</button>
-      </div>
-    </div>
-
-    <button class="login-btn" onclick="doLogin()" id="loginBtn">🔐 Login</button>
-    <div class="login-attempts" id="loginAttempts"></div>
-  </div>
-</div>
 
 <div class="topbar">
   <div class="topbar-logo">👗 HMI Fashion — Admin Dashboard</div>
@@ -256,7 +171,6 @@ textarea{resize:vertical;min-height:65px;}
     <span class="badge-count" id="totalCount">Loading...</span>
     <span class="badge-count" id="orderCountBadge" style="background:rgba(22,163,74,.4);cursor:pointer;" onclick="showSection('orders')">📦 0 Orders</span>
     <a href="index.html" class="topbar-link">🌐 Store Dekho</a>
-    <button onclick="doLogout()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:white;padding:6px 14px;border-radius:20px;font-family:'Nunito',sans-serif;font-weight:700;font-size:.82rem;cursor:pointer;transition:all .2s;" onmouseover="this.style.background='rgba(220,38,38,.5)'" onmouseout="this.style.background='rgba(255,255,255,.15)'">🚪 Logout</button>
   </div>
 </div>
 
@@ -429,7 +343,7 @@ textarea{resize:vertical;min-height:65px;}
               <input type="text" id="customSizeInput" placeholder="Custom size add karo (e.g. 44, 6-7Y)" style="flex:1;padding:8px 12px;font-size:.85rem;">
               <button type="button" class="btn btn-outline btn-sm" onclick="addCustomSize()">+ Add</button>
             </div>
-            <div style="font-size:.73rem;color:var(--gray);margin-top:5px;">☑ If no size is selected, the size option will not appear on the product.</div>
+            <div style="font-size:.73rem;color:var(--gray);margin-top:5px;">☑ Koi size nahi chunoge toh product mein size option nahi dikhega.</div>
           </div>
 
           <!-- COLORS -->
@@ -463,7 +377,7 @@ textarea{resize:vertical;min-height:65px;}
               <input type="color" id="customColorHex" value="#f97316" style="width:40px;height:38px;padding:2px;border:2px solid #e5e7eb;border-radius:8px;cursor:pointer;">
               <button type="button" class="btn btn-outline btn-sm" onclick="addCustomColor()">+ Add Colour</button>
             </div>
-            <div style="font-size:.73rem;color:var(--gray);margin-top:5px;">☑ If no colour is selected, the colour option will not appear on the product.</div>
+            <div style="font-size:.73rem;color:var(--gray);margin-top:5px;">☑ Koi colour nahi chunoge toh product mein colour option nahi dikhega.</div>
           </div>
 
           <div class="form-group full">
@@ -504,7 +418,7 @@ textarea{resize:vertical;min-height:65px;}
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
         <h2 style="font-family:'Playfair Display',serif;font-size:1.2rem;">📦 Orders Management</h2>
         <div style="display:flex;gap:8px;flex-wrap:wrap;">
-          <button class="btn btn-blue btn-sm" onclick="refreshOrdersFromGitHub()">🔄 Refresh</button>
+          <button class="btn btn-blue btn-sm" onclick="refreshFromGitHub()">🔄 Refresh from GitHub</button>
           <select class="filter-sel" id="orderStatusFilter" onchange="renderOrders()">
             <option value="all">All Orders</option>
             <option value="Pending">⏳ Pending</option>
@@ -534,8 +448,8 @@ textarea{resize:vertical;min-height:65px;}
         </div>
         <div id="emptyOrders" class="empty-state" style="display:none;">
           <div style="font-size:3rem;margin-bottom:10px;">📦</div>
-          <p>No orders yet</p>
-          <p style="font-size:.75rem;margin-top:6px;color:var(--gray)">Orders placed by customers will appear here</p>
+          <p>Abhi tak koi order nahi aaya</p>
+          <p style="font-size:.75rem;margin-top:6px;color:var(--gray)">Jab customer order karega, woh yahan dikhega</p>
         </div>
       </div>
     </div>
@@ -557,8 +471,8 @@ textarea{resize:vertical;min-height:65px;}
         <div style="font-size:1.4rem;flex-shrink:0;">✅</div>
         <div>
           <b>Admin aur Store directly linked hain!</b><br>
-          Add, edit or delete products here — the store updates automatically when refreshed. Changes reflect instantly when both files are open in the same browser.<br><br>
-          <b>For GitHub:</b> Click "Generate" → "Copy" → Paste into GitHub <code>products.js</code>.
+          Yahan koi bhi product add/edit/delete karo — store page refresh karne par automatically update ho jaega. Dono ek hi browser mein khule hain toh changes turant reflect hote hain.<br><br>
+          <b>GitHub ke liye:</b> Neeche "Generate" → "Copy" → GitHub <code>products.js</code> mein paste karo.
         </div>
       </div>
       <div class="card">
@@ -579,10 +493,10 @@ textarea{resize:vertical;min-height:65px;}
         <div class="card-title" style="margin-bottom:12px;">📖 GitHub Update Steps</div>
         <div style="font-size:.84rem;line-height:2.1;color:var(--dark);">
           <b>Step 1:</b> "Generate" dabao → "Copy" dabao<br>
-          <b>Step 2:</b> GitHub → your repo → open <code>products.js</code><br>
+          <b>Step 2:</b> GitHub → apna repo → <code>products.js</code> file open karo<br>
           <b>Step 3:</b> Pencil (Edit) icon dabao<br>
-          <b>Step 4:</b> Select all with Ctrl+A → Delete<br>
-          <b>Step 5:</b> Paste the copied content (Ctrl+V)<br>
+          <b>Step 4:</b> Ctrl+A karke sab select karo → Delete karo<br>
+          <b>Step 5:</b> Copied content paste karo (Ctrl+V)<br>
           <b>Step 6:</b> "Commit changes" → "Commit directly to main" → Done!<br>
           <b>Step 7:</b> ✅ 1-2 minute mein store live update ho jayega
         </div>
@@ -637,32 +551,12 @@ function loadProducts(){
     if(!saved) saveProducts();
   } catch(e){ products=[...SEED_PRODUCTS]; }
 }
-
-async function saveProducts(){
-  // 1. localStorage — instant
+function saveProducts(){
   try{
     localStorage.setItem(STORAGE_KEY,JSON.stringify(products));
-  }catch(e){}
+    // Store tab mein bhi automatically update ho jaega (storage event)
+  } catch(e){}
   updateCounts();
-  // 2. GitHub — cross-device sync
-  if(GH_ON){
-    try{
-      const r = await fetch(
-        `https://api.github.com/repos/${GH.owner}/${GH.repo}/contents/products.json`,
-        {headers:{'Authorization':'token '+GH.token,'Accept':'application/vnd.github.v3+json'},cache:'no-store'}
-      );
-      let sha = null;
-      if(r.ok){ const d=await r.json(); sha=d.sha; }
-      const content = btoa(unescape(encodeURIComponent(JSON.stringify({products},null,2))));
-      const body = {message:'products-update-'+Date.now(),content,committer:{name:'HMI Admin',email:'admin@hmi.in'}};
-      if(sha) body.sha=sha;
-      await fetch(
-        `https://api.github.com/repos/${GH.owner}/${GH.repo}/contents/products.json`,
-        {method:'PUT',headers:{'Authorization':'token '+GH.token,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},body:JSON.stringify(body)}
-      );
-      showToast('✅ Products saved to GitHub!','success');
-    }catch(e){ console.log('GitHub products save failed',e); }
-  }
 }
 function getNextId(){ return products.length>0?Math.max(...products.map(p=>p.id))+1:1; }
 
@@ -817,14 +711,14 @@ function saveProduct(){
     editingId=null;
     document.getElementById('formTitle').textContent='➕ Naya Product Add Karo';
     document.getElementById('cancelEdit').style.display='none';
-    showToast('✅ Product updated successfully!','success');
+    showToast('✅ Product update ho gaya!','success');
   } else {
     products.push({id:getNextId(),name,cat,price,old,badge,emoji,bg,desc,sizes,colors,
       rating:rating?parseFloat(rating):undefined,
       ratingCount:ratingCount?parseInt(ratingCount):undefined,
       qty:qty!==''?parseInt(qty):undefined,
       images:[...uploadedImages]});
-    showToast('✅ New product added successfully!','success');
+    showToast('✅ New product add ho gaya!','success');
   }
   saveProducts(); resetForm(); renderDashboard();
 }
@@ -869,10 +763,10 @@ function cancelEdit(){
 
 function deleteProduct(id){
   const p=products.find(x=>x.id===id);
-  if(!confirm(`Delete "${p?.name}"? This cannot be undone.`)) return;
+  if(!confirm(`"${p?.name}" delete karna chahte ho?`)) return;
   products=products.filter(p=>p.id!==id);
   saveProducts(); renderAllProducts(); renderDashboard();
-  showToast('🗑️ Product deleted successfully!','success');
+  showToast('🗑️ Product delete ho gaya!','success');
 }
 
 function resetForm(){
@@ -921,14 +815,14 @@ function addCustomSize(){
   const wrap = document.getElementById('sizeCheckboxes');
   // Check if already exists
   if([...wrap.querySelectorAll('input')].some(i=>i.value===val)){
-    showToast('This size already exists!','error'); return;
+    showToast('Yeh size pehle se hai!','error'); return;
   }
   const lbl = document.createElement('label');
   lbl.className = 'sz-check';
   lbl.innerHTML = `<input type="checkbox" value="${val}" checked> ${val}`;
   wrap.appendChild(lbl);
   document.getElementById('customSizeInput').value='';
-  showToast(`✅ Size "${val}" added!`,'success');
+  showToast(`✅ Size "${val}" add ho gaya!`,'success');
 }
 
 // Custom color add
@@ -938,14 +832,14 @@ function addCustomColor(){
   if(!name){ showToast('Color naam likho!','error'); return; }
   const wrap = document.getElementById('colorCheckboxes');
   if([...wrap.querySelectorAll('input')].some(i=>i.value===name)){
-    showToast('This colour already exists!','error'); return;
+    showToast('Yeh colour pehle se hai!','error'); return;
   }
   const lbl = document.createElement('label');
   lbl.className = 'col-check';
   lbl.innerHTML = `<input type="checkbox" value="${name}" data-hex="${hex}" checked> <span class="col-swatch" style="background:${hex}"></span> ${name}`;
   wrap.appendChild(lbl);
   document.getElementById('customColorName').value='';
-  showToast(`✅ Colour "${name}" added!`,'success');
+  showToast(`✅ Colour "${name}" add ho gaya!`,'success');
 }
 
 function generateExport(){
@@ -979,7 +873,7 @@ ${entries}
 
 function copyExport(){
   if(!exportContent){showToast('Pehle Generate dabao!','error');return;}
-  navigator.clipboard.writeText(exportContent).then(()=>showToast('📋 Copied! Paste into GitHub.','success'));
+  navigator.clipboard.writeText(exportContent).then(()=>showToast('📋 Copied! GitHub par paste karo.','success'));
 }
 
 function downloadExport(){
@@ -1002,10 +896,9 @@ function showToast(msg,type='success'){
 // =============================================
 // ORDERS MANAGEMENT
 // =============================================
-const ORDERS_KEY = 'hmi_orders';
 
 // =============================================
-// GITHUB CONFIG — Same as index.html mein bharo
+// GITHUB CONFIG
 // =============================================
 const GH = {
   owner: 'Parv-0627',
@@ -1013,7 +906,6 @@ const GH = {
   token: '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',
   file:  'orders.json'
 };
-const GH_ON = GH.token !== 'YOUR_GITHUB_TOKEN';
 
 async function ghRead(){
   try{
@@ -1028,45 +920,41 @@ async function ghRead(){
 async function ghWrite(orders,sha){
   try{
     const content=btoa(unescape(encodeURIComponent(JSON.stringify({orders},null,2))));
-    const body={message:'admin-orders-'+Date.now(),content,committer:{name:'HMI Admin',email:'admin@hmi.in'}};
+    const body={message:'admin-order-'+Date.now(),content,committer:{name:'HMI Admin',email:'admin@hmi.in'}};
     if(sha) body.sha=sha;
-    const r=await fetch(`https://api.github.com/repos/${GH.owner}/${GH.repo}/contents/${GH.file}`,
+    await fetch(`https://api.github.com/repos/${GH.owner}/${GH.repo}/contents/${GH.file}`,
       {method:'PUT',headers:{'Authorization':'token '+GH.token,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},body:JSON.stringify(body)});
-    return r.ok;
+    return true;
   }catch(e){return false;}
 }
 
-// Load orders: GitHub first, merge with localStorage
-async function loadOrdersAsync(){
-  let orders=[];
-  if(GH_ON){
-    const {orders:ghOrders}=await ghRead();
-    orders=ghOrders;
-    // Sync GitHub orders to localStorage
-    try{ localStorage.setItem(ORDERS_KEY,JSON.stringify(orders)); }catch(e){}
-  } else {
-    try{ orders=JSON.parse(localStorage.getItem(ORDERS_KEY)||'[]'); }catch(e){}
-  }
-  return orders;
-}
+const ORDERS_KEY = 'hmi_orders';
 
 function loadOrders(){
   try{ return JSON.parse(localStorage.getItem(ORDERS_KEY)||'[]'); }
   catch(e){ return []; }
 }
 
+async function refreshFromGitHub(){
+  try{
+    const {orders}=await ghRead();
+    if(orders.length>0 || true){
+      localStorage.setItem(ORDERS_KEY,JSON.stringify(orders));
+      updateOrderCounts();
+      renderOrders();
+      renderDashboard();
+      showToast('✅ '+orders.length+' orders loaded from GitHub!','success');
+    }
+  }catch(e){ showToast('❌ GitHub load failed','error'); }
+}
+
 async function saveOrdersData(orders){
-  // 1. localStorage
-  try{ localStorage.setItem(ORDERS_KEY, JSON.stringify(orders)); }catch(e){}
+  try{ localStorage.setItem(ORDERS_KEY,JSON.stringify(orders)); }catch(e){}
   updateOrderCounts();
-  // 2. GitHub
-  if(GH_ON){
-    try{
-      const {sha}=await ghRead();
-      const ok=await ghWrite(orders,sha);
-      if(ok) showToast('✅ Saved to GitHub!','success');
-    }catch(e){}
-  }
+  try{
+    const {sha}=await ghRead();
+    await ghWrite(orders,sha);
+  }catch(e){}
 }
 
 function updateOrderCounts(){
@@ -1131,30 +1019,17 @@ function openOrderDetail(orderNo){
   const dateStr = d.toLocaleDateString('en-IN',{day:'2-digit',month:'long',year:'numeric'});
   const timeStr = d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
 
-  // Status timestamps — track when each status was set
-  const statusTimes = o.statusTimes || {};
-  // Order placed time always from o.date
-  if(!statusTimes['Pending']) statusTimes['Pending'] = o.date;
-
   const statusSteps = ['Pending','Confirmed','Shipped','Delivered'];
   const curIdx = statusSteps.indexOf(o.status);
 
-  function fmtTime(ts){
-    if(!ts) return '';
-    const dt = new Date(ts);
-    return dt.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})
-      + ' at ' + dt.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
-  }
-
-  const timelineHtml = statusSteps.map((step,idx)=>{
-    const isDone = idx <= curIdx;
+  const timelineHtml = statusSteps.map((step,i)=>{
+    const isDone = i < curIdx || (o.status===step);
+    const isActive = o.status===step;
     const icons = {'Pending':'🕐','Confirmed':'✅','Shipped':'🚚','Delivered':'📬'};
-    const ts = isDone ? fmtTime(statusTimes[step]) : '';
     return `<div class="stl-step">
       <div class="stl-dot ${isDone?'done':''}">${isDone?icons[step]:'○'}</div>
       <div class="stl-label ${isDone?'done':''}">${step}</div>
-      ${ts ? `<div style="font-size:.58rem;color:var(--pink-deep);margin-top:2px;text-align:center;line-height:1.3;">${ts}</div>` : `<div style="font-size:.58rem;color:#d1d5db;margin-top:2px;">Pending</div>`}
-      <div class="stl-line ${idx<curIdx?'done':''}"></div>
+      <div class="stl-line ${i<curIdx?'done':''}"></div>
     </div>`;
   }).join('');
 
@@ -1163,7 +1038,7 @@ function openOrderDetail(orderNo){
       <div style="width:40px;height:40px;border-radius:8px;background:${item.bg||'#fce7f3'};display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0;">${item.emoji||'👗'}</div>
       <div style="flex:1;">
         <div style="font-weight:700;font-size:.85rem;">${item.name}</div>
-        <div style="font-size:.75rem;color:var(--gray);">${item.selSize?'Size: '+item.selSize:''}${item.selSize&&item.selColor?' · ':''}${item.selColor?'Colour: '+item.selColor:''}</div>
+        <div style="font-size:.75rem;color:var(--gray);">${item.selSize?'Size: '+item.selSize:''}${item.selSize&&item.selColor?' · ':''}${item.selColor?'Color: '+item.selColor:''}</div>
       </div>
       <div style="text-align:right;">
         <div style="font-weight:700;color:var(--pink-deep);">₹${(item.price*item.qty).toLocaleString()}</div>
@@ -1172,16 +1047,13 @@ function openOrderDetail(orderNo){
     </div>`).join('');
 
   const statusBtns = [
-    {s:'Confirmed', label:'✅ Confirm',       cls:'s-confirmed'},
-    {s:'Shipped',   label:'🚚 Mark Shipped',   cls:'s-shipped'},
-    {s:'Delivered', label:'📬 Mark Delivered', cls:'s-delivered'},
-    {s:'Cancelled', label:'❌ Cancel',         cls:'s-cancelled'},
+    {s:'Confirmed',label:'✅ Confirm',cls:'s-confirmed'},
+    {s:'Shipped',label:'🚚 Mark Shipped',cls:'s-shipped'},
+    {s:'Delivered',label:'📬 Mark Delivered',cls:'s-delivered'},
+    {s:'Cancelled',label:'❌ Cancel',cls:'s-cancelled'},
   ].filter(b=>b.s!==o.status).map(b=>
     `<button class="status-btn ${b.cls}" onclick="updateOrderStatus('${o.orderNo}','${b.s}')">${b.label}</button>`
   ).join('');
-
-  const statusCls = {Pending:'os-pending',Confirmed:'os-confirmed',Shipped:'os-shipped',Delivered:'os-delivered',Cancelled:'os-cancelled'}[o.status]||'os-pending';
-  const statusEmoji = {Pending:'⏳',Confirmed:'✅',Shipped:'🚚',Delivered:'📬',Cancelled:'❌'}[o.status]||'⏳';
 
   document.getElementById('orderDetailContent').innerHTML = `
     <div style="margin-bottom:16px;">
@@ -1190,15 +1062,17 @@ function openOrderDetail(orderNo){
           <div style="font-size:1.1rem;font-weight:800;color:var(--pink-deep);">${o.orderNo}</div>
           <div style="font-size:.78rem;color:var(--gray);">${dateStr} at ${timeStr}</div>
         </div>
-        <span class="${statusCls}" style="font-size:.8rem;padding:5px 14px;">${statusEmoji} ${o.status}</span>
+        <span class="${{Pending:'os-pending',Confirmed:'os-confirmed',Shipped:'os-shipped',Delivered:'os-delivered',Cancelled:'os-cancelled'}[o.status]||'os-pending'} " style="font-size:.8rem;padding:5px 14px;">
+          ${'⏳✅🚚📬❌'.split('')[['Pending','Confirmed','Shipped','Delivered','Cancelled'].indexOf(o.status)]||'⏳'} ${o.status}
+        </span>
       </div>
     </div>
 
     <!-- STATUS TIMELINE -->
     ${o.status!=='Cancelled'?`<div style="background:#fff9fb;border-radius:12px;padding:14px;margin-bottom:16px;border:1.5px solid var(--pink-light);">
-      <div style="font-size:.72rem;font-weight:800;text-transform:uppercase;color:var(--gray);letter-spacing:1px;margin-bottom:12px;">Order Progress</div>
+      <div style="font-size:.72rem;font-weight:800;text-transform:uppercase;color:var(--gray);letter-spacing:1px;margin-bottom:10px;">Order Progress</div>
       <div class="status-timeline">${timelineHtml}</div>
-    </div>`:'<div style="background:#fee2e2;border:2px solid #fca5a5;border-radius:12px;padding:14px;text-align:center;color:#dc2626;font-weight:700;margin-bottom:16px;">❌ This order has been cancelled.</div>'}
+    </div>`:''}
 
     <!-- UPDATE STATUS BUTTONS -->
     <div style="margin-bottom:16px;">
@@ -1209,14 +1083,14 @@ function openOrderDetail(orderNo){
     <!-- CUSTOMER INFO -->
     <div style="background:#f8fafc;border-radius:12px;padding:14px;margin-bottom:14px;">
       <div style="font-size:.72rem;font-weight:800;text-transform:uppercase;color:var(--gray);letter-spacing:1px;margin-bottom:10px;">👤 Customer Details</div>
-      <div style="font-size:.85rem;line-height:2.1;">
+      <div style="font-size:.85rem;line-height:2;">
         <b>Name:</b> ${o.customerName||'—'}<br>
         <b>Phone:</b> <a href="tel:${o.customerPhone}" style="color:var(--pink-deep);">${o.customerPhone||'—'}</a><br>
         <b>Address:</b> ${o.address||'—'}<br>
         <b>Payment:</b> ${o.payMethod||'—'}
       </div>
       <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
-        <a href="https://wa.me/91${o.customerPhone}?text=Hello%20${encodeURIComponent(o.customerName||'')}!%20Your%20order%20${o.orderNo}%20status%20has%20been%20updated%20to:%20${o.status}."
+        <a href="https://wa.me/91${o.customerPhone}?text=Hello%20${encodeURIComponent(o.customerName||'')}!%20Your%20order%20${o.orderNo}%20status%20update%20karein."
            target="_blank" style="background:#25d366;color:white;padding:7px 14px;border-radius:8px;font-weight:700;font-size:.78rem;text-decoration:none;display:inline-flex;align-items:center;gap:5px;">
           💬 WhatsApp
         </a>
@@ -1260,28 +1134,30 @@ function updateOrderStatus(orderNo, newStatus){
   if(idx<0) return;
   orders[idx].status = newStatus;
   orders[idx].statusUpdatedAt = Date.now();
-  // Save timestamp for this specific status
-  if(!orders[idx].statusTimes) orders[idx].statusTimes = {};
-  if(!orders[idx].statusTimes['Pending']) orders[idx].statusTimes['Pending'] = orders[idx].date;
-  orders[idx].statusTimes[newStatus] = Date.now();
+  if(!orders[idx].statusTimes) orders[idx].statusTimes={};
+  if(!orders[idx].statusTimes['Pending']) orders[idx].statusTimes['Pending']=orders[idx].date;
+  orders[idx].statusTimes[newStatus]=Date.now();
   saveOrdersData(orders);
-  showToast(`✅ Order ${orderNo} marked as ${newStatus}!`, 'success');
+  showToast(`✅ Order ${orderNo} → ${newStatus}!`,'success');
+  // Re-render detail modal with updated data
   openOrderDetail(orderNo);
+  // Re-render table in background
   renderOrders();
+  // Update dashboard counts
   renderDashboard();
 }
 
 function deleteOrder(orderNo){
-  if(!confirm(`Delete Order ${orderNo}? This cannot be undone.`)) return;
+  if(!confirm(`Order ${orderNo} delete karna chahte ho?`)) return;
   const orders = loadOrders().filter(o=>o.orderNo!==orderNo);
   saveOrdersData(orders);
   renderOrders();
   renderDashboard();
-  showToast('🗑️ Order deleted successfully!','success');
+  showToast('🗑️ Order delete ho gaya!','success');
 }
 
 function clearAllOrders(){
-  if(!confirm('Delete all orders? This cannot be undone!')) return;
+  if(!confirm('Saare orders delete karna chahte ho? Yeh wapas nahi aayenge!')) return;
   localStorage.removeItem(ORDERS_KEY);
   updateOrderCounts();
   renderOrders();
@@ -1296,186 +1172,16 @@ window.addEventListener('storage', function(e){
     renderDashboard();
     const ordersVisible = document.getElementById('sec-orders')?.style.display!=='none';
     if(ordersVisible) renderOrders();
-    showToast('🔔 New order received!','success');
+    showToast('🔔 Naya order aaya!','success');
   }
 });
 
-// ====== LOGIN SYSTEM ======
-// Credentials — change karne ke liye yahan update karo
-const ADMIN_CREDENTIALS = [
-  { user: 'admin',    pass: 'HMI@2024' },
-  { user: 'hmifashion', pass: 'Fashion@123' }
-];
-
-const MAX_ATTEMPTS = 5;
-const LOCK_SECONDS = 30;
-const SESSION_KEY = 'hmi_admin_session';
-
-let loginAttempts = parseInt(sessionStorage.getItem('hmi_login_attempts')||'0');
-let lockUntil = parseInt(sessionStorage.getItem('hmi_lock_until')||'0');
-
-function checkSession(){
-  const session = sessionStorage.getItem(SESSION_KEY);
-  if(session === 'authenticated'){
-    document.getElementById('loginScreen').style.display = 'none';
-    return true;
-  }
-  // Check if locked
-  if(Date.now() < lockUntil){
-    startLockTimer();
-  }
-  updateAttemptsDisplay();
-  // Focus username field
-  setTimeout(()=>{ const u=document.getElementById('loginUser'); if(u)u.focus(); }, 300);
-  return false;
-}
-
-function doLogin(){
-  const now = Date.now();
-  // Check lock
-  if(now < lockUntil){
-    showLoginErr('🔒 Account is locked. Please wait for the timer.');
-    return;
-  }
-
-  const user = document.getElementById('loginUser').value.trim();
-  const pass = document.getElementById('loginPass').value;
-
-  if(!user || !pass){
-    showLoginErr('❌ Please enter both username and password!');
-    shakeInputs(); return;
-  }
-
-  const valid = ADMIN_CREDENTIALS.some(c => c.user === user && c.pass === pass);
-
-  if(valid){
-    // Success
-    loginAttempts = 0;
-    sessionStorage.setItem('hmi_login_attempts','0');
-    sessionStorage.removeItem('hmi_lock_until');
-    sessionStorage.setItem(SESSION_KEY, 'authenticated');
-
-    // Animate out
-    const box = document.querySelector('.login-box');
-    box.style.transform = 'scale(1.05)';
-    box.style.opacity = '0';
-    box.style.transition = 'all .4s ease';
-    setTimeout(()=>{
-      document.getElementById('loginScreen').style.display = 'none';
-      showToast('✅ ✅ Welcome to HMI Fashion Admin!', 'success');
-    }, 400);
-  } else {
-    // Failed
-    loginAttempts++;
-    sessionStorage.setItem('hmi_login_attempts', loginAttempts);
-    const remaining = MAX_ATTEMPTS - loginAttempts;
-
-    if(loginAttempts >= MAX_ATTEMPTS){
-      lockUntil = Date.now() + LOCK_SECONDS * 1000;
-      sessionStorage.setItem('hmi_lock_until', lockUntil);
-      loginAttempts = 0;
-      sessionStorage.setItem('hmi_login_attempts','0');
-      showLoginErr('');
-      startLockTimer();
-    } else {
-      showLoginErr(`❌ Incorrect username or password! ${remaining} attempt${remaining>1?'s':''} remaining hain.`);
-      shakeInputs();
-    }
-    updateAttemptsDisplay();
-  }
-}
-
-function startLockTimer(){
-  const lockedEl = document.getElementById('loginLocked');
-  const timerEl = document.getElementById('lockTimer');
-  const btnEl = document.getElementById('loginBtn');
-  lockedEl.classList.add('show');
-  document.getElementById('loginErr').classList.remove('show');
-  if(btnEl){ btnEl.disabled=true; btnEl.style.opacity='.5'; }
-
-  const interval = setInterval(()=>{
-    const left = Math.ceil((lockUntil - Date.now()) / 1000);
-    if(left <= 0){
-      clearInterval(interval);
-      lockedEl.classList.remove('show');
-      if(btnEl){ btnEl.disabled=false; btnEl.style.opacity='1'; }
-      lockUntil = 0;
-      sessionStorage.removeItem('hmi_lock_until');
-      updateAttemptsDisplay();
-    } else {
-      if(timerEl) timerEl.textContent = left;
-    }
-  }, 1000);
-}
-
-function showLoginErr(msg){
-  const el = document.getElementById('loginErr');
-  el.textContent = msg;
-  if(msg){ el.classList.add('show'); }
-  else { el.classList.remove('show'); }
-}
-
-function shakeInputs(){
-  ['loginUser','loginPass'].forEach(id=>{
-    const el = document.getElementById(id);
-    if(el){
-      el.classList.add('error');
-      el.style.animation = 'shake .4s ease';
-      setTimeout(()=>{ el.classList.remove('error'); el.style.animation=''; }, 1500);
-    }
-  });
-}
-
-function updateAttemptsDisplay(){
-  const el = document.getElementById('loginAttempts');
-  if(!el) return;
-  if(loginAttempts > 0){
-    el.textContent = `${loginAttempts} incorrect attempt${loginAttempts>1?'s':''} — ${MAX_ATTEMPTS-loginAttempts} remaining`;
-  } else {
-    el.textContent = '';
-  }
-}
-
-function togglePw(){
-  const inp = document.getElementById('loginPass');
-  const btn = document.getElementById('pwToggle');
-  if(inp.type==='password'){ inp.type='text'; btn.textContent='🙈'; }
-  else { inp.type='password'; btn.textContent='👁️'; }
-}
-
-function doLogout(){
-  sessionStorage.removeItem(SESSION_KEY);
-  window.location.reload();
-}
-
-// Add shake animation
-const shakeStyle = document.createElement('style');
-shakeStyle.textContent = `@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}`;
-document.head.appendChild(shakeStyle);
-
-async function refreshOrdersFromGitHub(){
-  showToast('🔄 Loading orders from GitHub...','success');
-  const orders = await loadOrdersAsync();
-  try{ localStorage.setItem(ORDERS_KEY,JSON.stringify(orders)); }catch(e){}
-  updateOrderCounts();
-  renderOrders();
-  renderDashboard();
-  showToast(`✅ ${orders.length} orders loaded!`,'success');
-}
-
 // INIT
-if(checkSession()){
-  loadProducts();
-  renderDashboard();
-  updateCounts();
-  updateOrderCounts();
-  // Auto-load orders from GitHub on startup
-  if(GH_ON) setTimeout(refreshOrdersFromGitHub, 500);
-} else {
-  loadProducts();
-  updateCounts();
-  updateOrderCounts();
-}
+loadProducts();
+renderDashboard();
+updateCounts();
+refreshFromGitHub();
+updateOrderCounts();
 </script>
 </body>
 </html>
