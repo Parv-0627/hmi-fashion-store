@@ -232,6 +232,51 @@ nav ul li a:hover{color:var(--pink-deep);}
 .color-name-tag{font-size:.72rem;color:var(--gray);font-weight:600;}
 .cart-variant-tag{font-size:.7rem;background:var(--pink-light);color:var(--pink-deep);padding:2px 8px;border-radius:8px;display:inline-block;margin-top:3px;margin-right:3px;font-weight:700;}
 
+/* PRODUCT DETAIL MODAL */
+.pdp-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:2000;display:none;align-items:flex-end;justify-content:center;padding:0;backdrop-filter:blur(4px);}
+.pdp-overlay.open{display:flex;}
+@media(min-width:700px){.pdp-overlay{align-items:center;padding:20px;}}
+.pdp-modal{background:white;width:100%;max-width:860px;max-height:92vh;border-radius:24px 24px 0 0;display:flex;flex-direction:column;overflow:hidden;transform:translateY(100%);transition:transform .38s cubic-bezier(.32,1.2,.42,1);box-shadow:0 -20px 60px rgba(0,0,0,.2);}
+@media(min-width:700px){.pdp-modal{border-radius:24px;transform:scale(.92) translateY(20px);}}
+.pdp-overlay.open .pdp-modal{transform:translateY(0);}
+@media(min-width:700px){.pdp-overlay.open .pdp-modal{transform:scale(1) translateY(0);}}
+.pdp-inner{display:flex;flex-direction:column;overflow-y:auto;flex:1;}
+@media(min-width:700px){.pdp-inner{flex-direction:row;overflow:hidden;}}
+/* Image pane */
+.pdp-img-pane{background:#f8f0f5;position:relative;min-height:280px;flex-shrink:0;}
+@media(min-width:700px){.pdp-img-pane{width:42%;min-height:unset;overflow-y:auto;}}
+.pdp-main-img{width:100%;height:280px;object-fit:cover;display:block;}
+@media(min-width:700px){.pdp-main-img{height:360px;}}
+.pdp-emoji-big{display:flex;align-items:center;justify-content:center;height:280px;font-size:7rem;}
+@media(min-width:700px){.pdp-emoji-big{height:360px;}}
+.pdp-thumbs{display:flex;gap:8px;padding:10px 14px;overflow-x:auto;background:white;}
+.pdp-thumb{width:56px;height:56px;border-radius:8px;object-fit:cover;cursor:pointer;border:2px solid #e5e7eb;transition:border-color .2s;flex-shrink:0;}
+.pdp-thumb.active{border-color:var(--pink-deep);}
+.pdp-badge-big{position:absolute;top:14px;left:14px;background:linear-gradient(135deg,var(--pink-deep),var(--gold));color:white;font-size:.72rem;font-weight:700;padding:4px 12px;border-radius:20px;}
+/* Info pane */
+.pdp-info{padding:20px 20px 24px;flex:1;overflow-y:auto;}
+@media(min-width:700px){.pdp-info{padding:28px 28px 28px;}}
+.pdp-close{position:absolute;top:14px;right:14px;background:white;border:none;width:34px;height:34px;border-radius:50%;font-size:1.1rem;cursor:pointer;color:var(--gray);box-shadow:0 2px 10px rgba(0,0,0,.15);display:flex;align-items:center;justify-content:center;z-index:5;}
+.pdp-cat{font-size:.72rem;font-weight:700;color:var(--pink-deep);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;}
+.pdp-name{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;color:var(--dark);margin-bottom:10px;line-height:1.3;}
+.pdp-rating-row{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
+.pdp-stars .star-full,.pdp-stars .star-half{color:#f59e0b;font-size:1rem;}
+.pdp-stars .star-empty{color:#d1d5db;font-size:1rem;}
+.pdp-rating-num{font-size:.9rem;font-weight:700;color:#92650a;}
+.pdp-rating-count{font-size:.8rem;color:var(--gray);}
+.pdp-price-row{display:flex;align-items:center;gap:10px;margin-bottom:6px;flex-wrap:wrap;}
+.pdp-price{font-size:1.8rem;font-weight:800;color:var(--pink-deep);}
+.pdp-old{font-size:1rem;color:var(--gray);text-decoration:line-through;}
+.pdp-disc{background:#dcfce7;color:#16a34a;font-size:.78rem;font-weight:700;padding:3px 10px;border-radius:20px;}
+.pdp-qty-tag{font-size:.72rem;font-weight:700;padding:3px 10px;border-radius:20px;}
+.pdp-desc{font-size:.9rem;color:var(--gray);line-height:1.7;margin-bottom:18px;border-top:1px solid #f1f5f9;padding-top:14px;}
+.pdp-section-label{font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--gray);margin-bottom:8px;}
+.pdp-actions{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap;}
+.pdp-add-cart{flex:2;background:linear-gradient(135deg,var(--pink-deep),var(--gold));color:white;border:none;padding:14px;border-radius:14px;font-weight:700;font-size:.95rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .3s;min-width:150px;}
+.pdp-add-cart:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(219,39,119,.35);}
+.pdp-wa-btn{flex:1;background:#dcfce7;color:#16a34a;border:2px solid #86efac;padding:14px;border-radius:14px;font-weight:700;font-size:.88rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .3s;text-decoration:none;min-width:100px;}
+.pdp-wa-btn:hover{background:#bbf7d0;}
+
 /* KIDS */
 .kids-section{background:linear-gradient(135deg,#fce7f3,#fff9ee);padding:65px 5%;}
 .kids-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;max-width:1100px;margin:0 auto;}
@@ -596,6 +641,43 @@ footer{background:var(--dark);color:white;padding:55px 5% 25px;}
 
 <a href="https://wa.me/919560291565" class="whatsapp-float">💬</a>
 
+<!-- PRODUCT DETAIL MODAL -->
+<div class="pdp-overlay" id="pdpOverlay" onclick="closePDP(event)">
+  <div class="pdp-modal" id="pdpModal">
+    <button class="pdp-close" onclick="closePDPBtn()">✕</button>
+    <div class="pdp-inner">
+      <!-- Image pane -->
+      <div class="pdp-img-pane" id="pdpImgPane">
+        <div id="pdpMainImg"></div>
+        <div class="pdp-thumbs" id="pdpThumbs"></div>
+        <div class="pdp-badge-big" id="pdpBadge"></div>
+      </div>
+      <!-- Info pane -->
+      <div class="pdp-info">
+        <div class="pdp-cat" id="pdpCat"></div>
+        <div class="pdp-name" id="pdpName"></div>
+        <div class="pdp-rating-row" id="pdpRatingRow"></div>
+        <div class="pdp-price-row" id="pdpPriceRow"></div>
+        <div class="pdp-desc" id="pdpDesc"></div>
+        <!-- Sizes -->
+        <div id="pdpSizeWrap" style="margin-bottom:14px;display:none">
+          <div class="pdp-section-label">Size</div>
+          <div class="size-opts" id="pdpSizes"></div>
+        </div>
+        <!-- Colors -->
+        <div id="pdpColorWrap" style="margin-bottom:14px;display:none">
+          <div class="pdp-section-label">Colour</div>
+          <div class="color-opts-store" id="pdpColors"></div>
+        </div>
+        <div class="pdp-actions">
+          <button class="pdp-add-cart" id="pdpAddCart">🛒 Add to Cart</button>
+          <a class="pdp-wa-btn" id="pdpWaBtn" target="_blank">💬 WhatsApp</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
 // =============================================
 // SHARED PRODUCTS — Admin se sync hota hai
@@ -604,31 +686,49 @@ footer{background:var(--dark);color:white;padding:55px 5% 25px;}
 const HMI_STORAGE_KEY = 'hmi_products_shared';
 
 const DEFAULT_PRODUCTS = [
-  {id:1,name:"Banarasi Silk Saree",cat:"Saree",emoji:"🥻",bg:"#fce7f3",price:2499,old:3999,badge:"Bestseller",desc:"Pure Banarasi silk with golden zari work",images:[]},
-  {id:2,name:"Chiffon Printed Saree",cat:"Saree",emoji:"🌸",bg:"#fef9c3",price:1199,old:1999,badge:"New 2026",desc:"Light & breezy chiffon with floral prints",images:[]},
-  {id:3,name:"Cotton Handloom Saree",cat:"Saree",emoji:"🪡",bg:"#dcfce7",price:899,old:1499,badge:"Sale",desc:"Comfortable daily wear cotton saree",images:[]},
-  {id:4,name:"Designer Anarkali Suit",cat:"Suit",emoji:"👗",bg:"#ede9fe",price:1899,old:2999,badge:"Popular",desc:"Elegant Anarkali with embroidery work",images:[]},
-  {id:5,name:"Cotton Salwar Set",cat:"Suit",emoji:"🌿",bg:"#dcfce7",price:999,old:1499,badge:"Sale",desc:"Comfortable daily wear salwar set",images:[]},
-  {id:6,name:"Punjabi Patiala Suit",cat:"Suit",emoji:"💐",bg:"#fce7f3",price:1299,old:1999,badge:"New 2026",desc:"Vibrant Punjabi style Patiala with dupatta",images:[]},
-  {id:7,name:"Embroidered Kurti",cat:"Kurti",emoji:"👘",bg:"#fff0f8",price:699,old:1099,badge:"New 2026",desc:"Beautiful hand embroidered kurti",images:[]},
-  {id:8,name:"Printed Rayon Kurti",cat:"Kurti",emoji:"🌺",bg:"#fef3c7",price:499,old:799,badge:"Sale",desc:"Trendy rayon kurti with digital print",images:[]},
-  {id:9,name:"Long Flared Kurti",cat:"Kurti",emoji:"🌼",bg:"#ede9fe",price:849,old:1299,badge:"Popular",desc:"Stylish long flared kurti for all occasions",images:[]},
-  {id:10,name:"Bridal Lehenga",cat:"Lehenga",emoji:"💃",bg:"#fce7f3",price:7999,old:12999,badge:"Premium",desc:"Stunning bridal lehenga with heavy zari work",images:[]},
-  {id:11,name:"Party Wear Lehenga",cat:"Lehenga",emoji:"✨",bg:"#ede9fe",price:3499,old:5999,badge:"Popular",desc:"Gorgeous party wear lehenga with sequence",images:[]},
-  {id:12,name:"Casual Lehenga Skirt",cat:"Lehenga",emoji:"🎀",bg:"#fef9c3",price:1599,old:2499,badge:"New 2026",desc:"Lightweight casual lehenga skirt with kurti",images:[]},
-  {id:13,name:"Ethnic Kurta Pajama",cat:"Men",emoji:"👔",bg:"#dbeafe",price:1299,old:1999,badge:"New 2026",desc:"Classic ethnic kurta pajama set",images:[]},
-  {id:14,name:"Sherwani Set",cat:"Men",emoji:"🤵",bg:"#fef9c3",price:5999,old:8999,badge:"Premium",desc:"Royal sherwani set for weddings & parties",images:[]},
-  {id:15,name:"Nehru Jacket Set",cat:"Men",emoji:"🎩",bg:"#dcfce7",price:1899,old:2999,badge:"Popular",desc:"Stylish Nehru jacket with kurta",images:[]},
-  {id:16,name:"Girls Lehenga Choli",cat:"Kids",emoji:"🎀",bg:"#fce7f3",price:899,old:1499,badge:"Cute",desc:"Adorable lehenga choli for little girls",images:[]},
-  {id:17,name:"Boys Kurta Set",cat:"Kids",emoji:"🧒",bg:"#dbeafe",price:699,old:999,badge:"New 2026",desc:"Cute ethnic kurta set for boys",images:[]},
-  {id:18,name:"Kids Party Frock",cat:"Kids",emoji:"👸",bg:"#ede9fe",price:799,old:1299,badge:"Popular",desc:"Beautiful party frock for girls",images:[]},
-  {id:19,name:"Kids Casual Set",cat:"Kids",emoji:"🌈",bg:"#dcfce7",price:549,old:899,badge:"Sale",desc:"Comfortable everyday casual set for kids",images:[]}
+  {id:1,name:"Banarasi Silk Saree",cat:"Saree",emoji:"🥻",bg:"#fce7f3",price:2499,old:3999,badge:"Bestseller",desc:"Pure Banarasi silk with golden zari work. Ideal for weddings & special occasions.",images:[],rating:4.8,ratingCount:312,qty:18},
+  {id:2,name:"Chiffon Printed Saree",cat:"Saree",emoji:"🌸",bg:"#fef9c3",price:1199,old:1999,badge:"New 2026",desc:"Light & breezy chiffon with floral prints. Perfect for summer & casual wear.",images:[],rating:4.3,ratingCount:89,qty:34},
+  {id:3,name:"Cotton Handloom Saree",cat:"Saree",emoji:"🪡",bg:"#dcfce7",price:899,old:1499,badge:"Sale",desc:"Comfortable daily wear cotton saree. Breathable fabric for everyday use.",images:[],rating:4.5,ratingCount:156,qty:4},
+  {id:4,name:"Designer Anarkali Suit",cat:"Suit",emoji:"👗",bg:"#ede9fe",price:1899,old:2999,badge:"Popular",desc:"Elegant Anarkali with embroidery work. A classic look for festive occasions.",images:[],rating:4.6,ratingCount:203,qty:22},
+  {id:5,name:"Cotton Salwar Set",cat:"Suit",emoji:"🌿",bg:"#dcfce7",price:999,old:1499,badge:"Sale",desc:"Comfortable daily wear salwar set. Soft cotton fabric, easy to wear.",images:[],rating:4.2,ratingCount:67,qty:45},
+  {id:6,name:"Punjabi Patiala Suit",cat:"Suit",emoji:"💐",bg:"#fce7f3",price:1299,old:1999,badge:"New 2026",desc:"Vibrant Punjabi style Patiala with dupatta. Colorful & festive ethnic wear.",images:[],rating:4.4,ratingCount:128,qty:3},
+  {id:7,name:"Embroidered Kurti",cat:"Kurti",emoji:"👘",bg:"#fff0f8",price:699,old:1099,badge:"New 2026",desc:"Beautiful hand embroidered kurti. Intricate threadwork for a premium look.",images:[],rating:4.7,ratingCount:241,qty:29},
+  {id:8,name:"Printed Rayon Kurti",cat:"Kurti",emoji:"🌺",bg:"#fef3c7",price:499,old:799,badge:"Sale",desc:"Trendy rayon kurti with digital print. Lightweight & stylish for daily wear.",images:[],rating:4.1,ratingCount:54,qty:60},
+  {id:9,name:"Long Flared Kurti",cat:"Kurti",emoji:"🌼",bg:"#ede9fe",price:849,old:1299,badge:"Popular",desc:"Stylish long flared kurti for all occasions. Elegant silhouette with beautiful drape.",images:[],rating:4.5,ratingCount:179,qty:0},
+  {id:10,name:"Bridal Lehenga",cat:"Lehenga",emoji:"💃",bg:"#fce7f3",price:7999,old:12999,badge:"Premium",desc:"Stunning bridal lehenga with heavy zari work. The perfect outfit for your special day.",images:[],rating:4.9,ratingCount:88,qty:7},
+  {id:11,name:"Party Wear Lehenga",cat:"Lehenga",emoji:"✨",bg:"#ede9fe",price:3499,old:5999,badge:"Popular",desc:"Gorgeous party wear lehenga with sequence. Shimmering embellishments for a glamorous look.",images:[],rating:4.6,ratingCount:134,qty:15},
+  {id:12,name:"Casual Lehenga Skirt",cat:"Lehenga",emoji:"🎀",bg:"#fef9c3",price:1599,old:2499,badge:"New 2026",desc:"Lightweight casual lehenga skirt with kurti. Easy to wear for festive occasions.",images:[],rating:4.3,ratingCount:72,qty:27},
+  {id:13,name:"Ethnic Kurta Pajama",cat:"Men",emoji:"👔",bg:"#dbeafe",price:1299,old:1999,badge:"New 2026",desc:"Classic ethnic kurta pajama set. Comfortable & stylish for all occasions.",images:[],rating:4.4,ratingCount:96,qty:38},
+  {id:14,name:"Sherwani Set",cat:"Men",emoji:"🤵",bg:"#fef9c3",price:5999,old:8999,badge:"Premium",desc:"Royal sherwani set for weddings & parties. Premium fabric with intricate embroidery.",images:[],rating:4.8,ratingCount:61,qty:5},
+  {id:15,name:"Nehru Jacket Set",cat:"Men",emoji:"🎩",bg:"#dcfce7",price:1899,old:2999,badge:"Popular",desc:"Stylish Nehru jacket with kurta. A sophisticated look for festive wear.",images:[],rating:4.5,ratingCount:113,qty:19},
+  {id:16,name:"Girls Lehenga Choli",cat:"Kids",emoji:"🎀",bg:"#fce7f3",price:899,old:1499,badge:"Cute",desc:"Adorable lehenga choli for little girls. Perfect for weddings & celebrations.",images:[],rating:4.7,ratingCount:198,qty:23},
+  {id:17,name:"Boys Kurta Set",cat:"Kids",emoji:"🧒",bg:"#dbeafe",price:699,old:999,badge:"New 2026",desc:"Cute ethnic kurta set for boys. Comfortable & festive for special occasions.",images:[],rating:4.4,ratingCount:82,qty:41},
+  {id:18,name:"Kids Party Frock",cat:"Kids",emoji:"👸",bg:"#ede9fe",price:799,old:1299,badge:"Popular",desc:"Beautiful party frock for girls. Frilly design with stunning colors.",images:[],rating:4.6,ratingCount:167,qty:2},
+  {id:19,name:"Kids Casual Set",cat:"Kids",emoji:"🌈",bg:"#dcfce7",price:549,old:899,badge:"Sale",desc:"Comfortable everyday casual set for kids. Soft fabric, great for school & play.",images:[],rating:4.2,ratingCount:44,qty:55}
 ];
 
 function loadSharedProducts(){
   try {
     const saved = localStorage.getItem(HMI_STORAGE_KEY);
-    return saved ? JSON.parse(saved) : DEFAULT_PRODUCTS;
+    if(saved){
+      const parsed = JSON.parse(saved);
+      // Agar saved products mein rating nahi hai toh default se merge karo
+      const needsMerge = parsed.some(p => p.rating === undefined);
+      if(needsMerge){
+        const merged = parsed.map(p => {
+          const def = DEFAULT_PRODUCTS.find(d => d.id === p.id);
+          return {...(def||{}), ...p,
+            rating: p.rating !== undefined ? p.rating : (def ? def.rating : undefined),
+            ratingCount: p.ratingCount !== undefined ? p.ratingCount : (def ? def.ratingCount : undefined),
+            qty: p.qty !== undefined ? p.qty : (def ? def.qty : undefined),
+          };
+        });
+        try{ localStorage.setItem(HMI_STORAGE_KEY, JSON.stringify(merged)); }catch(e){}
+        return merged;
+      }
+      return parsed;
+    }
+    return DEFAULT_PRODUCTS;
   } catch(e){ return DEFAULT_PRODUCTS; }
 }
 
@@ -1046,7 +1146,7 @@ function renderProducts(list){
     }
 
     return `
-    <div class="product-card" id="pcard-${p.id}">
+    <div class="product-card" id="pcard-${p.id}" onclick="openPDP(${p.id})" style="cursor:pointer;">
       <div class="product-img" style="background:${p.bg||'#fce7f3'}">
         ${imgContent}
         <div class="product-badge">${p.badge||''}</div>
@@ -1065,9 +1165,7 @@ function renderProducts(list){
           <span class="price-old">₹${p.old.toLocaleString()}</span>
           <span class="price-discount">${disc(p.price,p.old)}</span>
         </div>
-        ${sizeHtml}
-        ${colorHtml}
-        <div class="product-btns">
+        <div class="product-btns" onclick="event.stopPropagation()">
           <button class="btn-cart" onclick="addToCartVariant(${p.id})">🛒 Add to Cart</button>
         </div>
       </div>
@@ -1145,6 +1243,162 @@ function showFlash(msg, color){
 setTimeout(()=>{
   document.getElementById('splash').classList.add('hide');
 }, 2500);
+
+// ===== PRODUCT DETAIL PAGE (PDP Modal) =====
+let pdpCurrentProduct = null;
+let pdpSelectedSize = null;
+let pdpSelectedColor = null;
+
+function openPDP(id){
+  const p = products.find(x=>x.id===id);
+  if(!p) return;
+  pdpCurrentProduct = p;
+  pdpSelectedSize = null;
+  pdpSelectedColor = null;
+
+  // Badge
+  const badge = document.getElementById('pdpBadge');
+  badge.textContent = p.badge||'';
+  badge.style.display = p.badge ? 'block' : 'none';
+
+  // Image
+  const mainImg = document.getElementById('pdpMainImg');
+  const thumbsWrap = document.getElementById('pdpThumbs');
+  if(p.images && p.images.length > 0){
+    mainImg.innerHTML = `<img src="${p.images[0]}" class="pdp-main-img" id="pdpActiveImg" alt="${p.name}">`;
+    if(p.images.length > 1){
+      thumbsWrap.innerHTML = p.images.map((src,i)=>
+        `<img src="${src}" class="pdp-thumb ${i===0?'active':''}" onclick="pdpChangeImg('${src}',this)" alt="img ${i+1}">`
+      ).join('');
+      thumbsWrap.style.display='flex';
+    } else {
+      thumbsWrap.style.display='none';
+    }
+  } else {
+    mainImg.innerHTML = `<div class="pdp-emoji-big" style="background:${p.bg||'#fce7f3'}">${p.emoji||'👗'}</div>`;
+    thumbsWrap.style.display='none';
+  }
+
+  // Category & Name
+  document.getElementById('pdpCat').textContent = p.cat;
+  document.getElementById('pdpName').textContent = p.name;
+
+  // Rating row
+  const ratingRow = document.getElementById('pdpRatingRow');
+  let rHtml = '';
+  if(p.rating){
+    rHtml += `<span class="pdp-stars">${renderStars(p.rating)}</span>`;
+    rHtml += `<span class="pdp-rating-num">${parseFloat(p.rating).toFixed(1)}</span>`;
+    if(p.ratingCount) rHtml += `<span class="pdp-rating-count">(${p.ratingCount.toLocaleString()} reviews)</span>`;
+  }
+  ratingRow.innerHTML = rHtml;
+
+  // Price row
+  const disc = Math.round((1-p.price/p.old)*100);
+  let priceHtml = `<span class="pdp-price">₹${p.price.toLocaleString()}</span>`;
+  priceHtml += `<span class="pdp-old">₹${p.old.toLocaleString()}</span>`;
+  priceHtml += `<span class="pdp-disc">${disc}% OFF</span>`;
+  // Qty tag
+  if(p.qty !== undefined){
+    if(p.qty===0) priceHtml += `<span class="pdp-qty-tag qty-out">Out of Stock</span>`;
+    else if(p.qty<=5) priceHtml += `<span class="pdp-qty-tag qty-low">Only ${p.qty} left!</span>`;
+    else priceHtml += `<span class="pdp-qty-tag qty-instock">In Stock</span>`;
+  }
+  document.getElementById('pdpPriceRow').innerHTML = priceHtml;
+
+  // Description
+  document.getElementById('pdpDesc').textContent = p.desc || 'Premium quality product from HMI Fashion Store.';
+
+  // Sizes
+  const sizeWrap = document.getElementById('pdpSizeWrap');
+  const sizesEl = document.getElementById('pdpSizes');
+  if(p.sizes && p.sizes.length > 0){
+    sizesEl.innerHTML = p.sizes.map(s=>
+      `<button class="size-btn" onclick="pdpSelectSize(this,'${s}')">${s}</button>`
+    ).join('');
+    sizeWrap.style.display='block';
+  } else {
+    sizeWrap.style.display='none';
+  }
+
+  // Colors
+  const colorWrap = document.getElementById('pdpColorWrap');
+  const colorsEl = document.getElementById('pdpColors');
+  if(p.colors && p.colors.length > 0){
+    colorsEl.innerHTML = p.colors.map(c=>`
+      <div style="text-align:center;">
+        <div class="color-dot" style="background:${c.hex}" title="${c.name}" onclick="pdpSelectColor(this,'${c.name}')"></div>
+        <div class="color-name-tag">${c.name}</div>
+      </div>`).join('');
+    colorWrap.style.display='block';
+  } else {
+    colorWrap.style.display='none';
+  }
+
+  // Buttons
+  const isOOS = p.qty === 0;
+  const addBtn = document.getElementById('pdpAddCart');
+  addBtn.disabled = isOOS;
+  addBtn.style.opacity = isOOS ? '.5' : '1';
+  addBtn.textContent = isOOS ? '❌ Out of Stock' : '🛒 Add to Cart';
+  addBtn.onclick = () => pdpAddToCart();
+
+  document.getElementById('pdpWaBtn').href =
+    `https://wa.me/${WA}?text=Hello%20HMI!%20I%20want%20*${encodeURIComponent(p.name)}*%20₹${p.price}`;
+
+  // Open modal
+  document.getElementById('pdpOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function pdpChangeImg(src, thumbEl){
+  document.getElementById('pdpActiveImg').src = src;
+  document.querySelectorAll('.pdp-thumb').forEach(t=>t.classList.remove('active'));
+  thumbEl.classList.add('active');
+}
+
+function pdpSelectSize(el, size){
+  document.querySelectorAll('#pdpSizes .size-btn').forEach(b=>b.classList.remove('selected'));
+  el.classList.add('selected');
+  pdpSelectedSize = size;
+}
+
+function pdpSelectColor(el, colorName){
+  document.querySelectorAll('#pdpColors .color-dot').forEach(d=>d.classList.remove('selected'));
+  el.classList.add('selected');
+  pdpSelectedColor = colorName;
+}
+
+function pdpAddToCart(){
+  const p = pdpCurrentProduct;
+  if(!p) return;
+
+  if(p.sizes && p.sizes.length > 0 && !pdpSelectedSize){
+    document.querySelectorAll('#pdpSizes .size-btn').forEach(b=>{ b.style.borderColor='#dc2626'; setTimeout(()=>b.style.borderColor='',1200); });
+    return;
+  }
+  if(p.colors && p.colors.length > 0 && !pdpSelectedColor){
+    document.querySelectorAll('#pdpColors .color-dot').forEach(d=>{ d.style.outline='2px solid #dc2626'; setTimeout(()=>d.style.outline='',1200); });
+    return;
+  }
+
+  const cartKey = `${p.id}_${pdpSelectedSize||''}_${pdpSelectedColor||''}`;
+  const ex = cart.find(x=>x.cartKey===cartKey);
+  if(ex){ ex.qty++; } else {
+    cart.push({...p, qty:1, cartKey, selSize:pdpSelectedSize||null, selColor:pdpSelectedColor||null});
+  }
+  updateCartCount();
+  showFlash('✅ Cart mein add ho gaya!', 'var(--pink-deep)');
+  closePDPBtn();
+}
+
+function closePDP(e){
+  if(e.target === document.getElementById('pdpOverlay')) closePDPBtn();
+}
+function closePDPBtn(){
+  document.getElementById('pdpOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
 
 renderProducts(products);
 </script>
