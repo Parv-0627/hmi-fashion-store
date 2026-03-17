@@ -504,6 +504,7 @@ textarea{resize:vertical;min-height:65px;}
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
         <h2 style="font-family:'Playfair Display',serif;font-size:1.2rem;">📦 Orders Management</h2>
         <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn btn-blue btn-sm" onclick="refreshOrdersFromGitHub()">🔄 Refresh</button>
           <select class="filter-sel" id="orderStatusFilter" onchange="renderOrders()">
             <option value="all">All Orders</option>
             <option value="Pending">⏳ Pending</option>
@@ -983,15 +984,69 @@ function showToast(msg,type='success'){
 // =============================================
 const ORDERS_KEY = 'hmi_orders';
 
+// =============================================
+// GITHUB CONFIG — Same as index.html mein bharo
+// =============================================
+const GH = {
+  owner: 'Parv-0627',
+  repo:  'hmi-fashion-store',
+  token: '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',
+  file:  'orders.json'
+};
+const GH_ON = GH.token !== 'YOUR_GITHUB_TOKEN';
+
+async function ghRead(){
+  try{
+    const r=await fetch(`https://api.github.com/repos/${GH.owner}/${GH.repo}/contents/${GH.file}`,
+      {headers:{'Authorization':'token '+GH.token,'Accept':'application/vnd.github.v3+json'},cache:'no-store'});
+    if(r.status===404) return {orders:[],sha:null};
+    const d=await r.json();
+    return {orders:JSON.parse(atob(d.content.replace(/\n/g,''))).orders||[],sha:d.sha};
+  }catch(e){return {orders:[],sha:null};}
+}
+
+async function ghWrite(orders,sha){
+  try{
+    const content=btoa(unescape(encodeURIComponent(JSON.stringify({orders},null,2))));
+    const body={message:'admin-orders-'+Date.now(),content,committer:{name:'HMI Admin',email:'admin@hmi.in'}};
+    if(sha) body.sha=sha;
+    const r=await fetch(`https://api.github.com/repos/${GH.owner}/${GH.repo}/contents/${GH.file}`,
+      {method:'PUT',headers:{'Authorization':'token '+GH.token,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},body:JSON.stringify(body)});
+    return r.ok;
+  }catch(e){return false;}
+}
+
+// Load orders: GitHub first, merge with localStorage
+async function loadOrdersAsync(){
+  let orders=[];
+  if(GH_ON){
+    const {orders:ghOrders}=await ghRead();
+    orders=ghOrders;
+    // Sync GitHub orders to localStorage
+    try{ localStorage.setItem(ORDERS_KEY,JSON.stringify(orders)); }catch(e){}
+  } else {
+    try{ orders=JSON.parse(localStorage.getItem(ORDERS_KEY)||'[]'); }catch(e){}
+  }
+  return orders;
+}
+
 function loadOrders(){
   try{ return JSON.parse(localStorage.getItem(ORDERS_KEY)||'[]'); }
   catch(e){ return []; }
 }
 
-function saveOrdersData(orders){
-  try{ localStorage.setItem(ORDERS_KEY, JSON.stringify(orders)); }
-  catch(e){}
+async function saveOrdersData(orders){
+  // 1. localStorage
+  try{ localStorage.setItem(ORDERS_KEY, JSON.stringify(orders)); }catch(e){}
   updateOrderCounts();
+  // 2. GitHub
+  if(GH_ON){
+    try{
+      const {sha}=await ghRead();
+      const ok=await ghWrite(orders,sha);
+      if(ok) showToast('✅ Saved to GitHub!','success');
+    }catch(e){}
+  }
 }
 
 function updateOrderCounts(){
@@ -1378,14 +1433,25 @@ const shakeStyle = document.createElement('style');
 shakeStyle.textContent = `@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}`;
 document.head.appendChild(shakeStyle);
 
+async function refreshOrdersFromGitHub(){
+  showToast('🔄 Loading orders from GitHub...','success');
+  const orders = await loadOrdersAsync();
+  try{ localStorage.setItem(ORDERS_KEY,JSON.stringify(orders)); }catch(e){}
+  updateOrderCounts();
+  renderOrders();
+  renderDashboard();
+  showToast(`✅ ${orders.length} orders loaded!`,'success');
+}
+
 // INIT
 if(checkSession()){
   loadProducts();
   renderDashboard();
   updateCounts();
   updateOrderCounts();
+  // Auto-load orders from GitHub on startup
+  if(GH_ON) setTimeout(refreshOrdersFromGitHub, 500);
 } else {
-  // Load in background so dashboard is ready after login
   loadProducts();
   updateCounts();
   updateOrderCounts();
