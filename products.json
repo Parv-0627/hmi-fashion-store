@@ -1,0 +1,27 @@
+bash
+
+cat /home/claude/products.json
+Output
+
+{"products":[
+  {"id":1,"name":"Banarasi Silk Saree","cat":"Saree","emoji":"🥻","bg":"#fce7f3","price":2499,"old":3999,"badge":"Bestseller","desc":"Pure Banarasi silk with golden zari work. Ideal for weddings & special occasions.","images":[],"rating":4.8,"ratingCount":312,"qty":18},
+  {"id":2,"name":"Chiffon Printed Saree","cat":"Saree","emoji":"🌸","bg":"#fef9c3","price":1199,"old":1999,"badge":"New 2026","desc":"Light & breezy chiffon with floral prints. Perfect for summer & casual wear.","images":[],"rating":4.3,"ratingCount":89,"qty":34},
+  {"id":3,"name":"Cotton Handloom Saree","cat":"Saree","emoji":"🪡","bg":"#dcfce7","price":899,"old":1499,"badge":"Sale","desc":"Comfortable daily wear cotton saree.","images":[],"rating":4.5,"ratingCount":156,"qty":4},
+  {"id":4,"name":"Designer Anarkali Suit","cat":"Suit","emoji":"👗","bg":"#ede9fe","price":1899,"old":2999,"badge":"Popular","desc":"Elegant Anarkali with embroidery work.","images":[],"rating":4.6,"ratingCount":203,"qty":22},
+  {"id":5,"name":"Cotton Salwar Set","cat":"Suit","emoji":"🌿","bg":"#dcfce7","price":999,"old":1499,"badge":"Sale","desc":"Comfortable daily wear salwar set.","images":[],"rating":4.2,"ratingCount":67,"qty":45},
+  {"id":6,"name":"Punjabi Patiala Suit","cat":"Suit","emoji":"💐","bg":"#fce7f3","price":1299,"old":1999,"badge":"New 2026","desc":"Vibrant Punjabi style Patiala with dupatta.","images":[],"rating":4.4,"ratingCount":128,"qty":3},
+  {"id":7,"name":"Embroidered Kurti","cat":"Kurti","emoji":"👘","bg":"#fff0f8","price":699,"old":1099,"badge":"New 2026","desc":"Beautiful hand embroidered kurti.","images":[],"rating":4.7,"ratingCount":241,"qty":29},
+  {"id":8,"name":"Printed Rayon Kurti","cat":"Kurti","emoji":"🌺","bg":"#fef3c7","price":499,"old":799,"badge":"Sale","desc":"Trendy rayon kurti with digital print.","images":[],"rating":4.1,"ratingCount":54,"qty":60},
+  {"id":9,"name":"Long Flared Kurti","cat":"Kurti","emoji":"🌼","bg":"#ede9fe","price":849,"old":1299,"badge":"Popular","desc":"Stylish long flared kurti for all occasions.","images":[],"rating":4.5,"ratingCount":179,"qty":0},
+  {"id":10,"name":"Bridal Lehenga","cat":"Lehenga","emoji":"💃","bg":"#fce7f3","price":7999,"old":12999,"badge":"Premium","desc":"Stunning bridal lehenga with heavy zari work.","images":[],"rating":4.9,"ratingCount":88,"qty":7},
+  {"id":11,"name":"Party Wear Lehenga","cat":"Lehenga","emoji":"✨","bg":"#ede9fe","price":3499,"old":5999,"badge":"Popular","desc":"Gorgeous party wear lehenga with sequence.","images":[],"rating":4.6,"ratingCount":134,"qty":15},
+  {"id":12,"name":"Casual Lehenga Skirt","cat":"Lehenga","emoji":"🎀","bg":"#fef9c3","price":1599,"old":2499,"badge":"New 2026","desc":"Lightweight casual lehenga skirt with kurti.","images":[],"rating":4.3,"ratingCount":72,"qty":27},
+  {"id":13,"name":"Ethnic Kurta Pajama","cat":"Men","emoji":"👔","bg":"#dbeafe","price":1299,"old":1999,"badge":"New 2026","desc":"Classic ethnic kurta pajama set.","images":[],"rating":4.4,"ratingCount":96,"qty":38},
+  {"id":14,"name":"Sherwani Set","cat":"Men","emoji":"🤵","bg":"#fef9c3","price":5999,"old":8999,"badge":"Premium","desc":"Royal sherwani set for weddings & parties.","images":[],"rating":4.8,"ratingCount":61,"qty":5},
+  {"id":15,"name":"Nehru Jacket Set","cat":"Men","emoji":"🎩","bg":"#dcfce7","price":1899,"old":2999,"badge":"Popular","desc":"Stylish Nehru jacket with kurta.","images":[],"rating":4.5,"ratingCount":113,"qty":19},
+  {"id":16,"name":"Girls Lehenga Choli","cat":"Kids","emoji":"🎀","bg":"#fce7f3","price":899,"old":1499,"badge":"Cute","desc":"Adorable lehenga choli for little girls.","images":[],"rating":4.7,"ratingCount":198,"qty":23},
+  {"id":17,"name":"Boys Kurta Set","cat":"Kids","emoji":"🧒","bg":"#dbeafe","price":699,"old":999,"badge":"New 2026","desc":"Cute ethnic kurta set for boys.","images":[],"rating":4.4,"ratingCount":82,"qty":41},
+  {"id":18,"name":"Kids Party Frock","cat":"Kids","emoji":"👸","bg":"#ede9fe","price":799,"old":1299,"badge":"Popular","desc":"Beautiful party frock for girls.","images":[],"rating":4.6,"ratingCount":167,"qty":2},
+  {"id":19,"name":"Kids Casual Set","cat":"Kids","emoji":"🌈","bg":"#dcfce7","price":549,"old":899,"badge":"Sale","desc":"Comfortable everyday casual set for kids.","images":[],"rating":4.2,"ratingCount":44,"qty":55}
+]}
+D
