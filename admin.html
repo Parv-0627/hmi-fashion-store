@@ -108,6 +108,17 @@ textarea{resize:vertical;min-height:65px;}
 .color-opt{width:27px;height:27px;border-radius:7px;cursor:pointer;border:2px solid transparent;transition:all .2s;}
 .color-opt.selected{border-color:var(--dark);transform:scale(1.2);box-shadow:0 2px 6px rgba(0,0,0,.2);}
 
+/* SIZE & COLOR CHECKBOXES */
+.sz-check{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border:2px solid #e5e7eb;border-radius:8px;cursor:pointer;font-size:.82rem;font-weight:600;transition:all .2s;background:white;}
+.sz-check:hover{border-color:var(--pink);background:var(--pink-light);}
+.sz-check input[type=checkbox]{accent-color:var(--pink-deep);width:14px;height:14px;cursor:pointer;}
+.sz-check:has(input:checked){border-color:var(--pink-deep);background:var(--pink-light);color:var(--pink-deep);}
+.col-check{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border:2px solid #e5e7eb;border-radius:8px;cursor:pointer;font-size:.82rem;font-weight:600;transition:all .2s;background:white;}
+.col-check:hover{border-color:var(--pink);background:var(--pink-light);}
+.col-check:has(input:checked){border-color:var(--pink-deep);background:var(--pink-light);color:var(--pink-deep);}
+.col-check input[type=checkbox]{accent-color:var(--pink-deep);width:14px;height:14px;cursor:pointer;}
+.col-swatch{width:16px;height:16px;border-radius:50%;display:inline-block;flex-shrink:0;}
+
 .info-banner{background:#eff6ff;border:2px solid #93c5fd;border-radius:12px;padding:14px 17px;margin-bottom:16px;display:flex;align-items:flex-start;gap:12px;font-size:.83rem;color:#1e40af;line-height:1.6;}
 .export-box{background:#1e293b;color:#94a3b8;border-radius:12px;padding:16px;font-family:monospace;font-size:.72rem;white-space:pre;overflow-x:auto;max-height:320px;overflow-y:auto;line-height:1.7;}
 
@@ -264,18 +275,81 @@ textarea{resize:vertical;min-height:65px;}
             <label>Description</label>
             <textarea id="p-desc" placeholder="Product ki short description likho..."></textarea>
           </div>
+
+          <!-- SIZES -->
+          <div class="form-group full">
+            <label>Available Sizes <span style="font-weight:400;text-transform:none;letter-spacing:0;color:#9ca3af;">(customer select karega)</span></label>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;" id="sizeCheckboxes">
+              <label class="sz-check"><input type="checkbox" value="XS"> XS</label>
+              <label class="sz-check"><input type="checkbox" value="S"> S</label>
+              <label class="sz-check"><input type="checkbox" value="M" checked> M</label>
+              <label class="sz-check"><input type="checkbox" value="L" checked> L</label>
+              <label class="sz-check"><input type="checkbox" value="XL" checked> XL</label>
+              <label class="sz-check"><input type="checkbox" value="XXL"> XXL</label>
+              <label class="sz-check"><input type="checkbox" value="3XL"> 3XL</label>
+              <label class="sz-check"><input type="checkbox" value="Free Size"> Free Size</label>
+              <label class="sz-check"><input type="checkbox" value="28"> 28</label>
+              <label class="sz-check"><input type="checkbox" value="30"> 30</label>
+              <label class="sz-check"><input type="checkbox" value="32"> 32</label>
+              <label class="sz-check"><input type="checkbox" value="34"> 34</label>
+              <label class="sz-check"><input type="checkbox" value="36"> 36</label>
+              <label class="sz-check"><input type="checkbox" value="38"> 38</label>
+              <label class="sz-check"><input type="checkbox" value="40"> 40</label>
+              <label class="sz-check"><input type="checkbox" value="42"> 42</label>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <input type="text" id="customSizeInput" placeholder="Custom size add karo (e.g. 44, 6-7Y)" style="flex:1;padding:8px 12px;font-size:.85rem;">
+              <button type="button" class="btn btn-outline btn-sm" onclick="addCustomSize()">+ Add</button>
+            </div>
+            <div style="font-size:.73rem;color:var(--gray);margin-top:5px;">☑ Koi size nahi chunoge toh product mein size option nahi dikhega.</div>
+          </div>
+
+          <!-- COLORS -->
+          <div class="form-group full">
+            <label>Available Colours <span style="font-weight:400;text-transform:none;letter-spacing:0;color:#9ca3af;">(customer select karega)</span></label>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;" id="colorCheckboxes">
+              <label class="col-check"><input type="checkbox" value="Red" data-hex="#ef4444"> <span class="col-swatch" style="background:#ef4444"></span> Red</label>
+              <label class="col-check"><input type="checkbox" value="Pink" data-hex="#f472b6"> <span class="col-swatch" style="background:#f472b6"></span> Pink</label>
+              <label class="col-check"><input type="checkbox" value="Maroon" data-hex="#9b2226"> <span class="col-swatch" style="background:#9b2226"></span> Maroon</label>
+              <label class="col-check"><input type="checkbox" value="Orange" data-hex="#fb923c"> <span class="col-swatch" style="background:#fb923c"></span> Orange</label>
+              <label class="col-check"><input type="checkbox" value="Yellow" data-hex="#facc15"> <span class="col-swatch" style="background:#facc15"></span> Yellow</label>
+              <label class="col-check"><input type="checkbox" value="Green" data-hex="#22c55e"> <span class="col-swatch" style="background:#22c55e"></span> Green</label>
+              <label class="col-check"><input type="checkbox" value="Mehendi" data-hex="#4d7c0f"> <span class="col-swatch" style="background:#4d7c0f"></span> Mehendi</label>
+              <label class="col-check"><input type="checkbox" value="Blue" data-hex="#3b82f6"> <span class="col-swatch" style="background:#3b82f6"></span> Blue</label>
+              <label class="col-check"><input type="checkbox" value="Navy Blue" data-hex="#1e3a5f"> <span class="col-swatch" style="background:#1e3a5f"></span> Navy Blue</label>
+              <label class="col-check"><input type="checkbox" value="Purple" data-hex="#a855f7"> <span class="col-swatch" style="background:#a855f7"></span> Purple</label>
+              <label class="col-check"><input type="checkbox" value="Violet" data-hex="#7c3aed"> <span class="col-swatch" style="background:#7c3aed"></span> Violet</label>
+              <label class="col-check"><input type="checkbox" value="White" data-hex="#f8fafc"> <span class="col-swatch" style="background:#f8fafc;border:1px solid #e5e7eb"></span> White</label>
+              <label class="col-check"><input type="checkbox" value="Off White" data-hex="#fefce8"> <span class="col-swatch" style="background:#fefce8;border:1px solid #e5e7eb"></span> Off White</label>
+              <label class="col-check"><input type="checkbox" value="Cream" data-hex="#fef3c7"> <span class="col-swatch" style="background:#fef3c7"></span> Cream</label>
+              <label class="col-check"><input type="checkbox" value="Beige" data-hex="#d4b896"> <span class="col-swatch" style="background:#d4b896"></span> Beige</label>
+              <label class="col-check"><input type="checkbox" value="Brown" data-hex="#92400e"> <span class="col-swatch" style="background:#92400e"></span> Brown</label>
+              <label class="col-check"><input type="checkbox" value="Grey" data-hex="#9ca3af"> <span class="col-swatch" style="background:#9ca3af"></span> Grey</label>
+              <label class="col-check"><input type="checkbox" value="Black" data-hex="#1f1224"> <span class="col-swatch" style="background:#1f1224"></span> Black</label>
+              <label class="col-check"><input type="checkbox" value="Gold" data-hex="#d4a843"> <span class="col-swatch" style="background:#d4a843"></span> Gold</label>
+              <label class="col-check"><input type="checkbox" value="Silver" data-hex="#cbd5e1"> <span class="col-swatch" style="background:#cbd5e1"></span> Silver</label>
+              <label class="col-check"><input type="checkbox" value="Multi" data-hex="linear-gradient(135deg,#f472b6,#facc15,#22c55e,#3b82f6)"> <span class="col-swatch" style="background:linear-gradient(135deg,#f472b6,#facc15,#22c55e,#3b82f6)"></span> Multi</label>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+              <input type="text" id="customColorName" placeholder="Color naam (e.g. Peach)" style="flex:1;min-width:120px;padding:8px 12px;font-size:.85rem;">
+              <input type="color" id="customColorHex" value="#f97316" style="width:40px;height:38px;padding:2px;border:2px solid #e5e7eb;border-radius:8px;cursor:pointer;">
+              <button type="button" class="btn btn-outline btn-sm" onclick="addCustomColor()">+ Add Colour</button>
+            </div>
+            <div style="font-size:.73rem;color:var(--gray);margin-top:5px;">☑ Koi colour nahi chunoge toh product mein colour option nahi dikhega.</div>
+          </div>
+
           <div class="form-group full">
             <label>Card Background Color</label>
             <div class="color-opts" id="colorOpts">
-              <div class="color-opt selected" style="background:#fce7f3" data-color="#fce7f3" onclick="selectColor(this,'#fce7f3')" title="Pink"></div>
-              <div class="color-opt" style="background:#fef9c3" data-color="#fef9c3" onclick="selectColor(this,'#fef9c3')" title="Yellow"></div>
-              <div class="color-opt" style="background:#dcfce7" data-color="#dcfce7" onclick="selectColor(this,'#dcfce7')" title="Green"></div>
-              <div class="color-opt" style="background:#dbeafe" data-color="#dbeafe" onclick="selectColor(this,'#dbeafe')" title="Blue"></div>
-              <div class="color-opt" style="background:#ede9fe" data-color="#ede9fe" onclick="selectColor(this,'#ede9fe')" title="Purple"></div>
-              <div class="color-opt" style="background:#fff7ed" data-color="#fff7ed" onclick="selectColor(this,'#fff7ed')" title="Orange"></div>
-              <div class="color-opt" style="background:#fff0f8" data-color="#fff0f8" onclick="selectColor(this,'#fff0f8')" title="Light Pink"></div>
-              <div class="color-opt" style="background:#fef3c7" data-color="#fef3c7" onclick="selectColor(this,'#fef3c7')" title="Warm Yellow"></div>
-              <div class="color-opt" style="background:#f1f5f9" data-color="#f1f5f9" onclick="selectColor(this,'#f1f5f9')" title="Gray"></div>
+              <div class="color-opt selected" style="background:#fce7f3" data-color="#fce7f3" onclick="selectBgColor(this,'#fce7f3')" title="Pink"></div>
+              <div class="color-opt" style="background:#fef9c3" data-color="#fef9c3" onclick="selectBgColor(this,'#fef9c3')" title="Yellow"></div>
+              <div class="color-opt" style="background:#dcfce7" data-color="#dcfce7" onclick="selectBgColor(this,'#dcfce7')" title="Green"></div>
+              <div class="color-opt" style="background:#dbeafe" data-color="#dbeafe" onclick="selectBgColor(this,'#dbeafe')" title="Blue"></div>
+              <div class="color-opt" style="background:#ede9fe" data-color="#ede9fe" onclick="selectBgColor(this,'#ede9fe')" title="Purple"></div>
+              <div class="color-opt" style="background:#fff7ed" data-color="#fff7ed" onclick="selectBgColor(this,'#fff7ed')" title="Orange"></div>
+              <div class="color-opt" style="background:#fff0f8" data-color="#fff0f8" onclick="selectBgColor(this,'#fff0f8')" title="Light Pink"></div>
+              <div class="color-opt" style="background:#fef3c7" data-color="#fef3c7" onclick="selectBgColor(this,'#fef3c7')" title="Warm Yellow"></div>
+              <div class="color-opt" style="background:#f1f5f9" data-color="#f1f5f9" onclick="selectBgColor(this,'#f1f5f9')" title="Gray"></div>
             </div>
             <input type="hidden" id="p-bg" value="#fce7f3">
           </div>
@@ -300,10 +374,11 @@ textarea{resize:vertical;min-height:65px;}
     <!-- EXPORT -->
     <div id="sec-export" style="display:none">
       <div class="info-banner">
-        <div style="font-size:1.4rem;flex-shrink:0;">ℹ️</div>
+        <div style="font-size:1.4rem;flex-shrink:0;">✅</div>
         <div>
-          <b>products.js GitHub par update kaise kare:</b><br>
-          Neeche "Generate" dabao → "Copy" dabao → GitHub par <code>products.js</code> file open karo → Edit karke sab replace karo → Commit karo. 1-2 min mein store live ho jaega!
+          <b>Admin aur Store directly linked hain!</b><br>
+          Yahan koi bhi product add/edit/delete karo — store page refresh karne par automatically update ho jaega. Dono ek hi browser mein khule hain toh changes turant reflect hote hain.<br><br>
+          <b>GitHub ke liye:</b> Neeche "Generate" → "Copy" → GitHub <code>products.js</code> mein paste karo.
         </div>
       </div>
       <div class="card">
@@ -340,7 +415,11 @@ textarea{resize:vertical;min-height:65px;}
 <div class="toast" id="toast"></div>
 
 <script>
-const STORAGE_KEY = 'hmi_admin_products_v2';
+// =============================================
+// SHARED KEY — index.html ke saath same key
+// Dono files ek hi localStorage data use karein
+// =============================================
+const STORAGE_KEY = 'hmi_products_shared';
 let products = [];
 let editingId = null;
 let uploadedImages = [];
@@ -379,7 +458,10 @@ function loadProducts(){
   } catch(e){ products=[...SEED_PRODUCTS]; }
 }
 function saveProducts(){
-  try{ localStorage.setItem(STORAGE_KEY,JSON.stringify(products)); } catch(e){}
+  try{
+    localStorage.setItem(STORAGE_KEY,JSON.stringify(products));
+    // Store tab mein bhi automatically update ho jaega (storage event)
+  } catch(e){}
   updateCounts();
 }
 function getNextId(){ return products.length>0?Math.max(...products.map(p=>p.id))+1:1; }
@@ -492,6 +574,16 @@ function saveProduct(){
   const bg=document.getElementById('p-bg').value||'#fce7f3';
   const desc=document.getElementById('p-desc').value.trim();
 
+  // Collect selected sizes
+  const sizes = [];
+  document.querySelectorAll('#sizeCheckboxes input[type=checkbox]:checked').forEach(cb=>sizes.push(cb.value));
+
+  // Collect selected colors
+  const colors = [];
+  document.querySelectorAll('#colorCheckboxes input[type=checkbox]:checked').forEach(cb=>{
+    colors.push({name: cb.value, hex: cb.dataset.hex||'#888'});
+  });
+
   if(!name){showToast('❌ Product name dalo!','error');return;}
   if(!cat){showToast('❌ Category chunao!','error');return;}
   if(!price||price<=0){showToast('❌ Sale price dalo!','error');return;}
@@ -500,14 +592,14 @@ function saveProduct(){
 
   if(editingId!==null){
     const idx=products.findIndex(p=>p.id===editingId);
-    if(idx>=0) products[idx]={...products[idx],name,cat,price,old,badge,emoji,bg,desc,
+    if(idx>=0) products[idx]={...products[idx],name,cat,price,old,badge,emoji,bg,desc,sizes,colors,
       images:uploadedImages.length>0?uploadedImages:products[idx].images};
     editingId=null;
     document.getElementById('formTitle').textContent='➕ Naya Product Add Karo';
     document.getElementById('cancelEdit').style.display='none';
     showToast('✅ Product update ho gaya!','success');
   } else {
-    products.push({id:getNextId(),name,cat,price,old,badge,emoji,bg,desc,images:[...uploadedImages]});
+    products.push({id:getNextId(),name,cat,price,old,badge,emoji,bg,desc,sizes,colors,images:[...uploadedImages]});
     showToast('✅ New product add ho gaya!','success');
   }
   saveProducts(); resetForm(); renderDashboard();
@@ -528,6 +620,16 @@ function editProduct(id){
   document.getElementById('p-emoji').value=p.emoji||'';
   document.getElementById('p-desc').value=p.desc||'';
   selectColorByValue(p.bg||'#fce7f3');
+
+  // Restore sizes
+  document.querySelectorAll('#sizeCheckboxes input[type=checkbox]').forEach(cb=>{
+    cb.checked = p.sizes ? p.sizes.includes(cb.value) : false;
+  });
+  // Restore colors
+  document.querySelectorAll('#colorCheckboxes input[type=checkbox]').forEach(cb=>{
+    cb.checked = p.colors ? p.colors.some(c=>c.name===cb.value) : false;
+  });
+
   uploadedImages=p.images?[...p.images]:[];
   renderImagePreviews();
 }
@@ -551,6 +653,12 @@ function resetForm(){
   document.getElementById('p-cat').value='';
   document.getElementById('p-badge').value='New 2026';
   selectColorByValue('#fce7f3');
+  // Default sizes: M, L, XL
+  document.querySelectorAll('#sizeCheckboxes input[type=checkbox]').forEach(cb=>{
+    cb.checked = ['M','L','XL'].includes(cb.value);
+  });
+  // Clear all colors
+  document.querySelectorAll('#colorCheckboxes input[type=checkbox]').forEach(cb=>cb.checked=false);
   uploadedImages=[]; renderImagePreviews();
 }
 
@@ -568,14 +676,49 @@ function renderImagePreviews(){
 }
 function removeImg(i){uploadedImages.splice(i,1);renderImagePreviews();}
 
-function selectColor(el,color){
+function selectBgColor(el,color){
   document.querySelectorAll('.color-opt').forEach(c=>c.classList.remove('selected'));
   el.classList.add('selected');
   document.getElementById('p-bg').value=color;
 }
+function selectColor(el,color){ selectBgColor(el,color); } // backward compat
 function selectColorByValue(color){
   document.querySelectorAll('.color-opt').forEach(c=>c.classList.toggle('selected',c.dataset.color===color));
   document.getElementById('p-bg').value=color;
+}
+
+// Custom size add
+function addCustomSize(){
+  const val = document.getElementById('customSizeInput').value.trim();
+  if(!val){ showToast('Size naam likho!','error'); return; }
+  const wrap = document.getElementById('sizeCheckboxes');
+  // Check if already exists
+  if([...wrap.querySelectorAll('input')].some(i=>i.value===val)){
+    showToast('Yeh size pehle se hai!','error'); return;
+  }
+  const lbl = document.createElement('label');
+  lbl.className = 'sz-check';
+  lbl.innerHTML = `<input type="checkbox" value="${val}" checked> ${val}`;
+  wrap.appendChild(lbl);
+  document.getElementById('customSizeInput').value='';
+  showToast(`✅ Size "${val}" add ho gaya!`,'success');
+}
+
+// Custom color add
+function addCustomColor(){
+  const name = document.getElementById('customColorName').value.trim();
+  const hex  = document.getElementById('customColorHex').value;
+  if(!name){ showToast('Color naam likho!','error'); return; }
+  const wrap = document.getElementById('colorCheckboxes');
+  if([...wrap.querySelectorAll('input')].some(i=>i.value===name)){
+    showToast('Yeh colour pehle se hai!','error'); return;
+  }
+  const lbl = document.createElement('label');
+  lbl.className = 'col-check';
+  lbl.innerHTML = `<input type="checkbox" value="${name}" data-hex="${hex}" checked> <span class="col-swatch" style="background:${hex}"></span> ${name}`;
+  wrap.appendChild(lbl);
+  document.getElementById('customColorName').value='';
+  showToast(`✅ Colour "${name}" add ho gaya!`,'success');
 }
 
 function generateExport(){
