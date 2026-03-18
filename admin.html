@@ -161,16 +161,70 @@ textarea{resize:vertical;min-height:65px;}
   .stats-grid{grid-template-columns:1fr 1fr;}
   .form-grid{grid-template-columns:1fr;}
 }
+
+/* ===== LOGIN OVERLAY ===== */
+#loginOverlay{
+  position:fixed;inset:0;background:linear-gradient(135deg,#1f1224,#3b0764);
+  z-index:99999;display:flex;align-items:center;justify-content:center;
+  font-family:'Nunito',sans-serif;
+}
+#loginBox{
+  background:white;border-radius:24px;padding:40px 36px;width:360px;
+  box-shadow:0 20px 60px rgba(0,0,0,.4);text-align:center;
+}
+#loginBox h2{
+  font-family:'Playfair Display',serif;font-size:1.6rem;
+  background:linear-gradient(135deg,#db2777,#92650a);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;margin-bottom:6px;
+}
+#loginBox p{color:#6b7280;font-size:.85rem;margin-bottom:24px;}
+.login-input{
+  width:100%;padding:12px 16px;border:2px solid #fce7f3;border-radius:12px;
+  font-family:'Nunito',sans-serif;font-size:.95rem;outline:none;
+  margin-bottom:14px;transition:border .2s;color:#1f1224;
+}
+.login-input:focus{border-color:#db2777;}
+#loginBtn{
+  width:100%;padding:13px;border:none;border-radius:12px;cursor:pointer;
+  background:linear-gradient(135deg,#db2777,#92650a);color:white;
+  font-family:'Nunito',sans-serif;font-size:1rem;font-weight:700;
+  letter-spacing:.5px;transition:opacity .2s;margin-top:4px;
+}
+#loginBtn:hover{opacity:.9;}
+#loginErr{
+  color:#dc2626;font-size:.82rem;margin-top:10px;
+  display:none;background:#fee2e2;padding:8px 12px;border-radius:8px;
+}
+#loginAttempts{color:#6b7280;font-size:.75rem;margin-top:8px;}
+
 </style>
 </head>
 <body>
+
+<!-- ===== LOGIN OVERLAY ===== -->
+<div id="loginOverlay">
+  <div id="loginBox">
+    <div style="font-size:2.5rem;margin-bottom:8px;">🔐</div>
+    <h2>HMI Fashion Admin</h2>
+    <p>Sirf authorized users ke liye</p>
+    <input class="login-input" type="text" id="loginUser" placeholder="👤 Username" autocomplete="username" />
+    <input class="login-input" type="password" id="loginPass" placeholder="🔑 Password" autocomplete="current-password"
+      onkeydown="if(event.key==='Enter')doLogin()" />
+    <button id="loginBtn" onclick="doLogin()">Login →</button>
+    <div id="loginErr">❌ Username ya Password galat hai!</div>
+    <div id="loginAttempts"></div>
+  <button onclick="adminLogout()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.4);color:white;padding:6px 14px;border-radius:20px;cursor:pointer;font-family:'Nunito',sans-serif;font-weight:700;font-size:.82rem;">🚪 Logout</button>
+</div>
+</div>
+
 
 <div class="topbar">
   <div class="topbar-logo">👗 HMI Fashion — Admin Dashboard</div>
   <div class="topbar-right">
     <span class="badge-count" id="totalCount">Loading...</span>
     <span class="badge-count" id="orderCountBadge" style="background:rgba(22,163,74,.4);cursor:pointer;" onclick="showSection('orders')">📦 0 Orders</span>
-    <a href="index.html" class="topbar-link">🌐 Store Dekho</a>
+    <a href="index.html" class="topbar-link" id="storeLink">🌐 Store Dekho</a>
   </div>
 </div>
 
@@ -908,6 +962,8 @@ const FIREBASE_CONFIG = {
   storageBucket:     "hmi-fashion-store.firebasestorage.app",
   messagingSenderId: "988891730362",
   appId:             "1:988891730362:web:40f2c9ee6774df53e24d83"
+  // NOTE: Firebase Security Rules set karo — Firebase Console > Firestore > Rules
+  // Admin-only write access ke liye rules neeche diye hain (README dekho)
 };
 
 let db = null;
@@ -1245,6 +1301,89 @@ updateOrderCounts();
 <script>
   // Firebase initialize karo — SDK load hone ke baad
   initFirebase();
+</script>
+<script>
+
+// ===== SECURE LOGIN SYSTEM =====
+const CORRECT_USER_HASH = '018e7aaebefd1f43a89e29d9c37c64a1d08630ed1ec4b69bc9f8d4561842cb51';
+const CORRECT_PASS_HASH = '5c7d35c27ccc6511a8ed38ee32936d01d4a9644a3940bcdea82477e7fe962f10';
+const SESSION_KEY       = 'hmi_admin_session';
+const MAX_ATTEMPTS      = 5;
+const LOCKOUT_MS        = 15 * 60 * 1000; // 15 minutes
+
+let loginAttempts = parseInt(sessionStorage.getItem('hmi_attempts') || '0');
+let lockoutUntil  = parseInt(sessionStorage.getItem('hmi_lockout')  || '0');
+
+async function sha256(str){
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+async function doLogin(){
+  const now = Date.now();
+  if(now < lockoutUntil){
+    const mins = Math.ceil((lockoutUntil - now)/60000);
+    showLoginErr(`🔒 ${mins} minute baad try karo (bahut zyada galat attempts)`);
+    return;
+  }
+  const u = document.getElementById('loginUser').value.trim();
+  const p = document.getElementById('loginPass').value;
+  if(!u || !p){ showLoginErr('Username aur Password dono bharo!'); return; }
+
+  const [uh, ph] = await Promise.all([sha256(u), sha256(p)]);
+  if(uh === CORRECT_USER_HASH && ph === CORRECT_PASS_HASH){
+    // SUCCESS
+    sessionStorage.setItem(SESSION_KEY, btoa(Date.now().toString()));
+    sessionStorage.removeItem('hmi_attempts');
+    sessionStorage.removeItem('hmi_lockout');
+    document.getElementById('loginOverlay').style.display = 'none';
+    document.body.style.overflow = '';
+  } else {
+    loginAttempts++;
+    sessionStorage.setItem('hmi_attempts', loginAttempts);
+    const left = MAX_ATTEMPTS - loginAttempts;
+    if(loginAttempts >= MAX_ATTEMPTS){
+      lockoutUntil = Date.now() + LOCKOUT_MS;
+      sessionStorage.setItem('hmi_lockout', lockoutUntil);
+      showLoginErr('🔒 15 minute ke liye lock ho gaya! Bahut zyada galat attempts.');
+    } else {
+      showLoginErr(`❌ Galat credentials! ${left} attempt bacha hai.`);
+    }
+    document.getElementById('loginPass').value = '';
+  }
+}
+
+function showLoginErr(msg){
+  const el = document.getElementById('loginErr');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+// Session check on load
+function checkSession(){
+  const now = Date.now();
+  if(now < lockoutUntil){
+    const mins = Math.ceil((lockoutUntil - now)/60000);
+    showLoginErr(`🔒 ${mins} minute baad try karo`);
+  }
+  const sess = sessionStorage.getItem(SESSION_KEY);
+  if(sess){
+    // Session valid hai (same browser tab session)
+    document.getElementById('loginOverlay').style.display = 'none';
+    document.body.style.overflow = '';
+  } else {
+    document.body.style.overflow = 'hidden';
+  }
+}
+// Run on page load
+window.addEventListener('DOMContentLoaded', checkSession);
+
+// Logout function
+function adminLogout(){
+  sessionStorage.removeItem(SESSION_KEY);
+  location.reload();
+}
+
 </script>
 </body>
 </html>
