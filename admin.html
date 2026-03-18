@@ -162,6 +162,13 @@ textarea{resize:vertical;min-height:65px;}
   .form-grid{grid-template-columns:1fr;}
 }
 
+.upload-spinner{
+  display:inline-block;width:16px;height:16px;border:2px solid #fce7f3;
+  border-top-color:#db2777;border-radius:50%;animation:spin .7s linear infinite;
+  vertical-align:middle;margin-right:6px;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
 /* ===== LOGIN OVERLAY ===== */
 #loginOverlay{
   position:fixed;inset:0;background:linear-gradient(135deg,#1f1224,#3b0764);
@@ -838,12 +845,45 @@ function resetForm(){
   uploadedImages=[]; renderImagePreviews();
 }
 
-function handleImageUpload(input){
-  Array.from(input.files).forEach(file=>{
-    const r=new FileReader();
-    r.onload=e=>{uploadedImages.push(e.target.result);renderImagePreviews();};
-    r.readAsDataURL(file);
-  });
+// ── Cloudinary Image Upload ──────────────────────────
+const CLOUDINARY_CLOUD = 'dlzowheen';
+const CLOUDINARY_PRESET = 'hmi_products';
+
+async function uploadToCloudinary(file){
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('upload_preset', CLOUDINARY_PRESET);
+  fd.append('folder', 'hmi-products');
+  try{
+    const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`, {
+      method: 'POST', body: fd
+    });
+    const data = await res.json();
+    if(data.secure_url) return data.secure_url;
+    throw new Error(data.error?.message || 'Upload failed');
+  }catch(e){ console.error('Cloudinary upload error:', e); return null; }
+}
+
+async function handleImageUpload(input){
+  const files = Array.from(input.files);
+  if(!files.length) return;
+
+  // Show uploading indicator
+  const wrap = document.getElementById('imgPreviewWrap');
+  wrap.innerHTML += `<div id="uploadingMsg" style="color:#db2777;font-size:.85rem;padding:8px;font-weight:700;">⏳ Images upload ho rahi hain...</div>`;
+
+  for(const file of files){
+    const url = await uploadToCloudinary(file);
+    if(url){
+      uploadedImages.push(url);
+      renderImagePreviews();
+    } else {
+      showToast('Image upload failed! Check internet connection.', 'error');
+    }
+  }
+  // Remove uploading message
+  const msg = document.getElementById('uploadingMsg');
+  if(msg) msg.remove();
   input.value='';
 }
 function renderImagePreviews(){
