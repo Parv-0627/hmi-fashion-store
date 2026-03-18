@@ -1,0 +1,32 @@
+// ======================================================
+// FIREBASE FIRESTORE SECURITY RULES
+// Firebase Console > Firestore Database > Rules tab mein
+// yeh paste karo aur PUBLISH karo
+// ======================================================
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Orders — sirf create allowed (customer order de sake)
+    // Read/Update/Delete — koi nahi (admin Firebase Console se dekhe)
+    match /orders/{orderId} {
+      allow create: if true;           // Customer order place kar sake
+      allow read:   if false;          // Direct read band
+      allow update: if false;
+      allow delete: if false;
+    }
+
+    // Settings/Products — sirf read allowed (website products load kare)
+    // Write — koi nahi (admin page locally save karta hai)
+    match /settings/{doc} {
+      allow read:  if true;            // Website products load kare
+      allow write: if false;           // Direct write band
+    }
+
+    // Baaki sab — completely band
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
