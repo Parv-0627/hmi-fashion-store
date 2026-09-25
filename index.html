@@ -355,7 +355,72 @@ footer{background:var(--dark);color:white;padding:55px 5% 25px;}
   .pay-methods{grid-template-columns:1fr 1fr;}
   .field-row{grid-template-columns:1fr;}
 }
-</style>
+/* CATEGORY COMPACT FIX */
+#categories.section{padding:40px 5% 30px;}
+#categories .section-title{margin-bottom:22px;}
+#categories .section-title p{font-size:.9rem;}
+.categories-grid{grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px;max-width:1000px;}
+.category-card{border-radius:14px;padding:14px 8px;box-shadow:none;}
+.category-card:hover,.category-card.active{transform:translateY(-2px);box-shadow:0 6px 16px rgba(219,39,119,.12);}
+.category-icon{font-size:1.6rem;margin-bottom:6px;}
+.category-card h3{font-size:.82rem;line-height:1.25;}
+.category-card p{font-size:.68rem;}
+@media(max-width:600px){
+  #categories.section{padding:24px 4% 18px;}
+  #categories .section-title{margin-bottom:14px;}
+  #categories .section-title h2{font-size:1.5rem;}
+  #categories .section-title p{display:none;}
+  .categories-grid{display:flex;overflow-x:auto;gap:8px;padding:2px 2px 10px;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+  .categories-grid::-webkit-scrollbar{display:none;}
+  .category-card{flex:0 0 84px;padding:10px 4px;scroll-snap-align:start;}
+  .category-card:hover,.category-card.active{transform:none;}
+  .category-icon{font-size:1.4rem;margin-bottom:4px;}
+  .category-card h3{font-size:.72rem;}
+  .category-card p{display:none;}
+}/* MEESHO STYLE FIX */
+.categories-grid{display:flex;flex-wrap:wrap;justify-content:center;}
+.category-card{flex:0 0 120px;}
+.products-section{padding:28px 4% 50px;border-top:1px solid #f3e1ea;}
+#products>.section-title{display:none;}
+.shop-bar{max-width:1240px;margin:0 auto 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding-bottom:12px;border-bottom:2px solid var(--pink-light);}
+.shop-bar-left{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;}
+.shop-bar h2{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;color:var(--dark);}
+#shopCount{font-size:.85rem;color:var(--gray);font-weight:600;}
+#shopClear{display:none;align-items:center;gap:6px;background:var(--pink-light);color:var(--pink-deep);border:none;border-radius:20px;padding:7px 14px;font:700 .8rem 'Nunito',sans-serif;cursor:pointer;}
+.products-grid{grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:16px;max-width:1240px;}
+.product-card{border:1px solid #eee;border-radius:10px;box-shadow:none;}
+.product-card:hover{transform:none;box-shadow:0 6px 18px rgba(0,0,0,.08);border-color:#e5e7eb;}
+.product-img{height:auto;aspect-ratio:1/1;background:#f7f7f7 !important;}
+.product-img img{object-fit:contain !important;background:#f7f7f7;}
+.product-badge{top:8px;left:8px;font-size:.62rem;padding:2px 8px;}
+.product-info{padding:10px 12px 12px;display:flex;flex-direction:column;}
+.product-info .category-tag{display:none;}
+.product-info h3{order:1;font-family:'Nunito',sans-serif;font-size:.92rem;font-weight:600;color:#555;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:4px;}
+.product-price{order:2;margin-bottom:8px;gap:6px;}
+.rating-row{order:3;gap:6px;margin-bottom:10px;}
+.product-btns{order:4;}
+.price-current{font-size:1.25rem;font-weight:800;color:var(--dark);}
+.price-old{font-size:.8rem;}
+.price-discount{background:none;padding:0;font-size:.78rem;}
+.rating-row .stars{display:none;}
+.rating-num{background:#038d63;color:#fff;border-radius:12px;padding:2px 8px;font-size:.78rem;font-weight:800;}
+.rating-num::after{content:" \2605";font-size:.7rem;}
+.rating-count{font-size:.72rem;}
+.qty-badge{font-size:.62rem;padding:2px 6px;}
+.btn-cart{padding:8px;font-size:.8rem;border-width:1.5px;border-radius:8px;background:#fff;}
+.btn-cart:hover{background:var(--pink-light);}
+@media(max-width:600px){
+  .categories-grid{flex-wrap:nowrap;justify-content:flex-start;}
+  .category-card{flex:0 0 84px;}
+  .products-section{padding:18px 3% 40px;}
+  .shop-bar{margin-bottom:12px;padding-bottom:10px;}
+  .shop-bar h2{font-size:1.15rem;}
+  .products-grid{grid-template-columns:repeat(2,1fr);gap:8px;}
+  .product-info{padding:8px 8px 10px;}
+  .product-info h3{font-size:.82rem;}
+  .price-current{font-size:1.05rem;}
+  .rating-count{display:none;}
+}</style>
 </head>
 <body>
 
@@ -1760,5 +1825,32 @@ applyFilter();
 renderCart();
 initFirebase();
 </script>
-</body>
+<script>
+/* MEESHO STYLE FIX - products header */
+(function(){
+  var sec = document.getElementById('products');
+  var grid = document.getElementById('productsGrid');
+  if(!sec || !grid || document.getElementById('shopBar')) return;
+  var bar = document.createElement('div');
+  bar.className = 'shop-bar'; bar.id = 'shopBar';
+  bar.innerHTML = '<div class="shop-bar-left"><h2 id="shopTitle">Latest Collection</h2><span id="shopCount"></span></div>' +
+                  '<button id="shopClear" type="button" onclick="filterProducts(\'all\')">&#10005; Sab products dikhao</button>';
+  sec.insertBefore(bar, grid);
+  var origRender = renderProducts;
+  renderProducts = function(list){
+    origRender(list);
+    var n = (list || []).length;
+    var isAll = (activeCat === 'all');
+    document.getElementById('shopTitle').textContent = isAll ? 'Latest Collection' : catName(activeCat);
+    document.getElementById('shopCount').textContent = n + (n === 1 ? ' product' : ' products');
+    document.getElementById('shopClear').style.display = isAll ? 'none' : 'inline-flex';
+  };
+  var origFilter = filterProducts;
+  filterProducts = function(c){
+    origFilter(c);
+    if(c !== 'all') sec.scrollIntoView({behavior:'smooth', block:'start'});
+  };
+  applyFilter();
+})();
+</script></body>
 </html>
