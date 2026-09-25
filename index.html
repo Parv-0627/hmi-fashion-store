@@ -450,6 +450,7 @@ footer{background:var(--dark);color:white;padding:55px 5% 25px;}
 </style>
 <script>
 var _splashDone=false;
+try{if(sessionStorage.getItem('hmi_splash_seen')){document.getElementById('splash').style.display='none';_splashDone=true;}sessionStorage.setItem('hmi_splash_seen','1');}catch(e){}
 function doHideSplash(){
   if(_splashDone)return;
   _splashDone=true;
@@ -1851,6 +1852,91 @@ initFirebase();
     if(c !== 'all') sec.scrollIntoView({behavior:'smooth', block:'start'});
   };
   applyFilter();
+})();
+</script><script>
+/* CART SAVE FIX - refresh ke baad bhi cart bacha rahe */
+(function(){
+  var KEY = 'hmi_cart';
+  function save(){ try{ localStorage.setItem(KEY, JSON.stringify(cart)); }catch(e){} }
+  function syncCart(){
+    cart.forEach(function(item){
+      var p = findProduct(item.id);
+      if(p){
+        item.name = p.name; item.price = p.price; item.old = p.old;
+        item.images = p.images || []; item.emoji = p.emoji; item.bg = p.bg;
+        item.cod = p.cod; item.cat = p.cat;
+      }
+    });
+  }
+  try{
+    var saved = JSON.parse(localStorage.getItem(KEY) || '[]');
+    if(Array.isArray(saved) && saved.length) cart = saved;
+  }catch(e){}
+  var origCount = updateCartCount;
+  updateCartCount = function(){ origCount(); save(); };
+  var origApply = applyFilter;
+  applyFilter = function(){ origApply(); if(cart.length){ syncCart(); save(); renderCart(); } };
+  syncCart(); updateCartCount(); renderCart();
+  window.addEventListener('storage', function(e){
+    if(e.key === KEY){
+      try{ cart = JSON.parse(e.newValue || '[]'); }catch(err){ cart = []; }
+      origCount(); renderCart();
+    }
+  });
+})();
+</script><script>
+/* CHECKOUT SAVE FIX - address/payment step refresh pe bhi wahi rahe */
+(function(){
+  var KEY = 'hmi_checkout';
+  var FIELDS = ['custPhone','custName','custAddr1','custAddr2','custLandmark','custCity','custState','custPincode','custAltPhone','upiInput'];
+  var sidebar = document.getElementById('cartSidebar');
+  var overlay = document.getElementById('cartOverlay');
+  var done = false;
+  function read(){ try{ return JSON.parse(localStorage.getItem(KEY) || 'null'); }catch(e){ return null; } }
+  function save(){
+    if(done) return;
+    var st = { step: sidebar.classList.contains('open') ? currentStep : 0,
+               custData: custData, pay: selectedPayMethod, orderNo: checkoutOrderNo,
+               fields: {}, t: Date.now() };
+    FIELDS.forEach(function(id){ var el = document.getElementById(id); if(el) st.fields[id] = el.value; });
+    try{ localStorage.setItem(KEY, JSON.stringify(st)); }catch(e){}
+  }
+  function clear(){ try{ localStorage.removeItem(KEY); }catch(e){} }
+
+  var origGoStep = goStep;
+  goStep = function(n){ origGoStep(n); save(); };
+  var origToggle = toggleCart;
+  toggleCart = function(){ origToggle(); save(); };
+  var origPay = selectPayMethod;
+  selectPayMethod = function(m){ origPay(m); save(); };
+  sidebar.addEventListener('input', save);
+
+  var origConfirm = confirmPayment;
+  confirmPayment = async function(btn){
+    await origConfirm(btn);
+    if(document.getElementById('successOverlay').classList.contains('open')){ done = true; clear(); }
+  };
+  var origClose = closeSuccess;
+  closeSuccess = function(){ done = true; origClose(); clear(); done = false; };
+
+  var st = read();
+  if(st && Date.now() - st.t < 24*60*60*1000){
+    Object.keys(st.fields || {}).forEach(function(id){
+      var el = document.getElementById(id); if(el) el.value = st.fields[id] || '';
+    });
+    if(st.custData) custData = st.custData;
+    if(st.orderNo) checkoutOrderNo = st.orderNo;
+    if(st.step > 0 && cart.length){
+      var step = st.step;
+      if(step >= 3 && !custData.phone) step = 2;
+      if(step === 4 && !custData.pincode) step = 3;
+      if(typeof doHideSplash === 'function') doHideSplash();
+      sidebar.classList.add('open'); overlay.classList.add('open');
+      renderCart();
+      origGoStep(step);
+      if(step === 4 && st.pay) origPay(st.pay);
+    }
+  } else if(st){ clear(); }
 })();
 </script></body>
 </html>
