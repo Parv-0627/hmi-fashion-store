@@ -4,12 +4,12 @@ rules_version = '2';
 //
 // Who can do what:
 //   - Anyone:      read products, categories and store settings
-//   - Customer:    read/update their own profile, read their own orders,
-//                  cancel their own order while it is still Pending
+//   - Customer:    read/update their own profile, read their own orders
 //   - Admin:       everything in the store (admins are listed in /admins/{uid},
 //                  which can only be edited from the Firebase Console)
 //   - Checkout worker (server, uses a service account and bypasses these rules):
-//                  creates orders, marks payments as paid, reduces stock
+//                  creates orders, marks payments as paid, reduces stock,
+//                  cancels a customer's Pending order and puts the stock back
 //
 // Orders can never be created from the browser, so a customer cannot
 // change prices or totals.
@@ -84,12 +84,6 @@ service cloud.firestore {
       // Admin manages fulfilment; totals, items and customer cannot be rewritten
       allow update: if isAdmin()
         && onlyChanges(['status', 'statusTimes', 'tracking', 'adminNote', 'payment', 'stockRestored', 'updatedAt']);
-
-      // Customer may cancel their own order before it is confirmed
-      allow update: if signedIn() && resource.data.userId == request.auth.uid
-        && resource.data.status == 'Pending'
-        && request.resource.data.status == 'Cancelled'
-        && onlyChanges(['status', 'statusTimes', 'updatedAt']);
 
       allow delete: if isAdmin();
     }

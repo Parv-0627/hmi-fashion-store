@@ -3,11 +3,17 @@
   "private": true,
   "description": "Dev tooling only: Firestore rules tests and the checkout worker. The store itself is static HTML.",
   "scripts": {
-    "test:rules": "firebase emulators:exec --only firestore --project demo-hmi \"node --test tests/*.test.mjs\""
+    "test": "firebase emulators:exec --only firestore --project demo-hmi \"node --test tests/*.test.mjs\"",
+    "test:rules": "firebase emulators:exec --only firestore --project demo-hmi \"node --test tests/firestore.rules.test.mjs\"",
+    "emulators": "firebase emulators:start --only firestore,auth --project hmi-fashion-store",
+    "seed": "node tests/dev-seed.mjs",
+    "worker:deploy": "cd worker && wrangler deploy",
+    "rules:deploy": "firebase deploy --only firestore:rules,firestore:indexes --project hmi-fashion-store"
   },
   "devDependencies": {
     "@firebase/rules-unit-testing": "^4.0.1",
     "firebase": "^11.0.0",
-    "firebase-tools": "^14.0.0"
+    "firebase-tools": "^14.0.0",
+    "wrangler": "^4.0.0"
   }
 }

@@ -119,16 +119,10 @@ test('customers see only their own orders', async () => {
   await assertFails(getDoc(doc(alice(), 'orders/LEGACY-1')));
 });
 
-test('customer can cancel own pending order but not change anything else', async () => {
+test('customers cannot change their orders directly (cancelling goes through the checkout server)', async () => {
   await assertFails(updateDoc(doc(alice(), 'orders/HMI-TEST-1'), { total: 1 }));
-  await assertFails(updateDoc(doc(alice(), 'orders/HMI-TEST-1'), { status: 'Delivered' }));
-  await assertFails(updateDoc(doc(bob(), 'orders/HMI-TEST-1'), { status: 'Cancelled' }));
-  await assertSucceeds(updateDoc(doc(alice(), 'orders/HMI-TEST-1'), { status: 'Cancelled', 'statusTimes.Cancelled': 2 }));
-});
-
-test('customer cannot cancel once the order is confirmed', async () => {
-  await env.withSecurityRulesDisabled((ctx) => updateDoc(doc(ctx.firestore(), 'orders/HMI-TEST-1'), { status: 'Confirmed' }));
   await assertFails(updateDoc(doc(alice(), 'orders/HMI-TEST-1'), { status: 'Cancelled' }));
+  await assertFails(updateDoc(doc(bob(), 'orders/HMI-TEST-1'), { status: 'Cancelled' }));
 });
 
 test('admin updates order status but cannot rewrite totals or items', async () => {

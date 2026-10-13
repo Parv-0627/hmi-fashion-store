@@ -274,6 +274,7 @@ function openOrderDetail(id) {
         <div class="help">${fmtDate(o.createdAt)}${o.legacy ? ' · purane system ka order' : ''}</div></div>
       ${statusPill(o.status)}
     </div>
+    ${o.stockIssue ? `<div class="warn-banner">⚠️ Payment ke waqt is order ke kuch items ka stock khatam ho chuka tha. Customer se baat karke maal ka intezaam karein ya refund karein.</div>` : ''}
     ${o.status !== 'Cancelled' ? `<div class="detail-box" style="background:#fff9fb;"><div class="status-timeline">${timeline}</div></div>` : ''}
     ${nextBtns ? `<div style="margin-bottom:14px;"><div class="detail-label">Status badlo</div><div style="display:flex;gap:8px;flex-wrap:wrap;">${nextBtns}</div></div>` : ''}
     <div class="detail-box">
@@ -307,6 +308,7 @@ function openOrderDetail(id) {
       ${esc(payLabel(p))}
       ${p.method === 'cod' ? `<br>Advance: <b>${rs(p.advance)}</b> · Delivery pe cash: <b style="color:var(--red)">${rs(p.balance)}</b>` : ''}
       ${p.razorpayPaymentId ? `<br><span class="help">Razorpay payment: ${esc(p.razorpayPaymentId)}</span>` : ''}
+      ${p.refundDue ? `<div class="warn-banner" style="margin:8px 0 0;">💸 Customer ne order cancel kiya. <b>${rs(p.refundDue)}</b> refund karna hai (Razorpay Dashboard → Payments → is payment par Refund).</div>` : ''}
       ${canMarkPaid ? `<br><button class="btn btn-green btn-sm" type="button" style="margin-top:8px;" onclick="markPaid('${esc(o.id)}')">✅ Poora payment mil gaya</button>` : ''}
     </div>
     <div style="display:flex;justify-content:flex-end;">

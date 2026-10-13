@@ -100,6 +100,8 @@
       adminNote: o.adminNote || '',
       stockDeducted: !!o.stockDeducted,
       stockRestored: !!o.stockRestored,
+      stockIssue: !!o.stockIssue,
+      cancelledBy: o.cancelledBy || '',
       legacy: !o.userId,
     };
   }
