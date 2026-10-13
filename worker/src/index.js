@@ -321,6 +321,11 @@ const ROUTES = {
   'POST /orders/cancel': cancelOrder,
   'POST /admin/upload-image': uploadImage,
   'GET /health': async () => ({ ok: true }),
+  // Confirms the service account can reach Firestore (no data is returned)
+  'GET /health/db': async (req, env, fs) => {
+    try { await fs.get('settings/payment'); return { ok: true, database: 'connected' }; }
+    catch (e) { console.error(e); throw new HttpError(503, 'Database se connect nahi hua: ' + (e.status || e.message)); }
+  },
 };
 
 export default {
