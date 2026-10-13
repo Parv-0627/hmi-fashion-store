@@ -9,7 +9,7 @@ window.HMI_CONFIG = {
     appId:             "1:988891730362:web:40f2c9ee6774df53e24d83"
   },
   // Checkout server (Cloudflare Worker). Set this after deploying worker/ — see worker/README.md
-  workerUrl: "",
+  workerUrl: "https://hmi-checkout.hmi-fashion.workers.dev",
   storeName: "HMI Fashion Store",
   whatsapp: "919560291565"
 };

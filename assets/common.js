@@ -13,7 +13,7 @@
   if (emulator && isLocal) {
     db.useEmulator('127.0.0.1', 8085);
     auth.useEmulator('http://127.0.0.1:9099', { disableWarnings: true });
-    if (!cfg.workerUrl) cfg.workerUrl = 'http://127.0.0.1:8787'; // tests/dev-worker.mjs
+    cfg.workerUrl = 'http://127.0.0.1:8787'; // tests/dev-worker.mjs, never the real server
   } else if (emulator) {
     // tests/preview-server.mjs forwards the emulators and worker on this same origin
     db.settings({ host: location.host, ssl: true, experimentalForceLongPolling: true });
