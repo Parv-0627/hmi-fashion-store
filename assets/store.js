@@ -554,6 +554,9 @@ function friendlyAuth(e) {
     'auth/network-request-failed': 'Internet check karein.',
     'auth/billing-not-enabled': 'SMS OTP abhi chalu nahi hai. Google se login karein.',
     'auth/operation-not-allowed': 'Yeh login tareeka abhi chalu nahi hai.',
+    'auth/configuration-not-found': 'Login abhi setup ho raha hai. Thodi der baad try karein ya WhatsApp par order karein.',
+    'auth/unauthorized-domain': 'Login abhi setup ho raha hai. Thodi der baad try karein.',
+    'auth/quota-exceeded': 'Aaj ke SMS khatam. Google se login karein.',
   };
   return map[e.code] || e.message;
 }

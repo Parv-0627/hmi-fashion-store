@@ -31,6 +31,9 @@ function friendlyAuthError(e) {
     'auth/too-many-requests': 'Bahut zyada koshish ho gayi. Thodi der baad try karein.',
     'auth/popup-closed-by-user': 'Google login window band ho gayi.',
     'auth/network-request-failed': 'Internet check karein.',
+    'auth/configuration-not-found': 'Firebase Authentication abhi chalu nahi hai (Console → Authentication → Get started).',
+    'auth/operation-not-allowed': 'Yeh login tareeka Firebase mein on nahi hai (Authentication → Sign-in method).',
+    'auth/unauthorized-domain': 'Yeh domain Firebase ke Authorized domains mein nahi hai.',
   };
   return map[e.code] || e.message;
 }
