@@ -5,10 +5,10 @@ compatibility_date = "2026-09-01"
 [vars]
 FIREBASE_PROJECT_ID = "hmi-fashion-store"
 ALLOWED_ORIGINS = "https://shop.hmitechnology.co.in"
+RAZORPAY_KEY_ID = "rzp_test_TnPYXHV1KFY8eK"   # public key id; switch to rzp_live_... after KYC
 
 # Secrets (set once with `npx wrangler secret put NAME`, never commit them):
 #   FIREBASE_SERVICE_ACCOUNT   whole JSON of a Firebase service-account key
-#   RAZORPAY_KEY_ID            rzp_test_... (later rzp_live_...)
 #   RAZORPAY_KEY_SECRET
 #   RAZORPAY_WEBHOOK_SECRET    any long random text, same as in the Razorpay webhook
 #   IMGBB_API_KEY              new ImgBB key (the old one was public)

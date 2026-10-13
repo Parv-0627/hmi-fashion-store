@@ -45,7 +45,7 @@ Authentication → Settings → **Authorized domains**:
 cd worker
 npx wrangler login                     # browser mein Cloudflare login
 npx wrangler secret put FIREBASE_SERVICE_ACCOUNT   # service account JSON ka poora content paste karein
-npx wrangler secret put RAZORPAY_KEY_ID            # rzp_test_...   (Step 3 se)
+
 npx wrangler secret put RAZORPAY_KEY_SECRET
 npx wrangler secret put RAZORPAY_WEBHOOK_SECRET    # koi bhi lambi random line, Step 3.2 mein bhi yahi
 npx wrangler secret put IMGBB_API_KEY              # naya ImgBB key (Step 4)
