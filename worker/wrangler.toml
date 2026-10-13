@@ -5,7 +5,7 @@ compatibility_date = "2026-09-01"
 [vars]
 FIREBASE_PROJECT_ID = "hmi-fashion-store"
 ALLOWED_ORIGINS = "https://shop.hmitechnology.co.in"
-RAZORPAY_KEY_ID = "rzp_test_TnPYXHV1KFY8eK"   # public key id; switch to rzp_live_... after KYC
+RAZORPAY_KEY_ID = "rzp_live_TnR12I3DTaSWej"   # public key id (live)
 
 # Secrets (set once with `npx wrangler secret put NAME`, never commit them):
 #   FIREBASE_SERVICE_ACCOUNT   whole JSON of a Firebase service-account key
