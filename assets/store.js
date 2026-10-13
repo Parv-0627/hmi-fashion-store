@@ -541,7 +541,7 @@ function orderPlaced(orderNo) {
 }
 
 // =====================================================================
-// LOGIN (Phone OTP + Google) — used in checkout and in My Account
+// LOGIN (Phone OTP, Google, email link) — used in checkout and in My Account
 // =====================================================================
 let recaptcha = null, confirmation = null;
 function friendlyAuth(e) {
@@ -553,11 +553,14 @@ function friendlyAuth(e) {
     'auth/popup-closed-by-user': 'Google sign-in window was closed.',
     'auth/popup-blocked': 'Popup blocked. Please allow popups in your browser.',
     'auth/network-request-failed': 'Please check your internet connection.',
-    'auth/billing-not-enabled': 'SMS OTP is not available right now. Please log in with Google.',
+    'auth/billing-not-enabled': 'SMS OTP is not available right now. Please log in with Google or email.',
+    'auth/invalid-email': 'Please enter a valid email address.',
+    'auth/invalid-action-code': 'This login link has expired or was already used. Please request a new one.',
+    'auth/expired-action-code': 'This login link has expired. Please request a new one.',
     'auth/operation-not-allowed': 'This login method is not available right now.',
     'auth/configuration-not-found': 'Login is being set up. Please try again later or order on WhatsApp.',
     'auth/unauthorized-domain': 'Login is being set up. Please try again later.',
-    'auth/quota-exceeded': 'SMS limit reached for today. Please log in with Google.',
+    'auth/quota-exceeded': 'Daily limit reached. Please log in with Google.',
   };
   return map[e.code] || e.message;
 }
@@ -581,6 +584,12 @@ function renderLogin(box, subtitle) {
       <div class="form-err" data-el="err"></div>
       <div class="or-line">or</div>
       <button class="google-btn" type="button" data-act="google"><img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18" height="18" alt=""> Log in with Google</button>
+      <button class="google-btn" type="button" data-act="emailToggle" style="margin-top:10px">✉️ Log in with email link</button>
+      <div data-phase="email" style="display:none;margin-top:10px">
+        <input class="field-input" data-el="email" type="email" placeholder="Your email address" autocomplete="email">
+        <button class="cart-footer-btn btn-proceed" type="button" data-act="sendLink">✉️ Send login link</button>
+      </div>
+      <div class="cart-note" data-el="emailSent" style="display:none"></div>
     </div>`;
   const q = (s) => box.querySelector(s);
   const err = (m) => { q('[data-el=err]').textContent = m ? '❌ ' + m : ''; };
@@ -623,6 +632,37 @@ function renderLogin(box, subtitle) {
     err('');
     try { await auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); } catch (e) { err(friendlyAuth(e)); }
   });
+  q('[data-act=emailToggle]').addEventListener('click', () => {
+    q('[data-phase=email]').style.display = 'block'; q('[data-el=email]').focus();
+  });
+  q('[data-act=sendLink]').addEventListener('click', async (ev) => {
+    const email = q('[data-el=email]').value.trim();
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return err('Please enter a valid email address.');
+    err(''); busy(ev.target, true, '⏳ Sending...');
+    try {
+      const url = location.origin + location.pathname + (HMI.emulator ? '?emulator=1&' : '?') + 'emailLogin=1';
+      await auth.sendSignInLinkToEmail(email, { url, handleCodeInApp: true });
+      localStorage.setItem('hmi_email_login', email);
+      const sent = q('[data-el=emailSent]');
+      sent.style.display = 'block';
+      sent.textContent = `✅ Login link sent to ${email}. Open it on this device to log in (check Spam too).`;
+      q('[data-phase=email]').style.display = 'none';
+    } catch (e) { err(friendlyAuth(e)); } finally { busy(ev.target, false, '✉️ Send login link'); }
+  });
+}
+
+// Finish an email-link login when the customer opens the link from their email
+async function completeEmailLinkLogin() {
+  if (!auth.isSignInWithEmailLink(location.href)) return;
+  let email = localStorage.getItem('hmi_email_login');
+  if (!email) email = prompt('Please confirm your email address to finish logging in');
+  if (!email) return;
+  try {
+    await auth.signInWithEmailLink(email.trim(), location.href);
+    localStorage.removeItem('hmi_email_login');
+    flash('✅ Logged in');
+  } catch (e) { flash('❌ ' + friendlyAuth(e), '#dc2626'); }
+  history.replaceState(null, '', location.pathname + (HMI.emulator ? '?emulator=1' : ''));
 }
 
 // =====================================================================
@@ -883,3 +923,4 @@ loadLocalWishlist();
 renderShipTexts();
 renderCart();
 startCatalogue();
+completeEmailLinkLogin();
