@@ -24,7 +24,7 @@
     auth.settings.appVerificationDisabledForTesting = true;
     document.addEventListener('DOMContentLoaded', () => {
       const bar = document.createElement('div');
-      bar.textContent = '🧪 TEST MODE — test data, nakli payment, OTP screen par dikhega';
+      bar.textContent = '🧪 TEST MODE — test data, fake payments, OTP shown on screen';
       bar.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:99998;background:#1e40af;color:#fff;text-align:center;font:700 12px Nunito,sans-serif;padding:5px;';
       document.body.appendChild(bar);
     });
@@ -133,12 +133,12 @@
         ? `💵 COD — advance ${rs(pay.advance)} paid` : `💵 COD — advance ${rs(pay.advance)} pending`;
       return '💵 Cash on Delivery';
     }
-    return 'UPI/QR (purana order)';
+    return 'UPI/QR (older order)';
   }
 
   // Call the checkout worker with the signed-in user's Firebase ID token
   async function callWorker(path, body, opts = {}) {
-    if (!cfg.workerUrl) throw new Error('Checkout server abhi set nahi hua (assets/config.js mein workerUrl).');
+    if (!cfg.workerUrl) throw new Error('Checkout server is not set up yet (workerUrl in assets/config.js).');
     const user = auth.currentUser;
     const headers = {};
     if (user) headers.Authorization = 'Bearer ' + (await user.getIdToken());

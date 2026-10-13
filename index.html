@@ -593,7 +593,7 @@ window.addEventListener('load',function(){setTimeout(doHideSplash,500);});
         <input class="field-input" id="custPincode" placeholder="Pincode *" type="tel" inputmode="numeric" maxlength="6" autocomplete="postal-code">
         <input class="field-input" id="custAltPhone" placeholder="Alt. Phone (optional)" type="tel" inputmode="numeric" maxlength="10">
       </div>
-      <label class="check-line"><input type="checkbox" id="saveAddress" checked> Yeh address agli baar ke liye save karo</label>
+      <label class="check-line"><input type="checkbox" id="saveAddress" checked> Save this address for next time</label>
     </div>
     <div class="form-err" id="addrErr"></div>
     <button class="cart-footer-btn btn-proceed" type="button" id="toPaymentBtn">Proceed to Payment →</button>
@@ -611,8 +611,8 @@ window.addEventListener('load',function(){setTimeout(doHideSplash,500);});
     <div class="cod-box" id="payBreakdown"></div>
     <div class="ship-to" id="shipTo"></div>
     <div class="form-err" id="payErr"></div>
-    <button class="cart-footer-btn btn-proceed" type="button" id="placeOrderBtn" disabled>Payment method chunein</button>
-    <div class="secure-note">🔒 Payment Razorpay se hota hai. Aapka card/UPI detail hum tak nahi aata.</div>
+    <button class="cart-footer-btn btn-proceed" type="button" id="placeOrderBtn" disabled>Choose payment method</button>
+    <div class="secure-note">🔒 Payments are processed securely by Razorpay. We never see your card/UPI details.</div>
     <button class="cart-footer-btn btn-back" type="button" data-step="3">← Back</button>
   </div>
 </div>
@@ -623,7 +623,7 @@ window.addEventListener('load',function(){setTimeout(doHideSplash,500);});
     <div class="tracker-header">
       <div>
         <div style="font-family:'Playfair Display',serif;font-size:1.1rem;">👤 My Account</div>
-        <div style="font-size:.75rem;opacity:.85;margin-top:2px;" id="accountSub">Login karke apne orders dekhein</div>
+        <div style="font-size:.75rem;opacity:.85;margin-top:2px;" id="accountSub">Log in to view your orders</div>
       </div>
       <button type="button" class="modal-x" id="accountClose" aria-label="Close">✕</button>
     </div>
@@ -643,10 +643,10 @@ window.addEventListener('load',function(){setTimeout(doHideSplash,500);});
     <div class="success-icon">🎉</div>
     <h2>Order Placed!</h2>
     <div class="order-no-badge" id="orderNoDisplay"></div>
-    <p id="successText">Aapka order mil gaya hai. Hum jaldi confirm karenge.</p>
-    <div class="tracking-note">📦 "My Orders" mein status aur tracking dekhte rahein.</div>
+    <p id="successText">We've received your order. We'll confirm it shortly.</p>
+    <div class="tracking-note">📦 Check "My Orders" for status and tracking.</div>
     <button class="btn-continue" type="button" id="successOrdersBtn">📦 My Orders</button>
-    <a class="btn-wa-confirm" id="successWaBtn" target="_blank" rel="noopener">💬 WhatsApp par baat karein</a>
+    <a class="btn-wa-confirm" id="successWaBtn" target="_blank" rel="noopener">💬 Chat on WhatsApp</a>
     <button class="btn-continue" type="button" id="successCloseBtn">🛍️ Continue Shopping</button>
   </div>
 </div>
@@ -691,17 +691,17 @@ window.addEventListener('load',function(){setTimeout(doHideSplash,500);});
   <div class="shop-bar" id="shopBar">
     <div class="shop-bar-left"><h2 id="shopTitle">Latest Collection</h2><span id="shopCount"></span></div>
     <div class="shop-tools">
-      <input type="search" id="searchInput" class="shop-search" placeholder="🔍 Search karo... (saree, kurti)" aria-label="Search products">
+      <input type="search" id="searchInput" class="shop-search" placeholder="🔍 Search... (saree, kurti)" aria-label="Search products">
       <select id="sortSelect" class="shop-sort" aria-label="Sort">
-        <option value="new">Naye pehle</option>
-        <option value="low">Price: kam se zyada</option>
-        <option value="high">Price: zyada se kam</option>
-        <option value="off">Sabse zyada discount</option>
+        <option value="new">Newest first</option>
+        <option value="low">Price: low to high</option>
+        <option value="high">Price: high to low</option>
+        <option value="off">Biggest discount</option>
       </select>
-      <button id="shopClear" type="button">✕ Sab products</button>
+      <button id="shopClear" type="button">✕ All products</button>
     </div>
   </div>
-  <div class="products-grid" id="productsGrid"><div class="empty-grid">⏳ Products load ho rahe hain...</div></div>
+  <div class="products-grid" id="productsGrid"><div class="empty-grid">⏳ Loading products...</div></div>
 </section>
 
 <!-- KIDS -->
@@ -725,7 +725,7 @@ window.addEventListener('load',function(){setTimeout(doHideSplash,500);});
     <div class="why-card"><div class="why-icon">✨</div><h3>Premium Quality</h3><p>Every piece carefully selected for finest fabric</p></div>
     <div class="why-card"><div class="why-icon">💰</div><h3>Best Prices</h3><p>Fashion-forward styles at unbeatable prices</p></div>
     <div class="why-card"><div class="why-icon">🚚</div><h3 id="whyShipTitle">Pan India Delivery</h3><p id="whyShipText">Fast & safe delivery across India</p></div>
-    <div class="why-card"><div class="why-icon">🔒</div><h3>Secure Payment</h3><p>UPI, Card, Netbanking (Razorpay) ya Cash on Delivery</p></div>
+    <div class="why-card"><div class="why-icon">🔒</div><h3>Secure Payment</h3><p>UPI, Card, Netbanking (Razorpay) or Cash on Delivery</p></div>
   </div>
 </section>
 

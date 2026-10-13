@@ -184,7 +184,7 @@ test('COD is refused when the product or the store does not allow it', async () 
 test('stock, hidden products, sizes and colours are checked', async () => {
   const tooMany = await call('/checkout/start', { uid: 'alice', body: { method: 'razorpay', address, items: [{ productId: 'kurti', qty: 2, size: 'M' }] } });
   assert.equal(tooMany.status, 409);
-  assert.match(tooMany.data.error, /sirf 1 piece/);
+  assert.match(tooMany.data.error, /Only 1 left/);
   assert.equal((await call('/checkout/start', { uid: 'alice', body: { method: 'razorpay', address, items: [{ productId: 'hidden', qty: 1 }] } })).status, 409);
   assert.equal((await call('/checkout/start', { uid: 'alice', body: { method: 'razorpay', address, items: [{ productId: 'nope', qty: 1 }] } })).status, 409);
   assert.equal((await call('/checkout/start', { uid: 'alice', body: { method: 'razorpay', address, items: [{ productId: 'kurti', qty: 1 }] } })).status, 400);

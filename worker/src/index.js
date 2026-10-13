@@ -58,11 +58,11 @@ function cleanAddress(a) {
     line1: str(a.line1, 200), line2: str(a.line2, 200), landmark: str(a.landmark, 120),
     city: str(a.city, 80), state: str(a.state, 80), pincode: str(a.pincode, 6), altPhone: str(a.altPhone, 20),
   };
-  if (out.name.length < 2) throw new HttpError(400, 'Naam likhein');
-  if (!/^[6-9]\d{9}$/.test(out.phone)) throw new HttpError(400, 'Sahi 10-digit mobile number likhein');
-  if (out.line1.length < 3) throw new HttpError(400, 'Address likhein');
-  if (!out.city || !out.state) throw new HttpError(400, 'City aur state likhein');
-  if (!/^[1-9]\d{5}$/.test(out.pincode)) throw new HttpError(400, 'Sahi 6-digit pincode likhein');
+  if (out.name.length < 2) throw new HttpError(400, 'Please enter your name');
+  if (!/^[6-9]\d{9}$/.test(out.phone)) throw new HttpError(400, 'Please enter a valid 10-digit mobile number');
+  if (out.line1.length < 3) throw new HttpError(400, 'Please enter your address');
+  if (!out.city || !out.state) throw new HttpError(400, 'Please enter your city and state');
+  if (!/^[1-9]\d{5}$/.test(out.pincode)) throw new HttpError(400, 'Please enter a valid 6-digit pincode');
   return out;
 }
 
@@ -70,14 +70,14 @@ const tracksStock = (p) => (p.trackStock !== undefined ? p.trackStock !== false 
 
 // Validates the cart against live product data and returns priced lines.
 async function priceCart(fs, rawItems, method, transaction) {
-  if (!Array.isArray(rawItems) || !rawItems.length) throw new HttpError(400, 'Cart khali hai');
-  if (rawItems.length > 30) throw new HttpError(400, 'Ek order mein 30 se zyada items nahi');
+  if (!Array.isArray(rawItems) || !rawItems.length) throw new HttpError(400, 'Your cart is empty');
+  if (rawItems.length > 30) throw new HttpError(400, 'An order cannot have more than 30 items');
   // merge identical lines
   const merged = new Map();
   for (const i of rawItems) {
     const productId = str(i.productId, 100), size = str(i.size, 40), color = str(i.color, 40);
     const qty = Number(i.qty);
-    if (!productId || !Number.isInteger(qty) || qty < 1 || qty > 10) throw new HttpError(400, 'Cart mein galat quantity hai');
+    if (!productId || !Number.isInteger(qty) || qty < 1 || qty > 10) throw new HttpError(400, 'Your cart has an invalid quantity');
     const key = [productId, size, color].join('|');
     const prev = merged.get(key);
     merged.set(key, { productId, size, color, qty: (prev ? prev.qty : 0) + qty });
@@ -91,14 +91,14 @@ async function priceCart(fs, rawItems, method, transaction) {
   const needed = {};
   const priced = lines.map((l) => {
     const p = products[l.productId];
-    if (!p || p.active === false || !(Number(p.price) > 0)) throw new HttpError(409, 'Ek product ab available nahi hai. Cart refresh karein.');
+    if (!p || p.active === false || !(Number(p.price) > 0)) throw new HttpError(409, 'A product is no longer available. Please refresh your cart.');
     const sizes = Array.isArray(p.sizes) ? p.sizes : [];
     const colors = (Array.isArray(p.colors) ? p.colors : []).map((c) => c && c.name);
-    if (sizes.length && !sizes.includes(l.size)) throw new HttpError(400, `"${p.name}" ka size chunein`);
-    if (colors.length && !colors.includes(l.color)) throw new HttpError(400, `"${p.name}" ka colour chunein`);
+    if (sizes.length && !sizes.includes(l.size)) throw new HttpError(400, `Please choose a size for "${p.name}"`);
+    if (colors.length && !colors.includes(l.color)) throw new HttpError(400, `Please choose a colour for "${p.name}"`);
     if (!sizes.length) l.size = '';
     if (!colors.length) l.color = '';
-    if (method === 'cod' && p.cod === false) throw new HttpError(400, `"${p.name}" par Cash on Delivery nahi hai`);
+    if (method === 'cod' && p.cod === false) throw new HttpError(400, `Cash on Delivery is not available for "${p.name}"`);
     needed[l.productId] = (needed[l.productId] || 0) + l.qty;
     return {
       productId: l.productId, name: p.name, price: Math.round(Number(p.price)), qty: l.qty,
@@ -109,11 +109,11 @@ async function priceCart(fs, rawItems, method, transaction) {
     const p = products[id];
     if (tracksStock(p) && (Number(p.stock) || 0) < qty) {
       throw new HttpError(409, (Number(p.stock) || 0) > 0
-        ? `"${p.name}" ke sirf ${p.stock} piece bache hain`
-        : `"${p.name}" out of stock ho gaya`);
+        ? `Only ${p.stock} left of "${p.name}"`
+        : `"${p.name}" is now out of stock`);
     }
   }
-  if (method === 'cod' && !settings.codEnabled) throw new HttpError(400, 'Cash on Delivery abhi band hai');
+  if (method === 'cod' && !settings.codEnabled) throw new HttpError(400, 'Cash on Delivery is not available right now');
   const totals = calcTotals(priced, settings, method === 'cod' ? 'cod' : 'prepaid');
   return { lines: priced, totals, products, needed };
 }
@@ -140,7 +140,7 @@ async function placeOrder(fs, { build, checkoutId, mustHaveStock }) {
       let checkout = null;
       if (checkoutId) {
         [checkout] = await fs.getMany([`checkouts/${checkoutId}`], tx);
-        if (!checkout) throw new HttpError(404, 'Checkout nahi mila');
+        if (!checkout) throw new HttpError(404, 'Checkout not found');
         if (checkout.status === 'done') { await fs.rollback(tx); return { orderNo: checkout.orderNo, already: true }; }
       }
       const order = build(checkout);
@@ -154,7 +154,7 @@ async function placeOrder(fs, { build, checkoutId, mustHaveStock }) {
         const want = order.items.filter((i) => i.productId === id).reduce((a, i) => a + i.qty, 0);
         const have = Number(p.stock) || 0;
         if (have < want) {
-          if (mustHaveStock) throw new HttpError(409, `"${p.name}" ab stock mein nahi hai`);
+          if (mustHaveStock) throw new HttpError(409, `"${p.name}" is now out of stock`);
           stockIssue = true; // already paid: still place it and tell the admin
         }
         writes.push({ op: 'update', path: `products/${id}`, data: { stock: Math.max(0, have - want), updatedAt: Date.now() } });
@@ -169,7 +169,7 @@ async function placeOrder(fs, { build, checkoutId, mustHaveStock }) {
       if (e.firestoreStatus !== 'ABORTED' || attempt === 3) throw e; // ABORTED = another order touched the same stock
     }
   }
-  throw new HttpError(503, 'Server busy, dobara try karein');
+  throw new HttpError(503, 'Server is busy, please try again');
 }
 
 async function razorpayCreateOrder(env, { amount, receipt, notes }) {
@@ -180,7 +180,7 @@ async function razorpayCreateOrder(env, { amount, receipt, notes }) {
     body: JSON.stringify({ amount: amount * 100, currency: 'INR', receipt, notes }),
   });
   const data = await res.json().catch(() => ({}));
-  if (!res.ok || !data.id) throw new HttpError(502, 'Payment shuru nahi ho paya: ' + (data.error?.description || res.status));
+  if (!res.ok || !data.id) throw new HttpError(502, 'Could not start the payment: ' + (data.error?.description || res.status));
   return data;
 }
 
@@ -237,9 +237,9 @@ async function checkoutConfirm(req, env, fs) {
   const b = await readJson(req);
   const orderId = str(b.razorpay_order_id, 64), paymentId = str(b.razorpay_payment_id, 64), sig = str(b.razorpay_signature, 128);
   const expected = await hmacHex(env.RAZORPAY_KEY_SECRET, `${orderId}|${paymentId}`);
-  if (!orderId || !paymentId || !safeEqual(expected, sig)) throw new HttpError(400, 'Payment verify nahi hua');
+  if (!orderId || !paymentId || !safeEqual(expected, sig)) throw new HttpError(400, 'Payment could not be verified');
   const checkout = await fs.get(`checkouts/${orderId}`);
-  if (!checkout || checkout.uid !== user.uid) throw new HttpError(404, 'Checkout nahi mila');
+  if (!checkout || checkout.uid !== user.uid) throw new HttpError(404, 'Checkout not found');
   const r = await finalizeRazorpay(fs, orderId, paymentId);
   return { placed: true, orderNo: r.orderNo };
 }
@@ -264,8 +264,8 @@ async function cancelOrder(req, env, fs) {
     const tx = await fs.beginTransaction();
     try {
       const [order] = await fs.getMany([`orders/${orderNo}`], tx);
-      if (!order || order.userId !== user.uid) throw new HttpError(404, 'Order nahi mila');
-      if (order.status !== 'Pending') throw new HttpError(400, 'Yeh order ab cancel nahi ho sakta. WhatsApp par baat karein.');
+      if (!order || order.userId !== user.uid) throw new HttpError(404, 'Order not found');
+      if (order.status !== 'Pending') throw new HttpError(400, 'This order can no longer be cancelled. Please contact us on WhatsApp.');
       const ids = [...new Set(order.items.map((i) => i.productId))];
       const docs = await fs.getMany(ids.map((id) => `products/${id}`), tx);
       const writes = [];
@@ -295,22 +295,22 @@ async function cancelOrder(req, env, fs) {
       if (e.firestoreStatus !== 'ABORTED' || attempt === 3) throw e;
     }
   }
-  throw new HttpError(503, 'Server busy');
+  throw new HttpError(503, 'Server is busy, please try again');
 }
 
 async function uploadImage(req, env, fs) {
   const user = await requireUser(req, env);
-  if (!(await fs.get(`admins/${user.uid}`))) throw new HttpError(403, 'Sirf admin photo upload kar sakta hai');
+  if (!(await fs.get(`admins/${user.uid}`))) throw new HttpError(403, 'Only an admin can upload photos');
   const form = await req.formData();
   const file = form.get('image');
-  if (!file || typeof file === 'string') throw new HttpError(400, 'Photo nahi mili');
-  if (file.size > 8 * 1024 * 1024) throw new HttpError(413, 'Photo 8 MB se chhoti honi chahiye');
-  if (!/^image\//.test(file.type || 'image/jpeg')) throw new HttpError(400, 'Sirf photo upload ho sakti hai');
+  if (!file || typeof file === 'string') throw new HttpError(400, 'No photo received');
+  if (file.size > 8 * 1024 * 1024) throw new HttpError(413, 'Photo must be smaller than 8 MB');
+  if (!/^image\//.test(file.type || 'image/jpeg')) throw new HttpError(400, 'Only image files can be uploaded');
   const fd = new FormData();
   fd.append('image', file, file.name || 'product.jpg');
   const res = await fetch(`${env.IMGBB_API_BASE || 'https://api.imgbb.com'}/1/upload?key=${encodeURIComponent(env.IMGBB_API_KEY)}`, { method: 'POST', body: fd });
   const data = await res.json().catch(() => ({}));
-  if (!data.success || !data.data?.url) throw new HttpError(502, 'Photo upload nahi hui: ' + (data.error?.message || res.status));
+  if (!data.success || !data.data?.url) throw new HttpError(502, 'Photo upload failed: ' + (data.error?.message || res.status));
   return { url: data.data.url };
 }
 
@@ -324,7 +324,7 @@ const ROUTES = {
   // Confirms the service account can reach Firestore (no data is returned)
   'GET /health/db': async (req, env, fs) => {
     try { await fs.get('settings/payment'); return { ok: true, database: 'connected' }; }
-    catch (e) { console.error(e); throw new HttpError(503, 'Database se connect nahi hua: ' + (e.status || e.message)); }
+    catch (e) { console.error(e); throw new HttpError(503, 'Could not connect to the database: ' + (e.status || e.message)); }
   },
 };
 
@@ -339,7 +339,7 @@ export default {
       if (e instanceof AuthError) return reply(env, req, 401, { error: e.message });
       if (e instanceof HttpError) return reply(env, req, e.status, { error: e.message });
       console.error(e);
-      return reply(env, req, 500, { error: 'Server error, dobara try karein' });
+      return reply(env, req, 500, { error: 'Server error, please try again' });
     }
   },
 };

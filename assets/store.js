@@ -90,9 +90,9 @@ function renderShipTexts() {
   const { shipping, freeAbove } = state.settings;
   $('statShip').textContent = shipping ? '₹' + shipping : 'FREE';
   $('heroShip').textContent = shipping === 0 ? '🚚 Pan India Delivery — FREE!'
-    : freeAbove ? `🚚 Delivery ₹${shipping} — ₹${freeAbove.toLocaleString('en-IN')}+ order pe FREE!` : `🚚 Pan India Delivery — Only ₹${shipping}!`;
+    : freeAbove ? `🚚 Delivery ₹${shipping} — FREE on orders ₹${freeAbove.toLocaleString('en-IN')}+!` : `🚚 Pan India Delivery — Only ₹${shipping}!`;
   $('whyShipTitle').textContent = shipping ? 'Delivery @ ₹' + shipping : 'Free Delivery';
-  $('whyShipText').textContent = freeAbove && shipping ? `₹${freeAbove.toLocaleString('en-IN')} se upar FREE delivery` : 'Fast & safe Pan India delivery';
+  $('whyShipText').textContent = freeAbove && shipping ? `FREE delivery above ₹${freeAbove.toLocaleString('en-IN')}` : 'Fast & safe Pan India delivery';
   $('footShip').textContent = shipping ? `🚚 Pan India Delivery — ₹${shipping}` : '🚚 Pan India Delivery — FREE';
 }
 
@@ -130,7 +130,7 @@ function visibleProducts() {
 function stockBadge(p) {
   if (!p.trackStock) return '';
   if (p.stock <= 0) return '<span class="qty-badge qty-out">Out of Stock</span>';
-  if (p.stock <= 5) return `<span class="qty-badge qty-low">Sirf ${p.stock} bache!</span>`;
+  if (p.stock <= 5) return `<span class="qty-badge qty-low">Only ${p.stock} left!</span>`;
   return '<span class="qty-badge qty-instock">In Stock</span>';
 }
 
@@ -138,12 +138,12 @@ function renderProducts() {
   const list = visibleProducts();
   const grid = $('productsGrid');
   const isAll = state.activeCat === 'all' && !state.search;
-  $('shopTitle').textContent = state.search ? `"${state.search}" ke results` : state.activeCat === 'all' ? 'Latest Collection' : catName(state.activeCat);
+  $('shopTitle').textContent = state.search ? `Results for "${state.search}"` : state.activeCat === 'all' ? 'Latest Collection' : catName(state.activeCat);
   $('shopCount').textContent = list.length + (list.length === 1 ? ' product' : ' products');
   $('shopClear').style.display = isAll ? 'none' : 'inline-flex';
   if (!state.catalogueReady && !state.products.length) return;
   if (!list.length) {
-    grid.innerHTML = `<div class="empty-grid"><div style="font-size:3rem;margin-bottom:12px">🛍️</div><p>${state.search ? 'Kuch nahi mila. Doosra word try karein.' : 'Is category mein abhi koi product nahi hai.'}</p></div>`;
+    grid.innerHTML = `<div class="empty-grid"><div style="font-size:3rem;margin-bottom:12px">🛍️</div><p>${state.search ? 'No results found. Try another word.' : 'No products in this category yet.'}</p></div>`;
     return;
   }
   grid.innerHTML = list.map((p) => {
@@ -179,7 +179,7 @@ function renderKids() {
       ${src ? `<img src="${src}" alt="${esc(p.name)}" loading="lazy">` : `<div class="kids-emoji" style="background:${esc(p.bg)}">${esc(p.emoji || '🧒')}</div>`}
       ${p.badge ? `<div class="ktag">${esc(p.badge)}</div>` : ''}
       <div class="koverlay"><h4>${esc(p.name)}</h4><p>${rs(p.price)}</p></div></div>`;
-  }).join('') : '<div class="kids-empty">Kids collection jaldi aa raha hai! 😍</div>';
+  }).join('') : '<div class="kids-empty">Kids collection coming soon! 😍</div>';
 }
 
 // =====================================================================
@@ -203,11 +203,11 @@ function openPDP(id) {
   $('pdpPriceRow').innerHTML = `<span class="pdp-price">${rs(p.price)}</span>`
     + (hasMrp(p) ? `<span class="pdp-old">${rs(p.mrp)}</span><span class="pdp-disc">${offPct(p)}% OFF</span>` : '')
     + (p.trackStock ? (p.stock <= 0 ? '<span class="pdp-qty-tag qty-out">Out of Stock</span>'
-      : p.stock <= 5 ? `<span class="pdp-qty-tag qty-low">Sirf ${p.stock} bache!</span>` : '<span class="pdp-qty-tag qty-instock">In Stock</span>') : '');
+      : p.stock <= 5 ? `<span class="pdp-qty-tag qty-low">Only ${p.stock} left!</span>` : '<span class="pdp-qty-tag qty-instock">In Stock</span>') : '');
   $('pdpDesc').textContent = p.desc || 'Premium quality product from HMI Fashion Store.';
   $('pdpCodTag').innerHTML = state.settings.codEnabled && p.cod
     ? '<span class="pdp-cod-tag yes">💵 Cash on Delivery available</span>'
-    : '<span class="pdp-cod-tag no">💳 Sirf online payment</span>';
+    : '<span class="pdp-cod-tag no">💳 Online payment only</span>';
   $('pdpSizeWrap').style.display = p.sizes.length ? 'block' : 'none';
   $('pdpSizes').innerHTML = p.sizes.map((s) => `<button type="button" class="size-btn ${pdp.size === s ? 'selected' : ''}" data-size="${esc(s)}">${esc(s)}</button>`).join('');
   $('pdpColorWrap').style.display = p.colors.length ? 'block' : 'none';
@@ -219,7 +219,7 @@ function openPDP(id) {
   $('pdpAddCart').style.opacity = oos ? '.5' : '1';
   $('pdpAddCart').textContent = oos ? '❌ Out of Stock' : '🛒 Add to Cart';
   renderPdpWish();
-  $('pdpWaBtn').href = `https://wa.me/${WA}?text=${encodeURIComponent(`Hello HMI! Mujhe *${p.name}* (${rs(p.price)}) ke baare mein jaanna hai.`)}`;
+  $('pdpWaBtn').href = `https://wa.me/${WA}?text=${encodeURIComponent(`Hello HMI! I'd like to know more about *${p.name}* (${rs(p.price)}).`)}`;
   $('pdpOverlay').classList.add('open');
   lockScroll(true);
 }
@@ -233,8 +233,8 @@ function closePDP() { $('pdpOverlay').classList.remove('open'); lockScroll(false
 function pdpAdd() {
   const p = pdp.p;
   if (!p || outOfStock(p)) return;
-  if (p.sizes.length && !pdp.size) { $('pdpHint').textContent = '⚠️ Pehle size chunein'; return; }
-  if (p.colors.length && !pdp.color) { $('pdpHint').textContent = '⚠️ Pehle colour chunein'; return; }
+  if (p.sizes.length && !pdp.size) { $('pdpHint').textContent = '⚠️ Please select a size'; return; }
+  if (p.colors.length && !pdp.color) { $('pdpHint').textContent = '⚠️ Please select a colour'; return; }
   if (addToCart(p, pdp.size, pdp.color)) closePDP();
 }
 
@@ -262,13 +262,13 @@ function cartLines() {
 }
 function qtyInCart(id) { return state.cart.filter((i) => i.productId === id).reduce((a, i) => a + i.qty, 0); }
 function addToCart(p, size, color) {
-  if (p.trackStock && qtyInCart(p.id) + 1 > p.stock) { flash(`Sirf ${p.stock} piece available hain`, '#dc2626'); return false; }
+  if (p.trackStock && qtyInCart(p.id) + 1 > p.stock) { flash(`Only ${p.stock} available`, '#dc2626'); return false; }
   const key = cartKey(p.id, size, color);
   const ex = state.cart.find((i) => cartKey(i.productId, i.size, i.color) === key);
-  if (ex) { if (ex.qty >= 10) { flash('Ek item ke max 10 piece', '#dc2626'); return false; } ex.qty++; }
+  if (ex) { if (ex.qty >= 10) { flash('Max 10 per item', '#dc2626'); return false; } ex.qty++; }
   else state.cart.push({ productId: p.id, size: size || '', color: color || '', qty: 1 });
   saveCart(); renderCart();
-  flash('✅ Cart mein add ho gaya!');
+  flash('✅ Added to cart!');
   return true;
 }
 function quickAdd(id) {
@@ -282,8 +282,8 @@ function changeQty(index, d) {
   const item = state.cart[index];
   if (!item) return;
   const p = findProduct(item.productId);
-  if (d > 0 && p && p.trackStock && qtyInCart(p.id) + 1 > p.stock) return flash(`Sirf ${p.stock} piece available hain`, '#dc2626');
-  if (d > 0 && item.qty >= 10) return flash('Ek item ke max 10 piece', '#dc2626');
+  if (d > 0 && p && p.trackStock && qtyInCart(p.id) + 1 > p.stock) return flash(`Only ${p.stock} available`, '#dc2626');
+  if (d > 0 && item.qty >= 10) return flash('Max 10 per item', '#dc2626');
   item.qty += d;
   if (item.qty <= 0) state.cart.splice(index, 1);
   saveCart(); renderCart();
@@ -292,7 +292,7 @@ function syncCartWithProducts() {
   if (!state.catalogueReady) return;
   const before = state.cart.length;
   state.cart = state.cart.filter((i) => findProduct(i.productId));
-  if (state.cart.length !== before) flash('Cart ka ek product ab available nahi hai, hata diya gaya', '#92650a');
+  if (state.cart.length !== before) flash('An item in your cart is no longer available and was removed', '#92650a');
   saveCart(); renderCart();
 }
 
@@ -300,7 +300,7 @@ function renderCart() {
   const lines = cartLines();
   const wrap = $('cartItemsWrap');
   if (!lines.length) {
-    wrap.innerHTML = '<div class="empty-msg"><div class="big">🛍️</div>Cart khali hai.<br>Kuch pasand aaye toh add karein!</div>';
+    wrap.innerHTML = '<div class="empty-msg"><div class="big">🛍️</div>Your cart is empty.<br>Add something you love!</div>';
     $('cartSummaryBox').style.display = 'none';
     return;
   }
@@ -315,14 +315,14 @@ function renderCart() {
         <h4>${esc(p.name)}</h4>
         ${l.size ? `<span class="cart-variant-tag">📐 ${esc(l.size)}</span>` : ''}${l.color ? `<span class="cart-variant-tag">🎨 ${esc(l.color)}</span>` : ''}
         <div class="cart-item-price">${rs(p.price * l.qty)}</div>
-        ${short ? `<div style="color:#dc2626;font-size:.72rem;font-weight:700;">Sirf ${p.stock} bache hain — qty kam karein</div>` : ''}
+        ${short ? `<div style="color:#dc2626;font-size:.72rem;font-weight:700;">Only ${p.stock} left — please reduce qty</div>` : ''}
         <div class="cart-item-qty">
-          <button class="qty-btn" type="button" data-qty="${i}" data-d="-1" aria-label="Kam">−</button>
+          <button class="qty-btn" type="button" data-qty="${i}" data-d="-1" aria-label="Decrease">−</button>
           <span class="qty-num">${l.qty}</span>
-          <button class="qty-btn" type="button" data-qty="${i}" data-d="1" aria-label="Zyada">+</button>
+          <button class="qty-btn" type="button" data-qty="${i}" data-d="1" aria-label="Increase">+</button>
         </div>
       </div>
-      <button class="remove-item" type="button" data-remove="${i}" aria-label="Hatao">🗑️</button>
+      <button class="remove-item" type="button" data-remove="${i}" aria-label="Remove">🗑️</button>
     </div>`;
   }).join('');
   const t = calcTotals(lines.map((l) => ({ price: l.p.price, qty: l.qty })), state.settings, 'prepaid');
@@ -330,7 +330,7 @@ function renderCart() {
   $('shipAmt').textContent = t.ship ? rs(t.ship) : 'FREE';
   $('totalAmt').textContent = rs(t.total);
   const { freeAbove, shipping } = state.settings;
-  $('freeShipNote').textContent = shipping && freeAbove && t.sub < freeAbove ? `₹${(freeAbove - t.sub).toLocaleString('en-IN')} aur ki shopping par FREE delivery!` : '';
+  $('freeShipNote').textContent = shipping && freeAbove && t.sub < freeAbove ? `Add ₹${(freeAbove - t.sub).toLocaleString('en-IN')} more for FREE delivery!` : '';
   $('cartSummaryBox').style.display = 'block';
 }
 
@@ -360,7 +360,7 @@ function goStep(n) {
   for (let i = 1; i <= 4; i++) $('sdot' + i).className = 'step-dot' + (i < n ? ' done' : i === n ? ' active' : '');
   for (let i = 1; i <= 3; i++) $('sline' + i).className = 'step-line' + (i < n ? ' done' : '');
   if (n === 1) renderCart();
-  if (n === 2) renderLogin($('checkoutLogin'), 'Order karne ke liye login karein');
+  if (n === 2) renderLogin($('checkoutLogin'), 'Log in to place your order');
   if (n === 3) renderAddressStep();
   if (n === 4) renderPayment();
 }
@@ -372,12 +372,12 @@ function readAddressForm() {
     landmark: v('custLandmark'), city: v('custCity'), state: v('custState'), pincode: v('custPincode'), altPhone: v('custAltPhone') };
 }
 function addressError(a) {
-  if (!a.name || a.name.length < 2) return 'Naam likhein';
-  if (!/^[6-9]\d{9}$/.test(a.phone)) return 'Sahi 10-digit mobile number likhein';
-  if (!a.line1 || a.line1.length < 3) return 'House / Street likhein';
-  if (!a.city) return 'City likhein';
-  if (!a.state) return 'State likhein';
-  if (!/^[1-9]\d{5}$/.test(a.pincode)) return 'Sahi 6-digit pincode likhein';
+  if (!a.name || a.name.length < 2) return 'Please enter your name';
+  if (!/^[6-9]\d{9}$/.test(a.phone)) return 'Please enter a valid 10-digit mobile number';
+  if (!a.line1 || a.line1.length < 3) return 'Please enter house / street';
+  if (!a.city) return 'Please enter city';
+  if (!a.state) return 'Please enter state';
+  if (!/^[1-9]\d{5}$/.test(a.pincode)) return 'Please enter a valid 6-digit pincode';
   return '';
 }
 function addressText(a) {
@@ -392,7 +392,7 @@ function renderAddressStep() {
     <label class="addr-card ${selectedAddressIndex === i ? 'selected' : ''}">
       <input type="radio" name="addrPick" value="${i}" ${selectedAddressIndex === i ? 'checked' : ''}>
       <span><b>${esc(a.name)}</b> · ${esc(a.phone)}<br>${esc(addressText(a))}</span></label>`).join('')
-    + `<label class="addr-card ${selectedAddressIndex === -1 ? 'selected' : ''}"><input type="radio" name="addrPick" value="-1" ${selectedAddressIndex === -1 ? 'checked' : ''}><span>➕ Naya address</span></label>` : '';
+    + `<label class="addr-card ${selectedAddressIndex === -1 ? 'selected' : ''}"><input type="radio" name="addrPick" value="-1" ${selectedAddressIndex === -1 ? 'checked' : ''}><span>➕ New address</span></label>` : '';
   $('addressForm').style.display = selectedAddressIndex === -1 ? 'block' : 'none';
   if (selectedAddressIndex === -1 && !$('custPhone').value && state.user && state.user.phoneNumber) {
     $('custPhone').value = state.user.phoneNumber.replace(/^\+91/, '');
@@ -435,11 +435,11 @@ function renderPayment() {
   $('pmCOD').style.display = s.codEnabled ? '' : 'none';
   $('pmCOD').disabled = !codOk;
   $('codBlockedNote').style.display = s.codEnabled && blockers.length ? 'block' : 'none';
-  $('codBlockedNote').innerHTML = blockers.length ? `🚫 In products par COD nahi hai: <b>${blockers.map(esc).join(', ')}</b>` : '';
+  $('codBlockedNote').innerHTML = blockers.length ? `🚫 COD not available for: <b>${blockers.map(esc).join(', ')}</b>` : '';
   if (state.payMethod === 'cod' && !codOk) state.payMethod = '';
   if (!state.payMethod) state.payMethod = 'razorpay'; // online is the default; COD is one tap away
   const codT = calcTotals(lines, s, 'cod');
-  $('codSmall').textContent = codOk ? (codT.advance ? `${rs(codT.advance)} advance` : 'Poora delivery pe') : '';
+  $('codSmall').textContent = codOk ? (codT.advance ? `${rs(codT.advance)} advance` : 'Full amount on delivery') : '';
   document.querySelectorAll('[data-pay]').forEach((b) => b.classList.toggle('selected', b.dataset.pay === state.payMethod));
 
   const t = calcTotals(lines, s, state.payMethod === 'cod' ? 'cod' : 'prepaid');
@@ -448,18 +448,18 @@ function renderPayment() {
   if (t.codCharge) html += `<div class="sum-row"><span>💵 COD charge</span><span>${rs(t.codCharge)}</span></div>`;
   html += `<div class="sum-row total"><span>Total</span><span>${rs(t.total)}</span></div>`;
   if (state.payMethod === 'cod') {
-    if (t.advance) html += `<div class="sum-row adv"><span>Abhi online advance</span><span>${rs(t.advance)}</span></div>`;
-    html += `<div class="sum-row bal"><span>Delivery pe cash</span><span>${rs(t.balance)}</span></div>`;
+    if (t.advance) html += `<div class="sum-row adv"><span>Advance (pay now)</span><span>${rs(t.advance)}</span></div>`;
+    html += `<div class="sum-row bal"><span>Cash due on delivery</span><span>${rs(t.balance)}</span></div>`;
   }
   $('payBreakdown').innerHTML = html;
   const a = state.address;
-  $('shipTo').innerHTML = a ? `📍 <b>${esc(a.name)}</b> · ${esc(a.phone)}<br>${esc(addressText(a))} <button type="button" class="link-like" data-step="3">Badlo</button>` : '';
+  $('shipTo').innerHTML = a ? `📍 <b>${esc(a.name)}</b> · ${esc(a.phone)}<br>${esc(addressText(a))} <button type="button" class="link-like" data-step="3">Change</button>` : '';
   const btn = $('placeOrderBtn');
   btn.disabled = !state.payMethod || state.placing;
   btn.textContent = state.placing ? '⏳ Please wait...'
-    : !state.payMethod ? 'Payment method chunein'
-      : state.payMethod === 'razorpay' ? `🔒 Card / UPI se Pay ${rs(t.total)}`
-        : t.advance ? `🔒 ${rs(t.advance)} advance pay karein` : '✅ Place COD Order';
+    : !state.payMethod ? 'Choose payment method'
+      : state.payMethod === 'razorpay' ? `🔒 Pay ${rs(t.total)} via Card / UPI`
+        : t.advance ? `🔒 Pay ${rs(t.advance)} advance` : '✅ Place COD Order';
   $('payErr').textContent = '';
 }
 
@@ -468,7 +468,7 @@ function fakeRazorpay() {
   window.Razorpay = function (o) { this.o = o; };
   window.Razorpay.prototype.on = function () {};
   window.Razorpay.prototype.open = async function () {
-    if (!confirm(`🧪 TEST PAYMENT\n\n${this.o.description}\nAmount: ₹${this.o.amount / 100}\n\nOK = payment successful, Cancel = payment cancel`)) return this.o.modal.ondismiss();
+    if (!confirm(`🧪 TEST PAYMENT\n\n${this.o.description}\nAmount: ₹${this.o.amount / 100}\n\nOK = payment successful, Cancel = payment cancelled`)) return this.o.modal.ondismiss();
     const pid = 'pay_test_' + Date.now();
     const key = await crypto.subtle.importKey('raw', new TextEncoder().encode('rzp_secret'), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
     const sig = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(this.o.order_id + '|' + pid));
@@ -483,7 +483,7 @@ function loadRazorpay() {
     const s = document.createElement('script');
     s.src = 'https://checkout.razorpay.com/v1/checkout.js';
     s.onload = resolve;
-    s.onerror = () => reject(new Error('Payment page load nahi hua. Internet check karein.'));
+    s.onerror = () => reject(new Error('Payment page failed to load. Please check your internet.'));
     document.head.appendChild(s);
   });
 }
@@ -492,9 +492,9 @@ async function placeOrder() {
   if (state.placing || !state.payMethod) return;
   if (!cfg.workerUrl) {
     const lines = cartLines();
-    const msg = 'Hello HMI Fashion! Mujhe yeh order karna hai:\n' + lines.map((l) => `▪️ ${l.p.name}${l.size ? ' [' + l.size + ']' : ''}${l.color ? ' [' + l.color + ']' : ''} x${l.qty}`).join('\n')
+    const msg = 'Hello HMI Fashion! I would like to order:\n' + lines.map((l) => `▪️ ${l.p.name}${l.size ? ' [' + l.size + ']' : ''}${l.color ? ' [' + l.color + ']' : ''} x${l.qty}`).join('\n')
       + (state.address ? `\n\n📍 ${state.address.name}, ${state.address.phone}\n${addressText(state.address)}` : '');
-    $('payErr').innerHTML = `Online order abhi shuru ho raha hai. <a href="https://wa.me/${WA}?text=${encodeURIComponent(msg)}" target="_blank" rel="noopener">WhatsApp par order karein →</a>`;
+    $('payErr').innerHTML = `Online ordering is coming soon. <a href="https://wa.me/${WA}?text=${encodeURIComponent(msg)}" target="_blank" rel="noopener">Order on WhatsApp →</a>`;
     return;
   }
   state.placing = true; renderPayment();
@@ -514,13 +514,13 @@ async function placeOrder() {
             const done = await HMI.callWorker('/checkout/confirm', resp);
             orderPlaced(done.orderNo);
           } catch (e) {
-            $('payErr').textContent = '⚠️ Payment ho gaya par confirm karne mein dikkat aayi. Ghabraiye mat — order kuch der mein "My Orders" mein dikh jayega. Order no: ' + res.orderNo;
+            $('payErr').textContent = '⚠️ Payment received, but we could not confirm it. No need to worry — your order will show in "My Orders" shortly. Order no: ' + res.orderNo;
           }
           resolve();
         },
-        modal: { ondismiss: () => { $('payErr').textContent = 'Payment poora nahi hua. Dobara try kar sakte hain.'; resolve(); } },
+        modal: { ondismiss: () => { $('payErr').textContent = 'Payment was not completed. You can try again.'; resolve(); } },
       });
-      rz.on('payment.failed', (r) => { $('payErr').textContent = '❌ Payment fail: ' + ((r.error && r.error.description) || 'dobara try karein'); });
+      rz.on('payment.failed', (r) => { $('payErr').textContent = '❌ Payment fail: ' + ((r.error && r.error.description) || 'please try again'); });
       rz.open();
     });
   } catch (e) {
@@ -536,7 +536,7 @@ function orderPlaced(orderNo) {
   state.payMethod = ''; state.address = null;
   closeCart();
   $('orderNoDisplay').textContent = orderNo;
-  $('successWaBtn').href = `https://wa.me/${WA}?text=${encodeURIComponent(`Hello HMI Fashion! Maine order ${orderNo} place kiya hai.`)}`;
+  $('successWaBtn').href = `https://wa.me/${WA}?text=${encodeURIComponent(`Hello HMI Fashion! I have placed order ${orderNo}.`)}`;
   $('successOverlay').classList.add('open');
 }
 
@@ -546,18 +546,18 @@ function orderPlaced(orderNo) {
 let recaptcha = null, confirmation = null;
 function friendlyAuth(e) {
   const map = {
-    'auth/invalid-phone-number': 'Mobile number sahi nahi hai.',
-    'auth/invalid-verification-code': 'OTP galat hai. Dobara check karein.',
-    'auth/code-expired': 'OTP purana ho gaya. Naya OTP mangwayein.',
-    'auth/too-many-requests': 'Bahut zyada koshish. Thodi der baad try karein.',
-    'auth/popup-closed-by-user': 'Google window band ho gayi.',
-    'auth/popup-blocked': 'Popup block ho gaya. Browser mein popup allow karein.',
-    'auth/network-request-failed': 'Internet check karein.',
-    'auth/billing-not-enabled': 'SMS OTP abhi chalu nahi hai. Google se login karein.',
-    'auth/operation-not-allowed': 'Yeh login tareeka abhi chalu nahi hai.',
-    'auth/configuration-not-found': 'Login abhi setup ho raha hai. Thodi der baad try karein ya WhatsApp par order karein.',
-    'auth/unauthorized-domain': 'Login abhi setup ho raha hai. Thodi der baad try karein.',
-    'auth/quota-exceeded': 'Aaj ke SMS khatam. Google se login karein.',
+    'auth/invalid-phone-number': 'Invalid mobile number.',
+    'auth/invalid-verification-code': 'Incorrect OTP. Please check and try again.',
+    'auth/code-expired': 'OTP expired. Please request a new one.',
+    'auth/too-many-requests': 'Too many attempts. Please try again later.',
+    'auth/popup-closed-by-user': 'Google sign-in window was closed.',
+    'auth/popup-blocked': 'Popup blocked. Please allow popups in your browser.',
+    'auth/network-request-failed': 'Please check your internet connection.',
+    'auth/billing-not-enabled': 'SMS OTP is not available right now. Please log in with Google.',
+    'auth/operation-not-allowed': 'This login method is not available right now.',
+    'auth/configuration-not-found': 'Login is being set up. Please try again later or order on WhatsApp.',
+    'auth/unauthorized-domain': 'Login is being set up. Please try again later.',
+    'auth/quota-exceeded': 'SMS limit reached for today. Please log in with Google.',
   };
   return map[e.code] || e.message;
 }
@@ -565,22 +565,22 @@ function renderLogin(box, subtitle) {
   box.innerHTML = `
     <div class="login-box">
       <div class="otp-icon">📱</div>
-      <div class="otp-title">Login karein</div>
-      <div class="otp-sub">${esc(subtitle || 'Apne orders aur wishlist ke liye login karein')}</div>
+      <div class="otp-title">Log in</div>
+      <div class="otp-sub">${esc(subtitle || 'Log in for your orders and wishlist')}</div>
       <div data-phase="phone">
         <div class="phone-row"><span class="cc">+91</span>
           <input class="field-input" data-el="phone" type="tel" inputmode="numeric" maxlength="10" placeholder="10-digit mobile number" autocomplete="tel-national"></div>
-        <button class="cart-footer-btn btn-proceed" type="button" data-act="send">📲 OTP bhejo</button>
+        <button class="cart-footer-btn btn-proceed" type="button" data-act="send">📲 Send OTP</button>
       </div>
       <div data-phase="otp" style="display:none">
-        <div class="otp-sub">OTP bheja gaya: <b data-el="sentTo"></b></div>
+        <div class="otp-sub">OTP sent to: <b data-el="sentTo"></b></div>
         <input class="field-input otp-input" data-el="code" type="tel" inputmode="numeric" maxlength="6" placeholder="••••••" autocomplete="one-time-code">
         <button class="cart-footer-btn btn-proceed" type="button" data-act="verify">✅ Verify OTP</button>
-        <button class="link-like" type="button" data-act="change" style="margin-top:10px">Number badlo</button>
+        <button class="link-like" type="button" data-act="change" style="margin-top:10px">Change number</button>
       </div>
       <div class="form-err" data-el="err"></div>
-      <div class="or-line">ya</div>
-      <button class="google-btn" type="button" data-act="google"><img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18" height="18" alt=""> Google se login</button>
+      <div class="or-line">or</div>
+      <button class="google-btn" type="button" data-act="google"><img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18" height="18" alt=""> Log in with Google</button>
     </div>`;
   const q = (s) => box.querySelector(s);
   const err = (m) => { q('[data-el=err]').textContent = m ? '❌ ' + m : ''; };
@@ -588,8 +588,8 @@ function renderLogin(box, subtitle) {
 
   q('[data-act=send]').addEventListener('click', async (ev) => {
     const phone = q('[data-el=phone]').value.replace(/\D/g, '');
-    if (!/^[6-9]\d{9}$/.test(phone)) return err('Sahi 10-digit mobile number likhein');
-    err(''); busy(ev.target, true, '⏳ Bhej rahe hain...');
+    if (!/^[6-9]\d{9}$/.test(phone)) return err('Please enter a valid 10-digit mobile number');
+    err(''); busy(ev.target, true, '⏳ Sending...');
     try {
       if (!recaptcha) recaptcha = new firebase.auth.RecaptchaVerifier('recaptcha-container', { size: 'invisible' });
       confirmation = await auth.signInWithPhoneNumber('+91' + phone, recaptcha);
@@ -606,12 +606,12 @@ function renderLogin(box, subtitle) {
       err(friendlyAuth(e));
       try { recaptcha && recaptcha.clear(); } catch { /* already cleared */ }
       recaptcha = null;
-    } finally { busy(ev.target, false, '📲 OTP bhejo'); }
+    } finally { busy(ev.target, false, '📲 Send OTP'); }
   });
   const verify = async (btn) => {
     const code = q('[data-el=code]').value.replace(/\D/g, '');
-    if (code.length !== 6) return err('6-digit OTP likhein');
-    err(''); busy(btn, true, '⏳ Check ho raha hai...');
+    if (code.length !== 6) return err('Please enter the 6-digit OTP');
+    err(''); busy(btn, true, '⏳ Verifying...');
     try { await confirmation.confirm(code); } catch (e) { err(friendlyAuth(e)); } finally { busy(btn, false, '✅ Verify OTP'); }
   };
   q('[data-act=verify]').addEventListener('click', (ev) => verify(ev.target));
@@ -677,7 +677,7 @@ async function toggleWish(id) {
   const on = !state.wishlist.has(id);
   if (on) state.wishlist.add(id); else state.wishlist.delete(id);
   renderWishState();
-  flash(on ? '♥ Wishlist mein add' : 'Wishlist se hataya', on ? '' : '#6b7280');
+  flash(on ? '♥ Added to wishlist' : 'Removed from wishlist', on ? '' : '#6b7280');
   if (state.user) {
     try {
       await db.collection('users').doc(state.user.uid).update({
@@ -715,8 +715,8 @@ function renderAccount() {
   // Wishlist works without login
   if (!state.user && tab !== 'wishlist') {
     $('accTabs').style.display = 'none';
-    $('accountSub').textContent = 'Login karke apne orders dekhein';
-    renderLogin(body, 'Orders, address aur wishlist ke liye login karein');
+    $('accountSub').textContent = 'Log in to view your orders';
+    renderLogin(body, 'Log in for orders, addresses and wishlist');
     return;
   }
   $('accTabs').style.display = state.user ? 'flex' : 'none';
@@ -729,63 +729,63 @@ function renderAccount() {
 }
 
 function renderOrdersTab() {
-  if (!state.orders.length) return '<div class="empty-msg"><div class="big">📦</div>Abhi koi order nahi.<br><button type="button" class="mini-btn" data-close-account style="margin-top:12px">🛍️ Shopping karein</button></div>';
+  if (!state.orders.length) return '<div class="empty-msg"><div class="big">📦</div>No orders yet.<br><button type="button" class="mini-btn" data-close-account style="margin-top:12px">🛍️ Start shopping</button></div>';
   return state.orders.map((o) => {
     const cur = HMI.STATUS.indexOf(o.status);
     const steps = o.status === 'Cancelled'
-      ? '<div class="cancelled-box" style="margin:8px 0;">❌ Yeh order cancel ho gaya.' + (o.payment.refundDue ? ` ${rs(o.payment.refundDue)} ka refund 5-7 din mein aayega.` : '') + '</div>'
+      ? '<div class="cancelled-box" style="margin:8px 0;">❌ This order was cancelled.' + (o.payment.refundDue ? ` Your refund of ${rs(o.payment.refundDue)} will arrive in 5-7 days.` : '') + '</div>'
       : `<div class="track-timeline" style="margin:10px 0;">${HMI.STATUS.map((s, i) => `
           <div class="track-step ${i <= cur ? 'done' : 'inactive'}"><div class="track-icon">${i <= cur ? HMI.STATUS_ICON[s] : '○'}</div>
           <div class="track-info"><h4>${{ Pending: 'Order Placed', Confirmed: 'Confirmed', Shipped: 'Shipped', Delivered: 'Delivered' }[s]}</h4>
-          <p>${o.statusTimes[s] ? fmtDate(o.statusTimes[s]) : 'Abhi nahi'}</p></div></div>`).join('')}</div>`;
+          <p>${o.statusTimes[s] ? fmtDate(o.statusTimes[s]) : 'Not yet'}</p></div></div>`).join('')}</div>`;
     const trk = o.tracking && (o.tracking.id || o.tracking.courier)
       ? `<div class="ship-to" style="margin:6px 0;">🚚 ${esc(o.tracking.courier || 'Courier')} ${o.tracking.id ? '· AWB <b>' + esc(o.tracking.id) + '</b>' : ''}
-         ${o.tracking.url && safeUrl(o.tracking.url) ? ` · <a href="${safeUrl(o.tracking.url)}" target="_blank" rel="noopener">Track karein →</a>` : ''}</div>` : '';
+         ${o.tracking.url && safeUrl(o.tracking.url) ? ` · <a href="${safeUrl(o.tracking.url)}" target="_blank" rel="noopener">Track order →</a>` : ''}</div>` : '';
     return `<div class="order-card">
       <div class="order-card-head"><div><b>${esc(o.orderNo)}</b><br><span style="font-size:.72rem;color:var(--gray)">${fmtDate(o.createdAt)}</span></div>
         <span class="ostatus ${esc(o.status)}">${HMI.STATUS_ICON[o.status] || ''} ${esc(o.status)}</span></div>
       ${o.items.map((i) => `<div class="order-line">${i.image && safeUrl(i.image) ? `<img src="${safeUrl(i.image)}" alt="">` : `<span class="oemoji">${esc(i.emoji)}</span>`}
         <span style="flex:1">${esc(i.name)}${i.size ? ' · ' + esc(i.size) : ''}${i.color ? ' · ' + esc(i.color) : ''} × ${i.qty}</span><b>${rs(i.price * i.qty)}</b></div>`).join('')}
       <div style="display:flex;justify-content:space-between;font-size:.85rem;margin-top:6px;"><span>${esc(payLabel(o.payment))}</span><b>Total ${rs(o.total)}</b></div>
-      ${o.payment.method === 'cod' && o.payment.balance && o.status !== 'Cancelled' ? `<div style="font-size:.78rem;color:#16a34a;font-weight:700;">Delivery pe ${rs(o.payment.balance)} cash dena hai</div>` : ''}
+      ${o.payment.method === 'cod' && o.payment.balance && o.status !== 'Cancelled' ? `<div style="font-size:.78rem;color:#16a34a;font-weight:700;">Pay ${rs(o.payment.balance)} cash on delivery</div>` : ''}
       ${trk}${steps}
       <div class="order-actions">
         ${o.status === 'Pending' ? `<button type="button" class="mini-btn danger" data-cancel="${esc(o.orderNo)}">✖ Cancel order</button>` : ''}
-        <a class="mini-btn wa" target="_blank" rel="noopener" href="https://wa.me/${WA}?text=${encodeURIComponent('Hello HMI Fashion! Mere order ' + o.orderNo + ' ke baare mein baat karni hai.')}">💬 Help</a>
+        <a class="mini-btn wa" target="_blank" rel="noopener" href="https://wa.me/${WA}?text=${encodeURIComponent('Hello HMI Fashion! I need help with my order ' + o.orderNo + '.')}">💬 Help</a>
       </div></div>`;
   }).join('');
 }
 function renderWishlistTab() {
   const list = [...state.wishlist].map(findProduct).filter(Boolean);
-  if (!list.length) return '<div class="empty-msg"><div class="big">♡</div>Wishlist khali hai.<br>Products par ♡ dabakar save karein.</div>';
-  return (state.user ? '' : '<div class="ship-to" style="margin-bottom:10px;">💡 Login karein toh wishlist har device par milegi.</div>')
+  if (!list.length) return '<div class="empty-msg"><div class="big">♡</div>Your wishlist is empty.<br>Tap ♡ on a product to save it.</div>';
+  return (state.user ? '' : '<div class="ship-to" style="margin-bottom:10px;">💡 Log in to see your wishlist on every device.</div>')
     + list.map((p) => `<div class="order-card" style="display:flex;gap:12px;align-items:center;">
       <div style="width:60px;height:60px;border-radius:10px;overflow:hidden;background:${esc(p.bg)};display:flex;align-items:center;justify-content:center;font-size:2rem;flex-shrink:0;">${imgOrEmoji(p, '', 'width:100%;height:100%;object-fit:cover;')}</div>
       <div style="flex:1;"><b>${esc(p.name)}</b><br><span style="color:var(--pink-deep);font-weight:800;">${rs(p.price)}</span> ${outOfStock(p) ? '<span class="qty-badge qty-out">Out of Stock</span>' : ''}</div>
       <div style="display:flex;flex-direction:column;gap:6px;">
-        <button type="button" class="mini-btn" data-pdp="${esc(p.id)}" data-close-account>👁️ Dekho</button>
-        <button type="button" class="mini-btn danger" data-wish="${esc(p.id)}">✖ Hatao</button></div></div>`).join('');
+        <button type="button" class="mini-btn" data-pdp="${esc(p.id)}" data-close-account>👁️ View</button>
+        <button type="button" class="mini-btn danger" data-wish="${esc(p.id)}">✖ Remove</button></div></div>`).join('');
 }
 function renderAddressesTab() {
   const list = (state.profile && state.profile.addresses) || [];
-  if (!list.length) return '<div class="empty-msg"><div class="big">📍</div>Koi saved address nahi.<br>Checkout ke waqt address save ho jayega.</div>';
+  if (!list.length) return '<div class="empty-msg"><div class="big">📍</div>No saved addresses.<br>Your address will be saved at checkout.</div>';
   return list.map((a, i) => `<div class="addr-card" style="cursor:default"><span><b>${esc(a.name)}</b> · ${esc(a.phone)}<br>${esc(addressText(a))}</span>
     <button type="button" class="addr-del" data-del-addr="${i}" aria-label="Delete">🗑️</button></div>`).join('');
 }
 function renderProfileTab() {
   const p = state.profile || {};
-  return `<label class="check-line" style="display:block;font-weight:700;">Naam</label>
-    <input class="field-input" id="profName" value="${esc(p.name || '')}" maxlength="100" placeholder="Aapka naam">
+  return `<label class="check-line" style="display:block;font-weight:700;">Name</label>
+    <input class="field-input" id="profName" value="${esc(p.name || '')}" maxlength="100" placeholder="Your name">
     <div class="ship-to" style="margin-bottom:12px;">📱 ${esc(state.user.phoneNumber || p.phone || '—')}<br>📧 ${esc(state.user.email || p.email || '—')}</div>
     <button type="button" class="cart-footer-btn btn-proceed" id="profSave">💾 Save</button>
     <button type="button" class="cart-footer-btn btn-back" id="logoutBtn">🚪 Logout</button>`;
 }
 
 async function cancelMyOrder(orderNo) {
-  if (!confirm(`Order ${orderNo} cancel karein?`)) return;
+  if (!confirm(`Cancel order ${orderNo}?`)) return;
   try {
     const r = await HMI.callWorker('/orders/cancel', { orderNo });
-    flash(r.refundDue ? `Order cancel. ${rs(r.refundDue)} refund 5-7 din mein.` : 'Order cancel ho gaya');
+    flash(r.refundDue ? `Order cancelled. Refund of ${rs(r.refundDue)} in 5-7 days.` : 'Order cancelled');
   } catch (e) { flash('❌ ' + e.message, '#dc2626'); }
 }
 
@@ -840,9 +840,9 @@ document.addEventListener('click', (e) => {
   if (e.target.id === 'profSave') {
     const name = $('profName').value.trim().slice(0, 100);
     db.collection('users').doc(state.user.uid).update({ name, updatedAt: Date.now() })
-      .then(() => flash('✅ Save ho gaya')).catch((err) => flash('❌ ' + err.message, '#dc2626'));
+      .then(() => flash('✅ Saved')).catch((err) => flash('❌ ' + err.message, '#dc2626'));
   }
-  if (e.target.id === 'logoutBtn') { auth.signOut(); closeAccount(); flash('Logout ho gaye'); }
+  if (e.target.id === 'logoutBtn') { auth.signOut(); closeAccount(); flash('Logged out'); }
 });
 document.addEventListener('keydown', (e) => {
   if (e.key !== 'Escape') return;

@@ -209,26 +209,26 @@ input[type=email],input[type=password],input[type=url],input[type=tel]{padding:1
     <div style="font-size:2.5rem;margin-bottom:8px;">🔐</div>
     <h2>HMI Fashion Admin</h2>
     <div id="loginForm">
-      <p>Admin account se login karein</p>
+      <p>Log in with your admin account</p>
       <input class="login-input" type="email" id="loginEmail" placeholder="📧 Email" autocomplete="username">
       <input class="login-input" type="password" id="loginPass" placeholder="🔑 Password" autocomplete="current-password">
       <button id="loginBtn" type="button">Login →</button>
-      <div class="login-alt">ya</div>
-      <button id="googleBtn" type="button"><img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18" height="18" alt=""> Google se login</button>
-      <button class="link-btn" id="forgotBtn" type="button">Password bhool gaye?</button>
+      <div class="login-alt">or</div>
+      <button id="googleBtn" type="button"><img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18" height="18" alt=""> Sign in with Google</button>
+      <button class="link-btn" id="forgotBtn" type="button">Forgot password?</button>
     </div>
     <div id="notAdminBox">
-      <p style="margin-bottom:10px;"><b>⛔ Yeh account admin nahi hai.</b></p>
+      <p style="margin-bottom:10px;"><b>⛔ This account is not an admin.</b></p>
       <p>Logged in: <b id="naEmail"></b></p>
-      <p style="margin-top:8px;">Is account ko admin banane ke liye (sirf store owner):</p>
+      <p style="margin-top:8px;">To make this account an admin (store owner only):</p>
       <ol style="padding-left:18px;margin:6px 0 12px;">
-        <li>Firebase Console → Firestore Database kholein</li>
-        <li><b>admins</b> naam ka collection banayein (pehli baar)</li>
-        <li>Document ID mein yeh UID daalein:<br><code id="naUid"></code></li>
-        <li>Ek field daalein: <code>email</code> = apna email → Save</li>
+        <li>Open Firebase Console → Firestore Database</li>
+        <li>Create a collection named <b>admins</b> (first time only)</li>
+        <li>Use this UID as the Document ID:<br><code id="naUid"></code></li>
+        <li>Add a field: <code>email</code> = your email → Save</li>
       </ol>
-      <button id="loginBtn2" class="btn btn-primary" type="button" onclick="location.reload()">🔄 Dobara check karo</button>
-      <button class="link-btn" type="button" onclick="adminLogout()">Doosre account se login</button>
+      <button id="loginBtn2" class="btn btn-primary" type="button" onclick="location.reload()">🔄 Check again</button>
+      <button class="link-btn" type="button" onclick="adminLogout()">Use a different account</button>
     </div>
     <div id="loginErr"></div>
   </div>
@@ -263,27 +263,27 @@ input[type=email],input[type=password],input[type=url],input[type=tel]{padding:1
     <!-- DASHBOARD -->
     <div id="sec-dashboard" class="sec">
       <div id="importNudge" class="warn-banner" style="display:none">
-        Purane products abhi naye system mein import nahi hue. <a href="#" onclick="showSection('data');return false;" style="color:inherit;font-weight:800;">💾 Import / Backup</a> mein jaakar ek click mein import karein.
+        Old products haven't been imported into the new system yet. Go to <a href="#" onclick="showSection('data');return false;" style="color:inherit;font-weight:800;">💾 Import / Backup</a> to import them in one click.
       </div>
       <div class="stats-grid">
-        <div class="stat-card"><div class="stat-icon">💰</div><div class="stat-num" id="st-revenue">₹0</div><div class="stat-label">Sales (cancelled chhodkar)</div></div>
+        <div class="stat-card"><div class="stat-icon">💰</div><div class="stat-num" id="st-revenue">₹0</div><div class="stat-label">Sales (excl. cancelled)</div></div>
         <div class="stat-card"><div class="stat-icon">📦</div><div class="stat-num" id="st-orders">0</div><div class="stat-label">Total Orders</div></div>
-        <div class="stat-card"><div class="stat-icon">⏳</div><div class="stat-num" id="st-pending">0</div><div class="stat-label">Pending (confirm karna hai)</div></div>
-        <div class="stat-card"><div class="stat-icon">📅</div><div class="stat-num" id="st-today">0</div><div class="stat-label">Aaj ke orders</div></div>
+        <div class="stat-card"><div class="stat-icon">⏳</div><div class="stat-num" id="st-pending">0</div><div class="stat-label">Pending (to confirm)</div></div>
+        <div class="stat-card"><div class="stat-icon">📅</div><div class="stat-num" id="st-today">0</div><div class="stat-label">Today's orders</div></div>
         <div class="stat-card"><div class="stat-icon">👗</div><div class="stat-num" id="st-products">0</div><div class="stat-label">Active Products</div></div>
-        <div class="stat-card"><div class="stat-icon">⚠️</div><div class="stat-num" id="st-low">0</div><div class="stat-label">Stock kam (≤5)</div></div>
+        <div class="stat-card"><div class="stat-icon">⚠️</div><div class="stat-num" id="st-low">0</div><div class="stat-label">Low stock (≤5)</div></div>
         <div class="stat-card"><div class="stat-icon">🚫</div><div class="stat-num" id="st-out">0</div><div class="stat-label">Out of stock</div></div>
         <div class="stat-card"><div class="stat-icon">👥</div><div class="stat-num" id="st-customers">0</div><div class="stat-label">Customers</div></div>
       </div>
       <div class="card">
         <div class="card-header"><div class="card-title">Latest Orders</div>
-          <button class="btn btn-outline btn-sm" type="button" onclick="showSection('orders')">Sab dekho →</button></div>
+          <button class="btn btn-outline btn-sm" type="button" onclick="showSection('orders')">View all →</button></div>
         <div style="overflow-x:auto;"><table class="prod-table">
           <thead><tr><th>Order</th><th>Customer</th><th>Total</th><th>Payment</th><th>Status</th><th>Date</th></tr></thead>
           <tbody id="dashOrders"></tbody></table></div>
       </div>
       <div class="card">
-        <div class="card-header"><div class="card-title">Stock kam hai</div></div>
+        <div class="card-header"><div class="card-title">Low stock</div></div>
         <div style="overflow-x:auto;"><table class="prod-table">
           <thead><tr><th>Img</th><th>Product</th><th>Stock</th><th></th></tr></thead>
           <tbody id="dashLowStock"></tbody></table></div>
@@ -293,7 +293,7 @@ input[type=email],input[type=password],input[type=url],input[type=tel]{padding:1
     <!-- ORDERS -->
     <div id="sec-orders" class="sec" style="display:none">
       <div class="search-bar">
-        <input class="search-input" type="text" id="orderSearch" placeholder="🔍 Order no, naam ya phone...">
+        <input class="search-input" type="text" id="orderSearch" placeholder="🔍 Order no., name or phone...">
         <select class="filter-sel" id="orderStatusFilter">
           <option value="all">All Orders</option>
           <option value="Pending">⏳ Pending</option>
@@ -307,7 +307,7 @@ input[type=email],input[type=password],input[type=url],input[type=tel]{padding:1
         <div style="overflow-x:auto;"><table class="prod-table">
           <thead><tr><th>Order</th><th>Customer</th><th>Items</th><th>Total / Payment</th><th>Date</th><th>Status</th><th></th></tr></thead>
           <tbody id="ordersBody"></tbody></table></div>
-        <div id="emptyOrders" class="empty-state" style="display:none;"><div style="font-size:3rem;margin-bottom:10px;">📦</div><p>Koi order nahi mila</p></div>
+        <div id="emptyOrders" class="empty-state" style="display:none;"><div style="font-size:3rem;margin-bottom:10px;">📦</div><p>No orders found</p></div>
       </div>
     </div>
 
@@ -325,21 +325,21 @@ input[type=email],input[type=password],input[type=url],input[type=tel]{padding:1
     <!-- PRODUCTS -->
     <div id="sec-products" class="sec" style="display:none">
       <div class="search-bar">
-        <input class="search-input" type="text" id="productSearch" placeholder="🔍 Product search karo...">
+        <input class="search-input" type="text" id="productSearch" placeholder="🔍 Search products...">
         <select class="filter-sel" id="catFilter"></select>
         <select class="filter-sel" id="stockFilter">
-          <option value="all">Sab stock</option>
-          <option value="low">⚠️ Kam stock (≤5)</option>
+          <option value="all">All stock</option>
+          <option value="low">⚠️ Low stock (≤5)</option>
           <option value="out">🚫 Out of stock</option>
-          <option value="hidden">🙈 Store se chhupe</option>
+          <option value="hidden">🙈 Hidden from store</option>
         </select>
         <button class="btn btn-primary" type="button" onclick="newProduct()">➕ Add Product</button>
       </div>
       <div class="card" style="padding:0;overflow:hidden;">
         <div style="overflow-x:auto;"><table class="prod-table">
-          <thead><tr><th>Img</th><th>Name</th><th>Category</th><th>Price</th><th>Stock</th><th>Store pe</th><th>COD</th><th></th></tr></thead>
+          <thead><tr><th>Img</th><th>Name</th><th>Category</th><th>Price</th><th>Stock</th><th>Visibility</th><th>COD</th><th></th></tr></thead>
           <tbody id="productsBody"></tbody></table></div>
-        <div id="emptyProducts" class="empty-state" style="display:none;"><div style="font-size:3rem;margin-bottom:10px;">🛍️</div><p>Koi product nahi mila</p></div>
+        <div id="emptyProducts" class="empty-state" style="display:none;"><div style="font-size:3rem;margin-bottom:10px;">🛍️</div><p>No products found</p></div>
       </div>
     </div>
 
@@ -347,21 +347,21 @@ input[type=email],input[type=password],input[type=url],input[type=tel]{padding:1
     <div id="sec-addProduct" class="sec" style="display:none">
       <div class="card">
         <div class="card-header">
-          <div class="card-title" id="formTitle">➕ Naya Product</div>
+          <div class="card-title" id="formTitle">➕ New Product</div>
           <button class="btn btn-outline btn-sm" type="button" id="cancelEdit" style="display:none" onclick="newProduct()">✖ Cancel edit</button>
         </div>
         <div class="form-grid">
           <div class="form-group full"><label for="p-name">Product Name *</label><input type="text" id="p-name" maxlength="200" placeholder="e.g. Banarasi Silk Saree"></div>
           <div class="form-group"><label for="p-cat">Category *</label><select id="p-cat"></select></div>
           <div class="form-group"><label for="p-badge">Badge</label>
-            <select id="p-badge"><option value="">— Koi nahi —</option><option>New 2026</option><option>Bestseller</option><option>Sale</option><option>Popular</option><option>Premium</option><option>Trending</option><option>Cute</option></select></div>
+            <select id="p-badge"><option value="">— None —</option><option>New 2026</option><option>Bestseller</option><option>Sale</option><option>Popular</option><option>Premium</option><option>Trending</option><option>Cute</option></select></div>
           <div class="form-group"><label for="p-price">Sale Price (₹) *</label><input type="number" id="p-price" min="1" placeholder="e.g. 1499"></div>
-          <div class="form-group"><label for="p-mrp">MRP (₹)</label><input type="number" id="p-mrp" min="0" placeholder="e.g. 2999 (khali = koi discount nahi)"></div>
-          <div class="form-group"><label for="p-stock">Stock (kitne piece hain) *</label><input type="number" id="p-stock" min="0" step="1" placeholder="e.g. 25"></div>
-          <div class="form-group"><label for="p-emoji">Emoji (photo na ho toh)</label><input type="text" id="p-emoji" maxlength="4" placeholder="e.g. 🥻"></div>
+          <div class="form-group"><label for="p-mrp">MRP (₹)</label><input type="number" id="p-mrp" min="0" placeholder="e.g. 2999 (blank = no discount)"></div>
+          <div class="form-group"><label for="p-stock">Stock (pieces) *</label><input type="number" id="p-stock" min="0" step="1" placeholder="e.g. 25"></div>
+          <div class="form-group"><label for="p-emoji">Emoji (if no photo)</label><input type="text" id="p-emoji" maxlength="4" placeholder="e.g. 🥻"></div>
           <div class="form-group full" style="flex-direction:row;flex-wrap:wrap;gap:10px;">
-            <label class="sz-check"><input type="checkbox" id="p-active" checked> 👁️ Store pe dikhao</label>
-            <label class="sz-check"><input type="checkbox" id="p-trackStock" checked> 📦 Stock track karo (khatam hone par "Out of stock")</label>
+            <label class="sz-check"><input type="checkbox" id="p-active" checked> 👁️ Show on store</label>
+            <label class="sz-check"><input type="checkbox" id="p-trackStock" checked> 📦 Track stock (shows "Out of stock" at 0)</label>
             <label class="sz-check"><input type="checkbox" id="p-cod" checked> 💵 COD allowed</label>
           </div>
           <div class="form-group full"><label for="p-desc">Description</label><textarea id="p-desc" maxlength="2000" placeholder="Fabric, work, occasion, wash care..."></textarea></div>
@@ -387,10 +387,10 @@ input[type=email],input[type=password],input[type=url],input[type=tel]{padding:1
               <label class="sz-check"><input type="checkbox" value="42"> 42</label>
             </div>
             <div style="display:flex;gap:8px;align-items:center;">
-              <input type="text" id="customSizeInput" placeholder="Custom size add karo (e.g. 44, 6-7Y)" style="flex:1;padding:8px 12px;font-size:.85rem;">
+              <input type="text" id="customSizeInput" placeholder="Add a custom size (e.g. 44, 6-7Y)" style="flex:1;padding:8px 12px;font-size:.85rem;">
               <button type="button" class="btn btn-outline btn-sm" onclick="addCustomSize()">+ Add</button>
             </div>
-            <div style="font-size:.73rem;color:var(--gray);margin-top:5px;">☑ Koi size nahi chunoge toh product mein size option nahi dikhega.</div>
+            <div style="font-size:.73rem;color:var(--gray);margin-top:5px;">☑ If no size is selected, the product won't show a size option.</div>
           </div>
 
           <!-- COLORS -->
@@ -420,11 +420,11 @@ input[type=email],input[type=password],input[type=url],input[type=tel]{padding:1
               <label class="col-check"><input type="checkbox" value="Multi" data-hex="linear-gradient(135deg,#f472b6,#facc15,#22c55e,#3b82f6)"> <span class="col-swatch" style="background:linear-gradient(135deg,#f472b6,#facc15,#22c55e,#3b82f6)"></span> Multi</label>
             </div>
             <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-              <input type="text" id="customColorName" placeholder="Color naam (e.g. Peach)" style="flex:1;min-width:120px;padding:8px 12px;font-size:.85rem;">
+              <input type="text" id="customColorName" placeholder="Colour name (e.g. Peach)" style="flex:1;min-width:120px;padding:8px 12px;font-size:.85rem;">
               <input type="color" id="customColorHex" value="#f97316" style="width:40px;height:38px;padding:2px;border:2px solid #e5e7eb;border-radius:8px;cursor:pointer;">
               <button type="button" class="btn btn-outline btn-sm" onclick="addCustomColor()">+ Add Colour</button>
             </div>
-            <div style="font-size:.73rem;color:var(--gray);margin-top:5px;">☑ Koi colour nahi chunoge toh product mein colour option nahi dikhega.</div>
+            <div style="font-size:.73rem;color:var(--gray);margin-top:5px;">☑ If no colour is selected, the product won't show a colour option.</div>
           </div>
 
           <div class="form-group full">
@@ -447,11 +447,11 @@ input[type=email],input[type=password],input[type=url],input[type=tel]{padding:1
             <div class="img-upload-area" id="uploadArea">
               <input type="file" accept="image/*" multiple id="imgInput">
               <div style="font-size:2rem;margin-bottom:6px;">📸</div>
-              <div style="font-weight:700;font-size:.88rem;color:var(--pink-deep);">Click karke photos chuno</div>
-              <div style="font-size:.75rem;color:var(--gray);margin-top:4px;">JPG, PNG, WebP — pehli photo main photo banegi</div>
+              <div style="font-weight:700;font-size:.88rem;color:var(--pink-deep);">Click to choose photos</div>
+              <div style="font-size:.75rem;color:var(--gray);margin-top:4px;">JPG, PNG, WebP — the first photo is the main photo</div>
             </div>
             <div style="display:flex;gap:8px;margin-top:8px;">
-              <input type="url" id="imgUrlInput" placeholder="ya photo ka link paste karo (https://...)" style="flex:1;">
+              <input type="url" id="imgUrlInput" placeholder="or paste a photo link (https://...)" style="flex:1;">
               <button type="button" class="btn btn-outline btn-sm" onclick="addImageUrl()">+ Link</button>
             </div>
             <div class="img-preview-wrap" id="imgPreviewWrap"></div>
@@ -467,9 +467,9 @@ input[type=email],input[type=password],input[type=url],input[type=tel]{padding:1
     <!-- CATEGORIES -->
     <div id="sec-categories" class="sec" style="display:none">
       <div class="card">
-        <div class="card-header"><div class="card-title">🏷️ Nayi Category</div></div>
+        <div class="card-header"><div class="card-title">🏷️ New Category</div></div>
         <div class="form-grid">
-          <div class="form-group"><label for="c-name">Naam *</label><input type="text" id="c-name" placeholder="e.g. Western Wear"></div>
+          <div class="form-group"><label for="c-name">Name *</label><input type="text" id="c-name" placeholder="e.g. Western Wear"></div>
           <div class="form-group"><label for="c-icon">Emoji</label><input type="text" id="c-icon" maxlength="4" placeholder="e.g. 🌟"></div>
           <div class="form-group full"><label for="c-sub">Subtitle</label><input type="text" id="c-sub" placeholder="e.g. Tops, Jeans & Dresses"></div>
         </div>
@@ -477,19 +477,19 @@ input[type=email],input[type=password],input[type=url],input[type=tel]{padding:1
       </div>
       <div class="card" style="padding:0;overflow:hidden;">
         <div style="overflow-x:auto;"><table class="prod-table">
-          <thead><tr><th>Icon</th><th>Naam</th><th>Subtitle</th><th>Products</th><th>Order / Delete</th></tr></thead>
+          <thead><tr><th>Icon</th><th>Name</th><th>Subtitle</th><th>Products</th><th>Order / Delete</th></tr></thead>
           <tbody id="catBody"></tbody></table></div>
       </div>
     </div>
 
     <!-- CUSTOMERS -->
     <div id="sec-customers" class="sec" style="display:none">
-      <div class="search-bar"><input class="search-input" type="text" id="customerSearch" placeholder="🔍 Naam, phone ya email..."></div>
+      <div class="search-bar"><input class="search-input" type="text" id="customerSearch" placeholder="🔍 Name, phone or email..."></div>
       <div class="card" style="padding:0;overflow:hidden;">
         <div style="overflow-x:auto;"><table class="prod-table">
-          <thead><tr><th>Customer</th><th>Phone</th><th>Email</th><th>Orders</th><th>Kharcha</th><th>Joined</th></tr></thead>
+          <thead><tr><th>Customer</th><th>Phone</th><th>Email</th><th>Orders</th><th>Spent</th><th>Joined</th></tr></thead>
           <tbody id="customersBody"></tbody></table></div>
-        <div id="emptyCustomers" class="empty-state" style="display:none;"><div style="font-size:3rem;margin-bottom:10px;">👥</div><p>Abhi koi customer account nahi</p></div>
+        <div id="emptyCustomers" class="empty-state" style="display:none;"><div style="font-size:3rem;margin-bottom:10px;">👥</div><p>No customer accounts yet</p></div>
       </div>
     </div>
 
@@ -498,45 +498,45 @@ input[type=email],input[type=password],input[type=url],input[type=tel]{padding:1
       <div class="card">
         <div class="card-header"><div class="card-title">🚚 Shipping</div></div>
         <div class="form-grid">
-          <div class="form-group"><label for="ps-shipping">Shipping charge (₹) — har order pe</label><input type="number" id="ps-shipping" min="0"></div>
-          <div class="form-group"><label for="ps-freeAbove">Free shipping kitne ₹ ke upar (0 = kabhi nahi)</label><input type="number" id="ps-freeAbove" min="0"></div>
+          <div class="form-group"><label for="ps-shipping">Shipping charge (₹) per order</label><input type="number" id="ps-shipping" min="0"></div>
+          <div class="form-group"><label for="ps-freeAbove">Free shipping above (₹) (0 = never)</label><input type="number" id="ps-freeAbove" min="0"></div>
         </div>
       </div>
       <div class="card">
         <div class="card-header"><div class="card-title">💵 Cash on Delivery</div></div>
         <div class="form-grid">
-          <div class="form-group full"><label class="sz-check" style="align-self:flex-start;"><input type="checkbox" id="ps-codEnabled"> COD poori website pe ON</label>
-            <span class="help">Kisi ek product ka COD band karna ho toh Products list mein us product ka COD button dabayein.</span></div>
+          <div class="form-group full"><label class="sz-check" style="align-self:flex-start;"><input type="checkbox" id="ps-codEnabled"> Enable COD store-wide</label>
+            <span class="help">To turn off COD for a single product, use its COD button in the Products list.</span></div>
           <div class="form-group"><label for="ps-codCharge">COD extra charge (₹)</label><input type="number" id="ps-codCharge" min="0"></div>
-          <div class="form-group"><label for="ps-advanceType">COD pe advance (Razorpay se online)</label>
+          <div class="form-group"><label for="ps-advanceType">COD advance (paid online via Razorpay)</label>
             <select id="ps-advanceType">
-              <option value="none">Koi advance nahi</option>
+              <option value="none">No advance</option>
               <option value="fixed">Fixed amount (₹)</option>
-              <option value="percent">Total ka %</option>
+              <option value="percent">% of total</option>
               <option value="shipping">Shipping + COD charge</option>
             </select></div>
           <div class="form-group" id="ps-advanceValueWrap"><label for="ps-advanceValue" id="ps-advanceValueLabel">Advance amount</label><input type="number" id="ps-advanceValue" min="0"></div>
         </div>
       </div>
       <div class="card" style="background:#fff9fb;">
-        <div class="card-header"><div class="card-title">🧮 Example: ₹1,000 ka order</div></div>
+        <div class="card-header"><div class="card-title">🧮 Example: ₹1,000 order</div></div>
         <div id="payPreview" style="font-size:.88rem;line-height:1.9;"></div>
       </div>
       <button class="btn btn-primary" type="button" onclick="savePaySettings()">💾 Save Settings</button>
-      <p class="help" style="margin-top:10px;">Checkout server bhi yahi settings use karta hai, isliye customer se wahi charge hoga jo yahan likha hai.</p>
+      <p class="help" style="margin-top:10px;">The checkout server uses these same settings, so customers are charged exactly what is set here.</p>
     </div>
 
     <!-- IMPORT / BACKUP -->
     <div id="sec-data" class="sec" style="display:none">
       <div class="card">
-        <div class="card-header"><div class="card-title">🔄 Purana data import karo (ek baar)</div></div>
-        <p class="help" style="margin-bottom:12px;">Purane admin panel ke products aur categories ek hi list mein save hote the. Yeh button unhe naye system mein (har product alag) copy kar dega. Purana data delete nahi hota.</p>
+        <div class="card-header"><div class="card-title">🔄 Import old data (one-time)</div></div>
+        <p class="help" style="margin-bottom:12px;">The old admin panel saved products and categories in a single list. This copies them into the new system (one record per product). Old data is not deleted.</p>
         <div id="importStatus" class="help" style="margin-bottom:12px;"></div>
-        <button class="btn btn-primary" type="button" id="importBtn" onclick="importLegacy()">⬇️ Import karo</button>
+        <button class="btn btn-primary" type="button" id="importBtn" onclick="importLegacy()">⬇️ Import</button>
       </div>
       <div class="card">
         <div class="card-header"><div class="card-title">💾 Backup</div></div>
-        <p class="help" style="margin-bottom:12px;">Products, categories, orders aur settings ki ek JSON file download karo. Har hafte ek backup rakhna achha hai.</p>
+        <p class="help" style="margin-bottom:12px;">Download a JSON file of products, categories, orders and settings. A weekly backup is recommended.</p>
         <button class="btn btn-blue" type="button" onclick="downloadBackup()">⬇️ Backup download</button>
       </div>
     </div>

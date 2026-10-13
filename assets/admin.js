@@ -24,23 +24,23 @@ function showLoginError(msg) {
 }
 function friendlyAuthError(e) {
   const map = {
-    'auth/invalid-credential': 'Email ya password galat hai.',
-    'auth/wrong-password': 'Email ya password galat hai.',
-    'auth/user-not-found': 'Email ya password galat hai.',
-    'auth/invalid-email': 'Email sahi nahi hai.',
-    'auth/too-many-requests': 'Bahut zyada koshish ho gayi. Thodi der baad try karein.',
-    'auth/popup-closed-by-user': 'Google login window band ho gayi.',
-    'auth/network-request-failed': 'Internet check karein.',
-    'auth/configuration-not-found': 'Firebase Authentication abhi chalu nahi hai (Console → Authentication → Get started).',
-    'auth/operation-not-allowed': 'Yeh login tareeka Firebase mein on nahi hai (Authentication → Sign-in method).',
-    'auth/unauthorized-domain': 'Yeh domain Firebase ke Authorized domains mein nahi hai.',
+    'auth/invalid-credential': 'Incorrect email or password.',
+    'auth/wrong-password': 'Incorrect email or password.',
+    'auth/user-not-found': 'Incorrect email or password.',
+    'auth/invalid-email': 'Invalid email address.',
+    'auth/too-many-requests': 'Too many attempts. Please try again later.',
+    'auth/popup-closed-by-user': 'Google sign-in window was closed.',
+    'auth/network-request-failed': 'Check your internet connection.',
+    'auth/configuration-not-found': 'Firebase Authentication is not enabled yet (Console → Authentication → Get started).',
+    'auth/operation-not-allowed': 'This sign-in method is not enabled in Firebase (Authentication → Sign-in method).',
+    'auth/unauthorized-domain': 'This domain is not in Firebase Authorized domains.',
   };
   return map[e.code] || e.message;
 }
 
 $('loginBtn').addEventListener('click', async () => {
   const email = $('loginEmail').value.trim(), pass = $('loginPass').value;
-  if (!email || !pass) return showLoginError('Email aur password dono daalein.');
+  if (!email || !pass) return showLoginError('Enter both email and password.');
   $('loginBtn').disabled = true;
   try { await auth.signInWithEmailAndPassword(email, pass); showLoginError(''); }
   catch (e) { showLoginError(friendlyAuthError(e)); }
@@ -53,8 +53,8 @@ $('googleBtn').addEventListener('click', async () => {
 });
 $('forgotBtn').addEventListener('click', async () => {
   const email = $('loginEmail').value.trim();
-  if (!email) return showLoginError('Pehle upar apna email likhein, phir yeh button dabayein.');
-  try { await auth.sendPasswordResetEmail(email); showLoginError(''); toast('📧 Password reset link email par bhej diya'); }
+  if (!email) return showLoginError('Enter your email above first, then tap this button.');
+  try { await auth.sendPasswordResetEmail(email); showLoginError(''); toast('📧 Password reset link sent to your email'); }
   catch (e) { showLoginError(friendlyAuthError(e)); }
 });
 
@@ -112,7 +112,7 @@ function startApp() {
   if (unsubs.length) return;
   buildNav();
   showSection(sessionStorage.getItem('hmi_admin_section') || 'dashboard');
-  const onErr = (what) => (e) => { console.error(what, e); toast('❌ ' + what + ' load nahi hua: ' + e.message, 'error'); };
+  const onErr = (what) => (e) => { console.error(what, e); toast('❌ ' + what + ' failed to load: ' + e.message, 'error'); };
 
   unsubs.push(db.collection('products').onSnapshot((snap) => {
     products = snap.docs.map((d) => normalizeProduct(d.id, d.data()))
@@ -130,7 +130,7 @@ function startApp() {
   unsubs.push(db.collection('orders').onSnapshot((snap) => {
     if (!firstOrders) {
       snap.docChanges().filter((c) => c.type === 'added')
-        .forEach((c) => toast('🔔 Naya order: ' + (c.doc.data().orderNo || c.doc.id)));
+        .forEach((c) => toast('🔔 New order: ' + (c.doc.data().orderNo || c.doc.id)));
     }
     firstOrders = false;
     orders = snap.docs.map((d) => normalizeOrder(d.id, d.data())).sort((a, b) => b.createdAt - a.createdAt);
@@ -206,14 +206,14 @@ function renderDashboard() {
       <td>${payChip(o)}</td>
       <td>${statusPill(o.status)}</td>
       <td style="font-size:.78rem;color:var(--gray)">${fmtDate(o.createdAt)}</td>
-    </tr>`).join('') || '<tr><td colspan="6" class="empty-state">Abhi koi order nahi</td></tr>';
+    </tr>`).join('') || '<tr><td colspan="6" class="empty-state">No orders yet</td></tr>';
 
   const low = tracked.filter((p) => p.stock <= 5).sort((a, b) => a.stock - b.stock).slice(0, 10);
   $('dashLowStock').innerHTML = low.map((p) => `
     <tr><td>${productThumb(p)}</td><td><b>${esc(p.name)}</b></td>
       <td>${stockCell(p)}</td>
       <td><button class="btn btn-outline btn-sm" type="button" onclick="editProduct('${esc(p.id)}')">✏️ Edit</button></td></tr>`).join('')
-    || '<tr><td colspan="4" class="empty-state">Sab products mein stock theek hai 👍</td></tr>';
+    || '<tr><td colspan="4" class="empty-state">All products are well stocked 👍</td></tr>';
 
   const needsImport = products.length === 0;
   $('importNudge').style.display = needsImport ? 'block' : 'none';
@@ -230,7 +230,7 @@ function renderOrders() {
   $('emptyOrders').style.display = list.length ? 'none' : 'block';
   $('ordersBody').innerHTML = list.map((o) => `
     <tr>
-      <td><b style="color:var(--pink-deep);font-size:.82rem;">${esc(o.orderNo)}</b>${o.legacy ? '<br><span class="help">purana</span>' : ''}</td>
+      <td><b style="color:var(--pink-deep);font-size:.82rem;">${esc(o.orderNo)}</b>${o.legacy ? '<br><span class="help">legacy</span>' : ''}</td>
       <td><b>${esc(o.customerName || '—')}</b><br><span class="help">${esc(o.customerPhone || o.email || '')}</span></td>
       <td style="font-size:.8rem;color:var(--gray)">${o.items.reduce((a, i) => a + i.qty, 0)} item</td>
       <td><b style="color:var(--pink-deep)">${rs(o.total)}</b><br>${payChip(o)}</td>
@@ -268,25 +268,25 @@ function openOrderDetail(id) {
   }).join('');
   const p = o.payment;
   const phoneDigits = String(o.customerPhone || '').replace(/\D/g, '').slice(-10);
-  const waText = encodeURIComponent(`Namaste ${o.customerName || ''}! HMI Fashion se aapke order ${o.orderNo} ka update: ${o.status}.`);
+  const waText = encodeURIComponent(`Hello ${o.customerName || ''}! Update on your HMI Fashion order ${o.orderNo}: ${o.status}.`);
   const canMarkPaid = !o.legacy && ((p.method === 'cod' && p.status !== 'paid') || p.status === 'pending' || p.status === 'advance_pending');
 
   $('orderDetailContent').innerHTML = `
     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:14px;">
       <div><div style="font-size:1.1rem;font-weight:800;color:var(--pink-deep);">${esc(o.orderNo)}</div>
-        <div class="help">${fmtDate(o.createdAt)}${o.legacy ? ' · purane system ka order' : ''}</div></div>
+        <div class="help">${fmtDate(o.createdAt)}${o.legacy ? ' · legacy order' : ''}</div></div>
       ${statusPill(o.status)}
     </div>
-    ${o.stockIssue ? `<div class="warn-banner">⚠️ Payment ke waqt is order ke kuch items ka stock khatam ho chuka tha. Customer se baat karke maal ka intezaam karein ya refund karein.</div>` : ''}
+    ${o.stockIssue ? `<div class="warn-banner">⚠️ Some items in this order were out of stock at payment time. Contact the customer to arrange stock or issue a refund.</div>` : ''}
     ${o.status !== 'Cancelled' ? `<div class="detail-box" style="background:#fff9fb;"><div class="status-timeline">${timeline}</div></div>` : ''}
-    ${nextBtns ? `<div style="margin-bottom:14px;"><div class="detail-label">Status badlo</div><div style="display:flex;gap:8px;flex-wrap:wrap;">${nextBtns}</div></div>` : ''}
+    ${nextBtns ? `<div style="margin-bottom:14px;"><div class="detail-label">Update status</div><div style="display:flex;gap:8px;flex-wrap:wrap;">${nextBtns}</div></div>` : ''}
     <div class="detail-box">
       <div class="detail-label">🚚 Courier / Tracking</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
         <input type="text" class="mini-input" id="trkCourier" placeholder="Courier (e.g. Delhivery)" value="${esc(o.tracking && o.tracking.courier)}">
         <input type="text" class="mini-input" id="trkId" placeholder="Tracking / AWB no." value="${esc(o.tracking && o.tracking.id)}">
         <input type="url" class="mini-input" id="trkUrl" placeholder="Tracking link (optional)" value="${esc(o.tracking && o.tracking.url)}" style="grid-column:1/-1;">
-        <textarea class="mini-input" id="adminNote" placeholder="Note (sirf admin ko dikhega)" style="grid-column:1/-1;min-height:50px;">${esc(o.adminNote)}</textarea>
+        <textarea class="mini-input" id="adminNote" placeholder="Note (visible to admins only)" style="grid-column:1/-1;min-height:50px;">${esc(o.adminNote)}</textarea>
       </div>
       <button class="btn btn-blue btn-sm" type="button" style="margin-top:8px;" onclick="saveTracking('${esc(o.id)}')">💾 Save tracking & note</button>
     </div>
@@ -309,13 +309,13 @@ function openOrderDetail(id) {
     <div class="detail-box">
       <div class="detail-label">💳 Payment</div>
       ${esc(payLabel(p))}
-      ${p.method === 'cod' ? `<br>Advance: <b>${rs(p.advance)}</b> · Delivery pe cash: <b style="color:var(--red)">${rs(p.balance)}</b>` : ''}
+      ${p.method === 'cod' ? `<br>Advance: <b>${rs(p.advance)}</b> · Cash on delivery: <b style="color:var(--red)">${rs(p.balance)}</b>` : ''}
       ${p.razorpayPaymentId ? `<br><span class="help">Razorpay payment: ${esc(p.razorpayPaymentId)}</span>` : ''}
-      ${p.refundDue ? `<div class="warn-banner" style="margin:8px 0 0;">💸 Customer ne order cancel kiya. <b>${rs(p.refundDue)}</b> refund karna hai (Razorpay Dashboard → Payments → is payment par Refund).</div>` : ''}
-      ${canMarkPaid ? `<br><button class="btn btn-green btn-sm" type="button" style="margin-top:8px;" onclick="markPaid('${esc(o.id)}')">✅ Poora payment mil gaya</button>` : ''}
+      ${p.refundDue ? `<div class="warn-banner" style="margin:8px 0 0;">💸 Customer cancelled this order. Refund <b>${rs(p.refundDue)}</b> (Razorpay Dashboard → Payments → Refund on this payment).</div>` : ''}
+      ${canMarkPaid ? `<br><button class="btn btn-green btn-sm" type="button" style="margin-top:8px;" onclick="markPaid('${esc(o.id)}')">✅ Mark fully paid</button>` : ''}
     </div>
     <div style="display:flex;justify-content:flex-end;">
-      <button class="btn btn-danger btn-sm" type="button" onclick="deleteOrder('${esc(o.id)}')">🗑️ Order delete karo</button>
+      <button class="btn btn-danger btn-sm" type="button" onclick="deleteOrder('${esc(o.id)}')">🗑️ Delete order</button>
     </div>`;
   $('orderDetailOverlay').style.display = 'flex';
 }
@@ -326,7 +326,7 @@ async function setOrderStatus(id, status) {
   const o = orders.find((x) => x.id === id);
   if (!o) return;
   const restock = status === 'Cancelled' && o.stockDeducted && !o.stockRestored;
-  if (status === 'Cancelled' && !confirm(`Order ${o.orderNo} cancel karein?${restock ? '\n\nIske items ka stock wapas jud jayega.' : ''}`)) return;
+  if (status === 'Cancelled' && !confirm(`Cancel order ${o.orderNo}?${restock ? '\n\nStock for its items will be restored.' : ''}`)) return;
   try {
     const batch = db.batch();
     const update = { status, ['statusTimes.' + status]: Date.now(), updatedAt: Date.now() };
@@ -344,26 +344,26 @@ async function setOrderStatus(id, status) {
 }
 async function saveTracking(id) {
   const tracking = { courier: $('trkCourier').value.trim(), id: $('trkId').value.trim(), url: $('trkUrl').value.trim() };
-  if (tracking.url && !/^https?:\/\//i.test(tracking.url)) return toast('❌ Tracking link https:// se shuru hona chahiye', 'error');
+  if (tracking.url && !/^https?:\/\//i.test(tracking.url)) return toast('❌ Tracking link must start with https://', 'error');
   try {
     await db.collection('orders').doc(id).update({ tracking, adminNote: $('adminNote').value.trim(), updatedAt: Date.now() });
-    toast('✅ Tracking save ho gaya');
+    toast('✅ Tracking saved');
   } catch (e) { toast('❌ ' + e.message, 'error'); }
 }
 async function markPaid(id) {
   const o = orders.find((x) => x.id === id);
-  if (!o || !confirm(`${o.orderNo}: kya poora ${rs(o.total)} mil gaya hai?`)) return;
+  if (!o || !confirm(`${o.orderNo}: has the full ${rs(o.total)} been received?`)) return;
   try {
     await db.collection('orders').doc(id).update({
       payment: { ...o.payment, status: 'paid', balance: 0, paidAt: Date.now(), markedPaidByAdmin: true }, updatedAt: Date.now(),
     });
-    toast('✅ Payment received mark ho gaya');
+    toast('✅ Marked as paid');
   } catch (e) { toast('❌ ' + e.message, 'error'); }
 }
 async function deleteOrder(id) {
   const o = orders.find((x) => x.id === id);
-  if (!o || !confirm(`Order ${o.orderNo} hamesha ke liye delete karein?\n\n(Behtar hai "Cancel" karein, taaki record bana rahe.)`)) return;
-  try { await db.collection('orders').doc(id).delete(); closeOrderDetail(); toast('🗑️ Order delete ho gaya'); }
+  if (!o || !confirm(`Permanently delete order ${o.orderNo}?\n\n(Better to "Cancel" it so the record is kept.)`)) return;
+  try { await db.collection('orders').doc(id).delete(); closeOrderDetail(); toast('🗑️ Order deleted'); }
   catch (e) { toast('❌ ' + e.message, 'error'); }
 }
 
@@ -372,12 +372,12 @@ async function deleteOrder(id) {
 // =====================================================================
 function catName(id) { const c = categories.find((x) => x.id === id); return c ? c.name : (id || '—'); }
 function stockCell(p) {
-  if (!p.trackStock) return '<span class="help">∞ track nahi</span>';
+  if (!p.trackStock) return '<span class="help">∞ not tracked</span>';
   const cls = p.stock <= 0 ? 'stock-out' : p.stock <= 5 ? 'stock-low' : 'stock-ok';
-  return `<span class="stock-cell"><button type="button" title="1 kam" onclick="bumpStock('${esc(p.id)}',-1)">−</button>
+  return `<span class="stock-cell"><button type="button" title="Decrease by 1" onclick="bumpStock('${esc(p.id)}',-1)">−</button>
     <span class="${cls}">${p.stock}</span>
-    <button type="button" title="1 zyada" onclick="bumpStock('${esc(p.id)}',1)">+</button>
-    <button type="button" title="Stock likho" onclick="setStock('${esc(p.id)}')">✎</button></span>`;
+    <button type="button" title="Increase by 1" onclick="bumpStock('${esc(p.id)}',1)">+</button>
+    <button type="button" title="Set stock" onclick="setStock('${esc(p.id)}')">✎</button></span>`;
 }
 function renderProducts() {
   const q = $('productSearch').value.trim().toLowerCase();
@@ -397,7 +397,7 @@ function renderProducts() {
       <td><span class="cat-tag ${categories.some((c) => c.id === p.category) ? '' : 'missing'}">${esc(catName(p.category))}</span></td>
       <td><span class="price-main">${rs(p.price)}</span>${p.mrp > p.price ? `<br><span class="price-old-s">${rs(p.mrp)}</span>` : ''}</td>
       <td>${stockCell(p)}</td>
-      <td><button type="button" class="toggle ${p.active ? 'on' : 'off'}" onclick="toggleField('${esc(p.id)}','active')">${p.active ? '👁️ Dikh raha' : '🙈 Chhupa'}</button></td>
+      <td><button type="button" class="toggle ${p.active ? 'on' : 'off'}" onclick="toggleField('${esc(p.id)}','active')">${p.active ? '👁️ Visible' : '🙈 Hidden'}</button></td>
       <td><button type="button" class="toggle ${p.cod ? 'on' : 'off'}" onclick="toggleField('${esc(p.id)}','cod')">${p.cod ? '💵 ON' : '🚫 OFF'}</button></td>
       <td style="white-space:nowrap;">
         <button class="btn btn-outline btn-sm" type="button" onclick="editProduct('${esc(p.id)}')">✏️</button>
@@ -413,11 +413,11 @@ async function bumpStock(id, d) {
 }
 async function setStock(id) {
   const p = products.find((x) => x.id === id);
-  const v = prompt(`"${p.name}" ka stock kitna hai?`, p.stock);
+  const v = prompt(`Stock for "${p.name}"?`, p.stock);
   if (v === null) return;
   const n = parseInt(v, 10);
-  if (!Number.isInteger(n) || n < 0) return toast('❌ 0 ya usse bada number likhein', 'error');
-  try { await db.collection('products').doc(id).update({ stock: n, updatedAt: Date.now() }); toast('✅ Stock update'); }
+  if (!Number.isInteger(n) || n < 0) return toast('❌ Enter a number 0 or higher', 'error');
+  try { await db.collection('products').doc(id).update({ stock: n, updatedAt: Date.now() }); toast('✅ Stock updated'); }
   catch (e) { toast('❌ ' + e.message, 'error'); }
 }
 async function toggleField(id, field) {
@@ -427,15 +427,15 @@ async function toggleField(id, field) {
 }
 async function deleteProduct(id) {
   const p = products.find((x) => x.id === id);
-  if (!p || !confirm(`"${p.name}" delete karein?\n\nSirf chhupana ho toh "Store pe" button se chhupa sakte hain.`)) return;
-  try { await db.collection('products').doc(id).delete(); toast('🗑️ Product delete ho gaya'); }
+  if (!p || !confirm(`Delete "${p.name}"?\n\nTo just hide it, use the "Visibility" button instead.`)) return;
+  try { await db.collection('products').doc(id).delete(); toast('🗑️ Product deleted'); }
   catch (e) { toast('❌ ' + e.message, 'error'); }
 }
 
 // ---------- Add / edit form ----------
 function newProduct() {
   editingId = null;
-  $('formTitle').textContent = '➕ Naya Product';
+  $('formTitle').textContent = '➕ New Product';
   $('cancelEdit').style.display = 'none';
   ['p-name', 'p-price', 'p-mrp', 'p-stock', 'p-emoji', 'p-desc', 'imgUrlInput'].forEach((id) => { $(id).value = ''; });
   $('p-cat').value = '';
@@ -478,11 +478,11 @@ async function saveProduct() {
   const price = parseInt($('p-price').value, 10);
   const mrp = parseInt($('p-mrp').value, 10) || 0;
   const stock = parseInt($('p-stock').value, 10);
-  if (!name) return toast('❌ Product ka naam daalein', 'error');
-  if (!category) return toast('❌ Category chunein', 'error');
-  if (!(price > 0)) return toast('❌ Sale price daalein', 'error');
-  if (mrp && mrp < price) return toast('❌ MRP sale price se kam nahi ho sakti', 'error');
-  if ($('p-trackStock').checked && !(Number.isInteger(stock) && stock >= 0)) return toast('❌ Stock daalein (0 ya zyada)', 'error');
+  if (!name) return toast('❌ Enter a product name', 'error');
+  if (!category) return toast('❌ Select a category', 'error');
+  if (!(price > 0)) return toast('❌ Enter a sale price', 'error');
+  if (mrp && mrp < price) return toast('❌ MRP can\'t be lower than the sale price', 'error');
+  if ($('p-trackStock').checked && !(Number.isInteger(stock) && stock >= 0)) return toast('❌ Enter stock (0 or more)', 'error');
 
   const data = {
     name, category, price, mrp,
@@ -503,14 +503,14 @@ async function saveProduct() {
   try {
     if (editingId) {
       await db.collection('products').doc(editingId).set(data, { merge: true });
-      toast('✅ Product update ho gaya');
+      toast('✅ Product updated');
     } else {
       await db.collection('products').add({ ...data, createdAt: Date.now() });
-      toast('✅ Naya product add ho gaya');
+      toast('✅ Product added');
     }
     newProduct();
     showSection('products');
-  } catch (e) { toast('❌ Save nahi hua: ' + e.message, 'error'); }
+  } catch (e) { toast('❌ Save failed: ' + e.message, 'error'); }
   finally { $('saveProductBtn').disabled = false; }
 }
 
@@ -536,7 +536,7 @@ function addCustomSize() {
 }
 function addCustomColor() {
   const name = $('customColorName').value.trim();
-  if (!name) return toast('❌ Colour ka naam likhein', 'error');
+  if (!name) return toast('❌ Enter a colour name', 'error');
   const existing = document.querySelector(`#colorCheckboxes input[value="${CSS.escape(name)}"]`);
   if (existing) existing.checked = true; else addColorChip(name, $('customColorHex').value);
   $('customColorName').value = '';
@@ -555,15 +555,15 @@ function selectColorByValue(color) {
 function renderImagePreviews() {
   $('imgPreviewWrap').innerHTML = formImages.map((src, i) => `
     <div class="img-preview"><img src="${safeUrl(src)}" alt="">
-      <button class="img-del" type="button" title="Hatao" onclick="removeImg(${i})">✕</button>
-      ${i > 0 ? `<button class="img-del" type="button" title="Main photo banao" style="left:2px;right:auto;background:var(--blue)" onclick="makeMainImg(${i})">★</button>` : ''}
+      <button class="img-del" type="button" title="Remove" onclick="removeImg(${i})">✕</button>
+      ${i > 0 ? `<button class="img-del" type="button" title="Set as main photo" style="left:2px;right:auto;background:var(--blue)" onclick="makeMainImg(${i})">★</button>` : ''}
     </div>`).join('');
 }
 function removeImg(i) { formImages.splice(i, 1); renderImagePreviews(); }
 function makeMainImg(i) { formImages.unshift(formImages.splice(i, 1)[0]); renderImagePreviews(); }
 function addImageUrl() {
   const url = $('imgUrlInput').value.trim();
-  if (!/^https:\/\//i.test(url)) return toast('❌ Link https:// se shuru hona chahiye', 'error');
+  if (!/^https:\/\//i.test(url)) return toast('❌ Link must start with https://', 'error');
   formImages.push(url); $('imgUrlInput').value = ''; renderImagePreviews();
 }
 function compressImage(file, maxSize = 1600, quality = 0.85) {
@@ -585,17 +585,17 @@ async function handleImageUpload(input) {
   const files = [...input.files];
   input.value = '';
   if (!files.length) return;
-  if (!HMI.cfg.workerUrl) return toast('❌ Photo upload checkout server ke baad chalega. Abhi photo ka link paste karein.', 'error');
+  if (!HMI.cfg.workerUrl) return toast('❌ Photo upload needs the checkout server. Paste a photo link for now.', 'error');
   for (const [n, file] of files.entries()) {
-    toast(`⏳ Photo ${n + 1}/${files.length} upload ho rahi hai...`);
+    toast(`⏳ Uploading photo ${n + 1}/${files.length}...`);
     try {
       const fd = new FormData();
       fd.append('image', await compressImage(file), file.name || 'product.jpg');
       const { url } = await HMI.callWorker('/admin/upload-image', fd);
       formImages.push(url); renderImagePreviews();
-    } catch (e) { toast('❌ Upload nahi hua: ' + e.message, 'error'); return; }
+    } catch (e) { toast('❌ Upload failed: ' + e.message, 'error'); return; }
   }
-  toast('✅ Photos upload ho gayi');
+  toast('✅ Photos uploaded');
 }
 
 // =====================================================================
@@ -604,9 +604,9 @@ async function handleImageUpload(input) {
 function renderCategoryControls() {
   const opts = categories.map((c) => `<option value="${esc(c.id)}">${esc(c.icon || '')} ${esc(c.name)}</option>`).join('');
   const pc = $('p-cat'), v1 = pc.value;
-  pc.innerHTML = '<option value="">Category chunein</option>' + opts; pc.value = v1;
+  pc.innerHTML = '<option value="">Select a category</option>' + opts; pc.value = v1;
   const cf = $('catFilter'), v2 = cf.value;
-  cf.innerHTML = '<option value="all">Sab categories</option>' + opts; cf.value = v2 || 'all';
+  cf.innerHTML = '<option value="all">All categories</option>' + opts; cf.value = v2 || 'all';
 }
 function renderCategories() {
   $('catBody').innerHTML = categories.map((c, i) => `
@@ -617,12 +617,12 @@ function renderCategories() {
         <button class="btn btn-outline btn-sm" type="button" onclick="moveCategory(${i},-1)" ${i === 0 ? 'disabled' : ''}>⬆️</button>
         <button class="btn btn-outline btn-sm" type="button" onclick="moveCategory(${i},1)" ${i === categories.length - 1 ? 'disabled' : ''}>⬇️</button>
         <button class="btn btn-danger btn-sm" type="button" onclick="deleteCategory('${esc(c.id)}')">🗑️</button></td></tr>`).join('')
-    || '<tr><td colspan="5" class="empty-state">Koi category nahi — upar se add karein</td></tr>';
+    || '<tr><td colspan="5" class="empty-state">No categories — add one above</td></tr>';
 }
 async function addCategory() {
   const name = $('c-name').value.trim();
-  if (!name) return toast('❌ Category ka naam daalein', 'error');
-  if (categories.some((c) => c.name.toLowerCase() === name.toLowerCase())) return toast('❌ Yeh category pehle se hai', 'error');
+  if (!name) return toast('❌ Enter a category name', 'error');
+  if (categories.some((c) => c.name.toLowerCase() === name.toLowerCase())) return toast('❌ This category already exists', 'error');
   let id = name.replace(/[^a-zA-Z0-9]/g, '') || 'Cat' + Date.now();
   while (categories.some((c) => c.id === id)) id += '1';
   try {
@@ -631,14 +631,14 @@ async function addCategory() {
       order: categories.length ? Math.max(...categories.map((c) => c.order || 0)) + 1 : 0,
     });
     ['c-name', 'c-icon', 'c-sub'].forEach((x) => { $(x).value = ''; });
-    toast(`✅ "${name}" add ho gayi`);
+    toast(`✅ "${name}" added`);
   } catch (e) { toast('❌ ' + e.message, 'error'); }
 }
 async function deleteCategory(id) {
   const c = categories.find((x) => x.id === id);
   const cnt = products.filter((p) => p.category === id).length;
-  if (!confirm(cnt ? `"${c.name}" mein ${cnt} products hain. Delete karne par woh sirf "All" mein dikhenge.\n\nPhir bhi delete karein?` : `"${c.name}" delete karein?`)) return;
-  try { await db.collection('categories').doc(id).delete(); toast('🗑️ Category delete ho gayi'); }
+  if (!confirm(cnt ? `"${c.name}" has ${cnt} products. After deleting, they will only appear under "All".\n\nDelete anyway?` : `Delete "${c.name}"?`)) return;
+  try { await db.collection('categories').doc(id).delete(); toast('🗑️ Category deleted'); }
   catch (e) { toast('❌ ' + e.message, 'error'); }
 }
 async function moveCategory(i, d) {
@@ -701,22 +701,22 @@ function renderPayPreview() {
   const lines = [{ price: 1000, qty: 1 }];
   const on = HMI.pricing.calcTotals(lines, s, 'prepaid');
   let html = `<b>Online (Razorpay):</b> ₹1,000 + shipping ${on.ship ? rs(on.ship) : 'FREE'} = <b>${rs(on.total)}</b><br>`;
-  if (!s.codEnabled) html += '<b>COD:</b> <span style="color:var(--red);font-weight:700">Band hai</span>';
+  if (!s.codEnabled) html += '<b>COD:</b> <span style="color:var(--red);font-weight:700">Disabled</span>';
   else {
     const c = HMI.pricing.calcTotals(lines, s, 'cod');
     html += `<b>COD:</b> ₹1,000 + shipping ${c.ship ? rs(c.ship) : 'FREE'} + COD charge ${rs(c.codCharge)} = <b>${rs(c.total)}</b><br>`;
-    html += `&nbsp;&nbsp;→ Abhi advance (online): <b style="color:var(--pink-deep)">${rs(c.advance)}</b><br>`;
-    html += `&nbsp;&nbsp;→ Delivery pe cash: <b style="color:var(--green)">${rs(c.balance)}</b>`;
+    html += `&nbsp;&nbsp;→ Advance now (online): <b style="color:var(--pink-deep)">${rs(c.advance)}</b><br>`;
+    html += `&nbsp;&nbsp;→ Cash on delivery: <b style="color:var(--green)">${rs(c.balance)}</b>`;
   }
   $('payPreview').innerHTML = html;
 }
 async function savePaySettings() {
   const s = readPayForm();
-  if (s.advanceType === 'percent' && s.advanceValue > 100) return toast('❌ Advance % 100 se zyada nahi ho sakta', 'error');
+  if (s.advanceType === 'percent' && s.advanceValue > 100) return toast('❌ Advance % can\'t exceed 100', 'error');
   try {
     await db.collection('settings').doc('payment').set({ ...s, updatedAt: Date.now() });
     payFormDirty = false;
-    toast('✅ Settings save — store pe turant lagu');
+    toast('✅ Settings saved — live on store now');
   } catch (e) { toast('❌ ' + e.message, 'error'); }
 }
 
@@ -734,20 +734,20 @@ async function readLegacy() {
   };
 }
 async function renderImportStatus() {
-  $('importStatus').textContent = 'Check ho raha hai...';
+  $('importStatus').textContent = 'Checking...';
   try {
     const legacy = await readLegacy();
     const already = legacy.products.filter((p) => products.some((x) => x.id === String(p.id))).length;
-    $('importStatus').innerHTML = `Purane system mein: <b>${legacy.products.length}</b> products, <b>${legacy.categories.length}</b> categories.<br>
-      Naye system mein: <b>${products.length}</b> products, <b>${categories.length}</b> categories.
-      ${already ? `<br>${already} products pehle hi import ho chuke hain (dobara import karne par woh skip honge).` : ''}`;
-  } catch (e) { $('importStatus').textContent = 'Purana data padh nahi paya: ' + e.message; }
+    $('importStatus').innerHTML = `Old system: <b>${legacy.products.length}</b> products, <b>${legacy.categories.length}</b> categories.<br>
+      New system: <b>${products.length}</b> products, <b>${categories.length}</b> categories.
+      ${already ? `<br>${already} products already imported (they'll be skipped if you import again).` : ''}`;
+  } catch (e) { $('importStatus').textContent = 'Couldn\'t read old data: ' + e.message; }
 }
 async function importLegacy() {
   $('importBtn').disabled = true;
   try {
     const legacy = await readLegacy();
-    if (!legacy.products.length && !legacy.categories.length) return toast('Purane system mein kuch nahi mila', 'error');
+    if (!legacy.products.length && !legacy.categories.length) return toast('Nothing found in the old system', 'error');
     const batch = db.batch();
     let nCat = 0, nProd = 0, noStock = 0;
     legacy.categories.forEach((c, i) => {
@@ -785,10 +785,10 @@ async function importLegacy() {
       nProd++;
     });
     await batch.commit();
-    toast(`✅ Import ho gaya: ${nProd} products, ${nCat} categories`);
-    if (noStock) alert(`${noStock} products ka stock purane system mein likha nahi tha.\n\nUnke liye "Stock track karo" band rakha hai (unlimited). Products list mein jaakar asli stock bhar dein.`);
+    toast(`✅ Imported: ${nProd} products, ${nCat} categories`);
+    if (noStock) alert(`${noStock} products had no stock count in the old system.\n\n"Track stock" is turned off for them (unlimited). Set their real stock in the Products list.`);
     renderImportStatus();
-  } catch (e) { toast('❌ Import nahi hua: ' + e.message, 'error'); }
+  } catch (e) { toast('❌ Import failed: ' + e.message, 'error'); }
   finally { $('importBtn').disabled = false; }
 }
 async function downloadBackup() {
@@ -801,5 +801,5 @@ async function downloadBackup() {
     a.download = `hmi-fashion-backup-${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
     URL.revokeObjectURL(a.href);
-  } catch (e) { toast('❌ Backup nahi bana: ' + e.message, 'error'); }
+  } catch (e) { toast('❌ Backup failed: ' + e.message, 'error'); }
 }
