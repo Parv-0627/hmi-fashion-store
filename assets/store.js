@@ -462,7 +462,21 @@ function renderPayment() {
   $('payErr').textContent = '';
 }
 
+// Test mode only: a stand-in for Razorpay that signs with the local test secret
+function fakeRazorpay() {
+  window.Razorpay = function (o) { this.o = o; };
+  window.Razorpay.prototype.on = function () {};
+  window.Razorpay.prototype.open = async function () {
+    if (!confirm(`🧪 TEST PAYMENT\n\n${this.o.description}\nAmount: ₹${this.o.amount / 100}\n\nOK = payment successful, Cancel = payment cancel`)) return this.o.modal.ondismiss();
+    const pid = 'pay_test_' + Date.now();
+    const key = await crypto.subtle.importKey('raw', new TextEncoder().encode('rzp_secret'), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+    const sig = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(this.o.order_id + '|' + pid));
+    this.o.handler({ razorpay_order_id: this.o.order_id, razorpay_payment_id: pid,
+      razorpay_signature: [...new Uint8Array(sig)].map((b) => b.toString(16).padStart(2, '0')).join('') });
+  };
+}
 function loadRazorpay() {
+  if (HMI.emulator && !window.Razorpay) fakeRazorpay();
   if (window.Razorpay) return Promise.resolve();
   return new Promise((resolve, reject) => {
     const s = document.createElement('script');
@@ -579,6 +593,11 @@ function renderLogin(box, subtitle) {
       q('[data-phase=otp]').style.display = 'block';
       q('[data-el=sentTo]').textContent = '+91 ' + phone;
       q('[data-el=code]').focus();
+      if (HMI.emulator) { // test mode: show the OTP instead of sending an SMS
+        const r = await fetch(`${HMI.emulatorAuthUrl}/emulator/v1/projects/${cfg.firebase.projectId}/verificationCodes`).then((x) => x.json());
+        const c = (r.verificationCodes || []).filter((v) => v.phoneNumber === '+91' + phone).pop();
+        if (c) q('[data-el=sentTo]').textContent += ` — 🧪 Test OTP: ${c.code}`;
+      }
     } catch (e) {
       err(friendlyAuth(e));
       try { recaptcha && recaptcha.clear(); } catch { /* already cleared */ }

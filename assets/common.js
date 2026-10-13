@@ -5,12 +5,29 @@
   if (!firebase.apps.length) firebase.initializeApp(cfg.firebase);
   const db = firebase.firestore();
   const auth = firebase.auth();
-  // Local testing only: http://localhost:...?emulator=1 talks to the Firebase emulators, never the live store
-  if (['localhost', '127.0.0.1'].includes(location.hostname) && new URLSearchParams(location.search).has('emulator')) {
+  // Testing only: ?emulator=1 on localhost or a Codespaces preview talks to the
+  // Firebase emulators (test data), never the real store.
+  const isLocal = ['localhost', '127.0.0.1'].includes(location.hostname);
+  const isPreview = location.hostname.endsWith('.app.github.dev');
+  const emulator = (isLocal || isPreview) && new URLSearchParams(location.search).has('emulator');
+  if (emulator && isLocal) {
     db.useEmulator('127.0.0.1', 8085);
     auth.useEmulator('http://127.0.0.1:9099', { disableWarnings: true });
-    auth.settings.appVerificationDisabledForTesting = true;
     if (!cfg.workerUrl) cfg.workerUrl = 'http://127.0.0.1:8787'; // tests/dev-worker.mjs
+  } else if (emulator) {
+    // tests/preview-server.mjs forwards the emulators and worker on this same origin
+    db.settings({ host: location.host, ssl: true, experimentalForceLongPolling: true });
+    auth.useEmulator(location.origin, { disableWarnings: true });
+    cfg.workerUrl = location.origin + '/api';
+  }
+  if (emulator) {
+    auth.settings.appVerificationDisabledForTesting = true;
+    document.addEventListener('DOMContentLoaded', () => {
+      const bar = document.createElement('div');
+      bar.textContent = '🧪 TEST MODE — test data, nakli payment, OTP screen par dikhega';
+      bar.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:99998;background:#1e40af;color:#fff;text-align:center;font:700 12px Nunito,sans-serif;padding:5px;';
+      document.body.appendChild(bar);
+    });
   }
 
   function esc(s) {
@@ -149,7 +166,7 @@
   }
 
   window.HMI = {
-    cfg, db, auth, esc, safeUrl, rs, ts, fmtDate,
+    cfg, db, auth, emulator, emulatorAuthUrl: isLocal ? 'http://127.0.0.1:9099' : location.origin, esc, safeUrl, rs, ts, fmtDate,
     normalizeProduct, inStock, normalizeOrder, payLabel, STATUS, STATUS_ICON,
     callWorker, toast, pricing: window.HMIPricing,
   };
