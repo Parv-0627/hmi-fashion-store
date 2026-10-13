@@ -1,0 +1,102 @@
+rules_version = '2';
+
+// HMI Fashion Store — Firestore security rules
+//
+// Who can do what:
+//   - Anyone:      read products, categories and store settings
+//   - Customer:    read/update their own profile, read their own orders,
+//                  cancel their own order while it is still Pending
+//   - Admin:       everything in the store (admins are listed in /admins/{uid},
+//                  which can only be edited from the Firebase Console)
+//   - Checkout worker (server, uses a service account and bypasses these rules):
+//                  creates orders, marks payments as paid, reduces stock
+//
+// Orders can never be created from the browser, so a customer cannot
+// change prices or totals.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function isAdmin() {
+      return signedIn() && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+    function onlyChanges(keys) {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(keys);
+    }
+
+    // ---------- Admin list (edit only from Firebase Console) ----------
+    match /admins/{uid} {
+      allow read: if signedIn() && request.auth.uid == uid;
+      allow write: if false;
+    }
+
+    // ---------- Catalogue ----------
+    match /products/{productId} {
+      allow read: if true;
+      allow create, update: if isAdmin() && validProduct(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    function validProduct(p) {
+      return p.name is string && p.name.size() > 0 && p.name.size() <= 200
+        && p.price is number && p.price >= 0
+        && p.stock is int && p.stock >= 0
+        && p.category is string
+        && p.images is list && p.images.size() <= 12
+        && p.active is bool;
+    }
+
+    match /categories/{categoryId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Public store settings (shipping, COD rules, banners). No secrets here.
+    match /settings/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // ---------- Customers ----------
+    match /users/{uid} {
+      allow read: if signedIn() && (request.auth.uid == uid || isAdmin());
+      allow create: if signedIn() && request.auth.uid == uid && validUser(request.resource.data);
+      allow update: if signedIn() && request.auth.uid == uid && validUser(request.resource.data)
+                    && request.resource.data.createdAt == resource.data.createdAt;
+      allow delete: if false;
+    }
+
+    function validUser(u) {
+      return u.keys().hasOnly(['name', 'email', 'phone', 'addresses', 'wishlist', 'createdAt', 'updatedAt'])
+        && (!('name' in u) || (u.name is string && u.name.size() <= 100))
+        && (!('addresses' in u) || (u.addresses is list && u.addresses.size() <= 10))
+        && (!('wishlist' in u) || (u.wishlist is list && u.wishlist.size() <= 200));
+    }
+
+    // ---------- Orders ----------
+    match /orders/{orderId} {
+      allow read: if isAdmin() || (signedIn() && resource.data.userId == request.auth.uid);
+
+      // Only the checkout worker creates orders
+      allow create: if false;
+
+      // Admin manages fulfilment; totals, items and customer cannot be rewritten
+      allow update: if isAdmin()
+        && onlyChanges(['status', 'statusTimes', 'tracking', 'adminNote', 'payment', 'updatedAt']);
+
+      // Customer may cancel their own order before it is confirmed
+      allow update: if signedIn() && resource.data.userId == request.auth.uid
+        && resource.data.status == 'Pending'
+        && request.resource.data.status == 'Cancelled'
+        && onlyChanges(['status', 'statusTimes', 'updatedAt']);
+
+      allow delete: if isAdmin();
+    }
+
+    // Everything else is closed
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

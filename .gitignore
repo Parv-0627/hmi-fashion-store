@@ -1,0 +1,5 @@
+node_modules/
+.firebase/
+*-debug.log
+.dev.vars
+.wrangler/
