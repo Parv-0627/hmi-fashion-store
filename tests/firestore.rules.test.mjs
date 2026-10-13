@@ -134,9 +134,17 @@ test('customer cannot cancel once the order is confirmed', async () => {
 test('admin updates order status but cannot rewrite totals or items', async () => {
   await assertSucceeds(getDocs(collection(admin(), 'orders')));
   await assertSucceeds(updateDoc(doc(admin(), 'orders/HMI-TEST-1'), { status: 'Shipped', tracking: { courier: 'Delhivery', id: 'X1' } }));
+  await assertSucceeds(updateDoc(doc(admin(), 'orders/HMI-TEST-1'), { status: 'Cancelled', stockRestored: true }));
   await assertFails(updateDoc(doc(admin(), 'orders/HMI-TEST-1'), { total: 10 }));
   await assertFails(updateDoc(doc(admin(), 'orders/HMI-TEST-1'), { userId: 'bob' }));
   await assertSucceeds(deleteDoc(doc(admin(), 'orders/LEGACY-1')));
+});
+
+test('admin can change stock with an increment, customers cannot', async () => {
+  const { increment } = await import('firebase/firestore');
+  await assertSucceeds(updateDoc(doc(admin(), 'products/p1'), { stock: increment(2) }));
+  await assertFails(updateDoc(doc(alice(), 'products/p1'), { stock: increment(100) }));
+  await assertFails(updateDoc(doc(admin(), 'products/p1'), { stock: increment(-100) }));
 });
 
 test('everything else is closed', async () => {

@@ -83,7 +83,7 @@ service cloud.firestore {
 
       // Admin manages fulfilment; totals, items and customer cannot be rewritten
       allow update: if isAdmin()
-        && onlyChanges(['status', 'statusTimes', 'tracking', 'adminNote', 'payment', 'updatedAt']);
+        && onlyChanges(['status', 'statusTimes', 'tracking', 'adminNote', 'payment', 'stockRestored', 'updatedAt']);
 
       // Customer may cancel their own order before it is confirmed
       allow update: if signedIn() && resource.data.userId == request.auth.uid
