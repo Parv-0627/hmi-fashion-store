@@ -437,6 +437,7 @@ function renderPayment() {
   $('codBlockedNote').style.display = s.codEnabled && blockers.length ? 'block' : 'none';
   $('codBlockedNote').innerHTML = blockers.length ? `🚫 In products par COD nahi hai: <b>${blockers.map(esc).join(', ')}</b>` : '';
   if (state.payMethod === 'cod' && !codOk) state.payMethod = '';
+  if (!state.payMethod) state.payMethod = 'razorpay'; // online is the default; COD is one tap away
   const codT = calcTotals(lines, s, 'cod');
   $('codSmall').textContent = codOk ? (codT.advance ? `${rs(codT.advance)} advance` : 'Poora delivery pe') : '';
   document.querySelectorAll('[data-pay]').forEach((b) => b.classList.toggle('selected', b.dataset.pay === state.payMethod));
@@ -457,7 +458,7 @@ function renderPayment() {
   btn.disabled = !state.payMethod || state.placing;
   btn.textContent = state.placing ? '⏳ Please wait...'
     : !state.payMethod ? 'Payment method chunein'
-      : state.payMethod === 'razorpay' ? `🔒 Pay ${rs(t.total)}`
+      : state.payMethod === 'razorpay' ? `🔒 Card / UPI se Pay ${rs(t.total)}`
         : t.advance ? `🔒 ${rs(t.advance)} advance pay karein` : '✅ Place COD Order';
   $('payErr').textContent = '';
 }
