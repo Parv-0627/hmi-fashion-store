@@ -9,6 +9,8 @@
   if (['localhost', '127.0.0.1'].includes(location.hostname) && new URLSearchParams(location.search).has('emulator')) {
     db.useEmulator('127.0.0.1', 8085);
     auth.useEmulator('http://127.0.0.1:9099', { disableWarnings: true });
+    auth.settings.appVerificationDisabledForTesting = true;
+    if (!cfg.workerUrl) cfg.workerUrl = 'http://127.0.0.1:8787'; // tests/dev-worker.mjs
   }
 
   function esc(s) {

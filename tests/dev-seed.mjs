@@ -55,5 +55,18 @@ await env.withSecurityRulesDisabled(async (ctx) => {
     status: 'Pending', statusTimes: { Pending: Date.now() - 3600000 }, createdAt: Date.now() - 3600000, stockDeducted: true,
   });
 });
+if (process.argv.includes('--catalogue')) {
+  // Also write the new per-document catalogue (as if the admin already imported)
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    const db = ctx.firestore();
+    const cats = [['Saree', 'Sarees', '🥻'], ['Kurti', 'Kurtis', '👘'], ['Men', "Men's Wear", '👔'], ['Kids', 'Kids Wear', '🧒']];
+    for (const [i, [id, name, icon]] of cats.entries()) await setDoc(doc(db, 'categories', id), { name, icon, sub: '', order: i });
+    const base = { active: true, cod: true, badge: '', desc: 'Test product', emoji: '👗', bg: '#fce7f3', sizes: [], colors: [], images: [], trackStock: true, updatedAt: Date.now() };
+    await setDoc(doc(db, 'products/1'), { ...base, name: 'Banarasi Silk Saree', category: 'Saree', price: 2499, mrp: 3999, stock: 18, badge: 'Bestseller', colors: [{ name: 'Red', hex: '#ef4444' }, { name: 'Green', hex: '#22c55e' }], images: ['https://picsum.photos/seed/saree/600/800'], createdAt: 3 });
+    await setDoc(doc(db, 'products/2'), { ...base, name: 'Printed Rayon Kurti', category: 'Kurti', price: 499, mrp: 799, stock: 3, sizes: ['M', 'L', 'XL'], createdAt: 2 });
+    await setDoc(doc(db, 'products/3'), { ...base, name: 'Sherwani Set', category: 'Men', price: 5999, mrp: 8999, stock: 0, trackStock: false, cod: false, emoji: '🤵', createdAt: 1 });
+    await setDoc(doc(db, 'products/4'), { ...base, name: 'Kids Party Frock', category: 'Kids', price: 799, mrp: 1299, stock: 0, emoji: '👸', createdAt: 4 });
+  });
+}
 await env.cleanup();
 console.log('Seeded. Admin: admin@test.local / test1234   Customer: customer@test.local / test1234');
