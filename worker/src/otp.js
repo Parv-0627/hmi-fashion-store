@@ -7,7 +7,9 @@
 //   otps/{phone}         HMAC of the code, expiry, wrong tries, per-number send count
 //   otpLimits/{ip_...}   sends per IP per hour
 //   otpLimits/global     sends per day (protects the admin / SMS balance from bots)
-//   otpRequests/{phone}  the code for the admin to send on WhatsApp (admin delivery only)
+//   otpRequests/{phone}  the code for the admin to send on WhatsApp (admin delivery,
+//                        or when the SMS phone is offline / out of SMS for the day)
+//   otpLimits/sms        SMS sent today through the Android gateway phone
 //
 // How the code reaches the customer is decided only in deliverOtp() below.
 import { HttpError } from './errors.js';
@@ -52,22 +54,56 @@ function hourWindow(w, now) {
 function deliveryMode(env) {
   const mode = env.OTP_DELIVERY || 'admin';
   if (mode === 'screen' && !isEmulator(env)) throw new HttpError(500, 'OTP screen mode only works in test mode');
-  if (!['admin', 'screen'].includes(mode)) throw new HttpError(500, 'OTP delivery is not set up');
+  if (!['admin', 'screen', 'sms'].includes(mode)) throw new HttpError(500, 'OTP delivery is not set up');
   return mode;
 }
 
+// Admin queue: shows up in admin.html -> "Login OTPs", admin sends it on WhatsApp
+async function queueForAdmin(fs, { phone, code, expiresAt }, reason) {
+  await fs.commit([{
+    op: 'set', path: `otpRequests/${phone}`,
+    data: { phone: '+91' + phone, code, status: 'pending', createdAt: Date.now(), expiresAt, ...(reason ? { reason } : {}) },
+  }]);
+  return { delivery: 'admin' };
+}
+
+// SMS through an Android phone running "SMS Gateway for Android" (sms-gate.app,
+// cloud mode). The phone's own SIM sends it. Username/password from the app are
+// wrangler secrets SMS_GATEWAY_USER / SMS_GATEWAY_PASS.
+async function sendSms(env, phone, text) {
+  const url = env.SMS_GATEWAY_URL || 'https://api.sms-gate.app/3rdparty/v1/messages';
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: 'Basic ' + btoa(`${env.SMS_GATEWAY_USER}:${env.SMS_GATEWAY_PASS}`) },
+    body: JSON.stringify({ textMessage: { text }, phoneNumbers: ['+91' + phone] }),
+  });
+  if (!res.ok) throw new Error(`SMS gateway ${res.status}: ${(await res.text().catch(() => '')).slice(0, 200)}`);
+}
+
 // The only place that decides how a code reaches the customer.
-// To switch to an SMS gateway later: add a mode here that calls the gateway
-// (keys as `wrangler secret`s) and set OTP_DELIVERY in wrangler.toml.
 async function deliverOtp(env, fs, { phone, code, expiresAt }) {
   const mode = deliveryMode(env);
   if (mode === 'screen') return { delivery: 'screen', devCode: code }; // emulator only
-  // admin: shows up in admin.html -> "Login OTPs", admin sends it on WhatsApp
-  await fs.commit([{
-    op: 'set', path: `otpRequests/${phone}`,
-    data: { phone: '+91' + phone, code, status: 'pending', createdAt: Date.now(), expiresAt },
-  }]);
-  return { delivery: 'admin' };
+  if (mode === 'admin') return queueForAdmin(fs, { phone, code, expiresAt });
+
+  // sms: a SIM pack allows ~100 SMS a day, keep a margin; anything that goes
+  // wrong (phone offline, limit reached) falls back to the admin queue
+  if (!env.SMS_GATEWAY_USER || !env.SMS_GATEWAY_PASS) return queueForAdmin(fs, { phone, code, expiresAt }, 'SMS gateway not set up');
+  const today = istDay(Date.now());
+  const counter = await fs.get('otpLimits/sms');
+  const sentToday = counter && counter.day === today ? counter.count || 0 : 0;
+  if (sentToday >= (Number(env.SMS_DAILY_LIMIT) || 90)) return queueForAdmin(fs, { phone, code, expiresAt }, 'Daily SMS limit reached');
+  const mins = Math.round((expiresAt - Date.now()) / 60000);
+  // Last line in WebOTP format so Chrome on Android can fill the code in by itself
+  const text = `${code} is your HMI Fashion Store login OTP. It works for ${mins} minutes. Do not share it with anyone.\n\n@shop.hmitechnology.co.in #${code}`;
+  try {
+    await sendSms(env, phone, text);
+  } catch (e) {
+    console.error('SMS failed', e);
+    return queueForAdmin(fs, { phone, code, expiresAt }, 'SMS phone did not respond');
+  }
+  await fs.commit([{ op: 'set', path: 'otpLimits/sms', data: { day: today, count: sentToday + 1 } }]);
+  return { delivery: 'sms' };
 }
 
 export async function sendOtp(env, fs, { phone, ip }) {

@@ -573,7 +573,7 @@ function orderPlaced(orderNo) {
 // =====================================================================
 // LOGIN (Phone OTP, Google, email link) — used in checkout and in My Account
 // =====================================================================
-let otpPhone = '', resendTimer = null;
+let otpPhone = '', resendTimer = null, otpAutofill = null;
 function friendlyAuth(e) {
   const map = {
     'auth/invalid-phone-number': 'Invalid mobile number.',
@@ -652,11 +652,15 @@ function renderLogin(box, subtitle) {
       const mins = Math.max(1, Math.round((r.expiresAt - Date.now()) / 60000));
       q('[data-el=otpNote]').innerHTML = r.devCode
         ? `🧪 Test OTP: <b>${esc(r.devCode)}</b>`
-        : `📲 Our team will send your OTP on <b>WhatsApp</b> to this number in a few minutes (10 AM – 9 PM). It works for ${mins} minutes.
-           <a href="${ask}" target="_blank" rel="noopener">💬 Didn't get it? Message us on WhatsApp</a>`;
+        : r.delivery === 'sms'
+          ? `📩 OTP sent by <b>SMS</b> to this number. It works for ${mins} minutes.
+             <a href="${ask}" target="_blank" rel="noopener">💬 No SMS in 2 minutes? Message us on WhatsApp</a>`
+          : `📲 Our team will send your OTP on <b>WhatsApp</b> to this number in a few minutes (10 AM – 9 PM). It works for ${mins} minutes.
+             <a href="${ask}" target="_blank" rel="noopener">💬 Didn't get it? Message us on WhatsApp</a>`;
       q('[data-el=code]').value = '';
       q('[data-el=code]').focus();
       startResendWait(60);
+      if (r.delivery === 'sms') listenForSmsCode();
     } catch (e) { err(e.message); } finally { busy(btn, false, label); }
   };
   q('[data-act=send]').addEventListener('click', (ev) => {
@@ -665,6 +669,19 @@ function renderLogin(box, subtitle) {
     sendOtp(ev.target, phone);
   });
   resendBtn.addEventListener('click', () => sendOtp(resendBtn, otpPhone));
+  // Chrome on Android: reads the SMS (WebOTP line) and fills the code in itself
+  const listenForSmsCode = () => {
+    if (!('OTPCredential' in window)) return;
+    if (otpAutofill) otpAutofill.abort();
+    otpAutofill = new AbortController();
+    navigator.credentials.get({ otp: { transport: ['sms'] }, signal: otpAutofill.signal })
+      .then((c) => {
+        if (!c || !c.code || !document.body.contains(box)) return;
+        q('[data-el=code]').value = c.code;
+        verify(q('[data-act=verify]'));
+      })
+      .catch(() => { /* customer can still type it */ });
+  };
   const verify = async (btn) => {
     const code = q('[data-el=code]').value.replace(/\D/g, '');
     if (code.length !== 6) return err('Please enter the 6-digit OTP');
@@ -674,6 +691,7 @@ function renderLogin(box, subtitle) {
       const r = await HMI.callWorker('/auth/otp/verify', { phone: otpPhone, code });
       await auth.signInWithCustomToken(r.token);
       clearInterval(resendTimer);
+      if (otpAutofill) otpAutofill.abort();
     } catch (e) {
       err(e.code ? friendlyAuth(e) : e.message);
       q('[data-el=code]').select();

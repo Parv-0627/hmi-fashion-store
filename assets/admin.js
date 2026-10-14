@@ -702,7 +702,8 @@ function renderOtpRequests() {
     const wa = `https://wa.me/${String(r.phone || '').replace(/\D/g, '')}?text=${encodeURIComponent(msg)}`;
     return `<div class="card otp-card ${expired ? 'expired' : ''}">
       <div><div class="otp-phone">📱 ${esc(r.phone)}</div>
-        <div class="help">${fmtDate(r.createdAt)} · ${expired ? 'Expired' : left + ' min left'}${r.status === 'sent' ? ' · ✅ Sent' : ''}</div></div>
+        <div class="help">${fmtDate(r.createdAt)} · ${expired ? 'Expired' : left + ' min left'}${r.status === 'sent' ? ' · ✅ Sent' : ''}</div>
+        ${r.reason ? `<div class="help" style="color:#b45309">⚠️ ${esc(r.reason)} — please send on WhatsApp</div>` : ''}</div>
       <div class="otp-code">${expired ? '——' : esc(r.code)}</div>
       <div class="otp-actions">
         ${expired ? '' : `<a class="btn btn-green btn-sm" target="_blank" rel="noopener" href="${esc(wa)}" onclick="otpMarkSent('${esc(r.id)}')">📲 Send on WhatsApp</a>`}

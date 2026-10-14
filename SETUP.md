@@ -116,6 +116,20 @@ Order zaroori hai — pehle server aur rules, phir website:
 - [ ] Ab website push/deploy karein.
 - [ ] Test: apna number daal kar OTP maangein → admin panel mein dikhega → WhatsApp se bhejein → login.
 
+### 7.1 Automatic SMS (Android phone se, free)
+Ek Android phone jisme SIM ho (unlimited SMS pack ke saath), hamesha charge aur internet par rahe:
+- [ ] Phone par **SMS Gateway for Android** app install karein (sms-gate.app / GitHub: capcom6/android-sms-gateway)
+- [ ] App mein **Cloud Server** on karein → **Offline** dabayein → **Online** ho jayega → wahan **username** aur **password** dikhega
+- [ ] App ko SMS permission dein, aur phone settings mein app ka **battery optimization off** karein (warna phone app ko band kar dega)
+- [ ] Worker wale terminal mein (Cloudflare login wala):
+  ```bash
+  npx wrangler secret put SMS_GATEWAY_USER    # app ka username
+  npx wrangler secret put SMS_GATEWAY_PASS    # app ka password
+  ```
+- [ ] Test: apne doosre number se login karein → SMS aana chahiye
+- Phone offline ho ya din ke 90 SMS (`SMS_DAILY_LIMIT`) ho jaayein → OTP apne aap admin panel ke **Login OTPs** mein aa jayega, wahan se WhatsApp karein.
+- Dhyan: personal SIM se zyada SMS bhejne par telecom company SIM block kar sakti hai. Orders badhne par WhatsApp Business API ya DLT wala SMS gateway lagayein.
+
 Settings `worker/wrangler.toml` mein: `OTP_TTL_MINUTES` (OTP kitni der chale, abhi 10), `OTP_DAILY_LIMIT` (din mein max OTP, abhi 300).
 Baad mein SMS gateway lagana ho to sirf `worker/src/otp.js` ka `deliverOtp()` badalna hai.
 

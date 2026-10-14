@@ -2,6 +2,7 @@
 // and Auth emulators. Run: npm test
 import { test, before, after, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
+import { createServer } from 'node:http';
 import { initializeTestEnvironment } from '@firebase/rules-unit-testing';
 import { doc, setDoc, getDoc, updateDoc } from 'firebase/firestore';
 import worker from '../worker/src/index.js';
@@ -9,6 +10,11 @@ import worker from '../worker/src/index.js';
 const PROJECT = 'demo-hmi-otp';
 const AUTH = 'http://127.0.0.1:9099';
 let env;
+
+// Fake "SMS Gateway for Android" cloud API
+const sms = { sent: [], fail: false, url: '' };
+let smsServer;
+const SMS_ENV = () => ({ OTP_DELIVERY: 'sms', SMS_GATEWAY_URL: sms.url, SMS_GATEWAY_USER: 'gwuser', SMS_GATEWAY_PASS: 'gwpass' });
 
 const ENV = (extra = {}) => ({
   FIREBASE_PROJECT_ID: PROJECT, FIRESTORE_EMULATOR_HOST: '127.0.0.1:8085', AUTH_EMULATOR_HOST: '127.0.0.1:9099',
@@ -50,10 +56,22 @@ async function signIn(token) {
 }
 
 before(async () => {
+  smsServer = createServer((req, res) => {
+    let body = '';
+    req.on('data', (c) => { body += c; });
+    req.on('end', () => {
+      if (sms.fail) { res.statusCode = 503; return res.end('device offline'); }
+      sms.sent.push({ auth: req.headers.authorization, path: req.url, body: JSON.parse(body) });
+      res.statusCode = 202; res.end('{"id":"m1","state":"Pending"}');
+    });
+  });
+  await new Promise((r) => smsServer.listen(0, '127.0.0.1', r));
+  sms.url = `http://127.0.0.1:${smsServer.address().port}/3rdparty/v1/messages`;
   env = await initializeTestEnvironment({ projectId: PROJECT, firestore: { host: '127.0.0.1', port: 8085 } });
 });
-after(async () => { await env.cleanup(); });
+after(async () => { await env.cleanup(); smsServer.close(); });
 beforeEach(async () => {
+  sms.sent.length = 0; sms.fail = false;
   await env.clearFirestore();
   await fetch(`${AUTH}/emulator/v1/projects/${PROJECT}/accounts`, { method: 'DELETE' });
 });
@@ -151,4 +169,39 @@ test('bad input is rejected', async () => {
   assert.equal((await send('12345')).status, 400);
   assert.equal((await send('5876543210')).status, 400);
   assert.equal((await verify('9876543210', '12')).status, 400);
+});
+
+test('sms delivery: the gateway phone gets the code, the browser and admin do not', async () => {
+  const s = await send('9876543210', { envExtra: SMS_ENV() });
+  assert.equal(s.status, 200, JSON.stringify(s.data));
+  assert.equal(s.data.delivery, 'sms');
+  assert.equal(s.data.devCode, undefined);
+  assert.equal(sms.sent.length, 1);
+  const msg = sms.sent[0];
+  assert.equal(msg.auth, 'Basic ' + Buffer.from('gwuser:gwpass').toString('base64'));
+  assert.deepEqual(msg.body.phoneNumbers, ['+919876543210']);
+  const code = msg.body.textMessage.text.match(/^(\d{6}) is your/)[1];
+  assert.match(msg.body.textMessage.text, new RegExp(`@shop\\.hmitechnology\\.co\\.in #${code}$`)); // WebOTP autofill line
+  assert.equal(await read('otpRequests/9876543210'), undefined);
+  assert.equal((await verify('9876543210', code)).status, 200);
+  assert.equal((await read('otpLimits/sms')).count, 1);
+});
+
+test('sms delivery falls back to the admin queue when the phone is offline or out of SMS', async () => {
+  sms.fail = true;
+  const offline = await send('9876543210', { envExtra: SMS_ENV() });
+  assert.equal(offline.status, 200, JSON.stringify(offline.data));
+  assert.equal(offline.data.delivery, 'admin');
+  assert.match((await read('otpRequests/9876543210')).reason, /did not respond/);
+
+  sms.fail = false;
+  const today = new Date(Date.now() + 5.5 * 3600 * 1000).toISOString().slice(0, 10);
+  await write('otpLimits/sms', { day: today, count: 90 });
+  const full = await send('9123456780', { envExtra: SMS_ENV() });
+  assert.equal(full.data.delivery, 'admin');
+  assert.match((await read('otpRequests/9123456780')).reason, /limit/);
+  assert.equal(sms.sent.length, 0);
+
+  const noKeys = await send('9000000001', { envExtra: { ...SMS_ENV(), SMS_GATEWAY_PASS: '' } });
+  assert.equal(noKeys.data.delivery, 'admin');
 });

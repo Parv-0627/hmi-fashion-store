@@ -13,6 +13,10 @@ const fake = createServer((req, res) => {
       const o = JSON.parse(body);
       return res.end(JSON.stringify({ id: 'order_dev_' + Date.now(), amount: o.amount, currency: 'INR', receipt: o.receipt }));
     }
+    if (req.url === '/3rdparty/v1/messages') { // fake SMS gateway phone: prints the SMS
+      console.log('📩 SMS', JSON.parse(body).phoneNumbers.join(','), '→', JSON.parse(body).textMessage.text.split('\n')[0]);
+      res.statusCode = 202; return res.end('{"id":"dev","state":"Pending"}');
+    }
     if (req.url.startsWith('/1/upload')) return res.end(JSON.stringify({ success: true, data: { url: 'https://picsum.photos/seed/' + Date.now() + '/600/800' } }));
     res.statusCode = 404; res.end('{}');
   });
@@ -22,7 +26,9 @@ const ENV = {
   FIREBASE_PROJECT_ID: 'hmi-fashion-store', FIRESTORE_EMULATOR_HOST: '127.0.0.1:8085', AUTH_EMULATOR: 'true',
   AUTH_EMULATOR_HOST: '127.0.0.1:9099',
   // OTP login: 'screen' shows the code in the browser; OTP_DELIVERY=admin to try the admin WhatsApp queue
+  // OTP_DELIVERY=sms: fake gateway below prints each SMS in this terminal
   OTP_DELIVERY: process.env.OTP_DELIVERY || 'screen', OTP_TTL_MINUTES: '10',
+  SMS_GATEWAY_URL: 'http://127.0.0.1:8788/3rdparty/v1/messages', SMS_GATEWAY_USER: 'dev', SMS_GATEWAY_PASS: 'dev',
   RAZORPAY_KEY_ID: 'rzp_test_dev', RAZORPAY_KEY_SECRET: 'rzp_secret', RAZORPAY_WEBHOOK_SECRET: 'wh_secret',
   RAZORPAY_API_BASE: 'http://127.0.0.1:8788', IMGBB_API_KEY: 'dev', IMGBB_API_BASE: 'http://127.0.0.1:8788',
   ALLOWED_ORIGINS: 'http://localhost:5500,http://127.0.0.1:5500',
