@@ -105,6 +105,20 @@ Purani ImgBB key public ho chuki thi.
 
 ---
 
+## 7. Mobile OTP login (bina SMS gateway — admin WhatsApp par OTP bhejta hai)
+
+Customer number daalta hai → OTP admin panel ke **🔐 Login OTPs** mein aata hai → admin **📲 Send on WhatsApp** dabata hai → customer OTP daal kar login.
+
+Order zaroori hai — pehle server aur rules, phir website:
+- [ ] Codespace terminal: `npx firebase login` → `npm run rules:deploy` (naye rules: sirf admin OTP list dekh sake)
+- [ ] `cd worker && npx wrangler deploy` (naye `/auth/otp/send` aur `/auth/otp/verify` routes)
+- [ ] Browser mein `<worker URL>/health` → `{"ok":true}`
+- [ ] Ab website push/deploy karein.
+- [ ] Test: apna number daal kar OTP maangein → admin panel mein dikhega → WhatsApp se bhejein → login.
+
+Settings `worker/wrangler.toml` mein: `OTP_TTL_MINUTES` (OTP kitni der chale, abhi 10), `OTP_DAILY_LIMIT` (din mein max OTP, abhi 300).
+Baad mein SMS gateway lagana ho to sirf `worker/src/otp.js` ka `deliverOtp()` badalna hai.
+
 ## Developer notes
 - `npm test` — security rules + checkout server ke saare tests (local emulator par, live data nahi chhoota).
 - Local testing: `npm run emulators`, `node tests/dev-seed.mjs --catalogue`, `node tests/dev-worker.mjs`, `python3 -m http.server 5500`,

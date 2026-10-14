@@ -88,6 +88,16 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    // ---------- Login OTPs ----------
+    // The checkout worker writes these. Admin sees the code and sends it to
+    // the customer on WhatsApp. otps/ and otpLimits/ (hashes, rate limits)
+    // stay closed to every browser through the catch-all below.
+    match /otpRequests/{phone} {
+      allow read, delete: if isAdmin();
+      allow update: if isAdmin() && onlyChanges(['status', 'sentAt']);
+      allow create: if false;
+    }
+
     // Everything else is closed
     match /{document=**} {
       allow read, write: if false;

@@ -8,11 +8,12 @@ let products = [];      // normalized, from /products
 let categories = [];    // from /categories, sorted by .order
 let orders = [];        // normalized, from /orders
 let customers = [];     // from /users
+let otpRequests = [];   // from /otpRequests (login OTPs to send on WhatsApp)
 let paySettings = HMI.pricing.paySettings();
 let editingId = null;
 let formImages = [];
 const unsubs = [];
-const SECTIONS = ['dashboard', 'orders', 'products', 'addProduct', 'categories', 'customers', 'payment', 'data'];
+const SECTIONS = ['dashboard', 'orders', 'otp', 'products', 'addProduct', 'categories', 'customers', 'payment', 'data'];
 
 // =====================================================================
 // LOGIN
@@ -137,6 +138,18 @@ function startApp() {
     renderAll();
     if ($('orderDetailOverlay').style.display === 'flex' && openOrderId) openOrderDetail(openOrderId);
   }, onErr('Orders')));
+
+  let firstOtp = true;
+  unsubs.push(db.collection('otpRequests').onSnapshot((snap) => {
+    if (!firstOtp) {
+      snap.docChanges().filter((c) => c.type === 'added')
+        .forEach((c) => toast('🔐 Login OTP request: ' + (c.doc.data().phone || c.doc.id)));
+    }
+    firstOtp = false;
+    otpRequests = snap.docs.map((d) => ({ id: d.id, ...d.data() })).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+    renderOtpRequests();
+  }, onErr('Login OTPs')));
+  setInterval(renderOtpRequests, 15000); // keep "min left" fresh
 
   unsubs.push(db.collection('users').onSnapshot((snap) => {
     customers = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
@@ -673,6 +686,36 @@ function renderCustomers() {
       <td style="font-size:.8rem">${esc(c.email || '—')}</td><td>${s.count}</td><td><b>${rs(s.spent)}</b></td>
       <td class="help">${fmtDate(c.createdAt, false)}</td></tr>`;
   }).join('');
+}
+
+// =====================================================================
+// LOGIN OTPs — the worker puts each customer's OTP here; admin sends it on WhatsApp
+// =====================================================================
+function renderOtpRequests() {
+  const now = Date.now();
+  $('cnt-otp').textContent = otpRequests.filter((r) => r.expiresAt > now && r.status !== 'sent').length;
+  $('emptyOtp').style.display = otpRequests.length ? 'none' : 'block';
+  $('otpList').innerHTML = otpRequests.map((r) => {
+    const expired = !(r.expiresAt > now);
+    const left = Math.max(1, Math.ceil((r.expiresAt - now) / 60000));
+    const msg = `Your HMI Fashion Store login OTP is ${r.code}. It works for ${left} minutes. Do not share it with anyone.`;
+    const wa = `https://wa.me/${String(r.phone || '').replace(/\D/g, '')}?text=${encodeURIComponent(msg)}`;
+    return `<div class="card otp-card ${expired ? 'expired' : ''}">
+      <div><div class="otp-phone">📱 ${esc(r.phone)}</div>
+        <div class="help">${fmtDate(r.createdAt)} · ${expired ? 'Expired' : left + ' min left'}${r.status === 'sent' ? ' · ✅ Sent' : ''}</div></div>
+      <div class="otp-code">${expired ? '——' : esc(r.code)}</div>
+      <div class="otp-actions">
+        ${expired ? '' : `<a class="btn btn-green btn-sm" target="_blank" rel="noopener" href="${esc(wa)}" onclick="otpMarkSent('${esc(r.id)}')">📲 Send on WhatsApp</a>`}
+        <button class="btn btn-danger btn-sm" type="button" onclick="otpRemove('${esc(r.id)}')">🗑️ Remove</button>
+      </div></div>`;
+  }).join('');
+}
+function otpMarkSent(id) {
+  db.collection('otpRequests').doc(id).update({ status: 'sent', sentAt: Date.now() })
+    .catch((e) => toast('❌ ' + e.message, 'error'));
+}
+function otpRemove(id) {
+  db.collection('otpRequests').doc(id).delete().catch((e) => toast('❌ ' + e.message, 'error'));
 }
 
 // =====================================================================

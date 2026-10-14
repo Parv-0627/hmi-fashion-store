@@ -7,8 +7,17 @@ FIREBASE_PROJECT_ID = "hmi-fashion-store"
 ALLOWED_ORIGINS = "https://shop.hmitechnology.co.in"
 RAZORPAY_KEY_ID = "rzp_live_TnR12I3DTaSWej"   # public key id (live)
 
+# Mobile OTP login (worker/src/otp.js)
+#   OTP_DELIVERY "admin": the code appears in admin.html -> "Login OTPs" and the
+#   admin sends it to the customer on WhatsApp. ("screen" only works in test mode.)
+OTP_DELIVERY = "admin"
+OTP_TTL_MINUTES = "10"    # how long a code works (1-30); admin delivery is manual, so 10
+OTP_DAILY_LIMIT = "300"   # max OTPs per day for the whole store
+
 # Secrets (set once with `npx wrangler secret put NAME`, never commit them):
 #   FIREBASE_SERVICE_ACCOUNT   whole JSON of a Firebase service-account key
 #   RAZORPAY_KEY_SECRET
 #   RAZORPAY_WEBHOOK_SECRET    any long random text, same as in the Razorpay webhook
 #   IMGBB_API_KEY              new ImgBB key (the old one was public)
+#   OTP_SECRET                 optional: any long random text for hashing OTPs
+#                              (if not set, the service account key is used)

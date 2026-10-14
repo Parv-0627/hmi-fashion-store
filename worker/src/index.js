@@ -6,15 +6,15 @@
 //   POST /razorpay/webhook   places the order even if the customer closed the browser after paying
 //   POST /orders/cancel      customer cancels a Pending order (stock goes back)
 //   POST /admin/upload-image admin product photo upload (ImgBB key stays secret here)
+//   POST /auth/otp/send      mobile OTP login (see otp.js)
+//   POST /auth/otp/verify    -> Firebase custom token
 import '../../assets/pricing.js';
 import { Firestore } from './firestore.js';
 import { verifyIdToken, hmacHex, safeEqual, AuthError } from './google.js';
+import { HttpError } from './errors.js';
+import { sendOtp, verifyOtp } from './otp.js';
 
 const { calcTotals, paySettings } = globalThis.HMIPricing;
-
-class HttpError extends Error {
-  constructor(status, message) { super(message); this.status = status; }
-}
 
 // ---------------------------------------------------------------- helpers
 function cors(env, req) {
@@ -320,6 +320,10 @@ const ROUTES = {
   'POST /razorpay/webhook': razorpayWebhook,
   'POST /orders/cancel': cancelOrder,
   'POST /admin/upload-image': uploadImage,
+  'POST /auth/otp/send': async (req, env, fs) => sendOtp(env, fs, {
+    phone: (await readJson(req)).phone, ip: req.headers.get('CF-Connecting-IP'),
+  }),
+  'POST /auth/otp/verify': async (req, env, fs) => verifyOtp(env, fs, await readJson(req)),
   'GET /health': async () => ({ ok: true }),
   // Confirms the service account can reach Firestore (no data is returned)
   'GET /health/db': async (req, env, fs) => {

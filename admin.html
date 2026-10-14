@@ -195,6 +195,12 @@ input[type=email],input[type=password],input[type=url],input[type=tel]{padding:1
 .detail-label{font-size:.72rem;font-weight:800;text-transform:uppercase;color:var(--gray);letter-spacing:1px;margin-bottom:8px;}
 .mini-input{padding:7px 10px!important;font-size:.82rem!important;}
 .help{font-size:.75rem;color:var(--gray);line-height:1.6;}
+.otp-card{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:14px 18px;}
+.otp-card.expired{opacity:.5;}
+.otp-phone{font-weight:800;font-size:1rem;}
+.otp-code{font:800 1.6rem/1 'Nunito',sans-serif;letter-spacing:6px;color:var(--pink-deep);background:#fff0f8;border-radius:10px;padding:8px 14px;}
+.otp-actions{display:flex;gap:8px;margin-left:auto;flex-wrap:wrap;}
+.otp-actions a{text-decoration:none;}
 .warn-banner{background:#fef9c3;border:2px solid #fde68a;border-radius:12px;padding:12px 16px;margin-bottom:16px;font-size:.83rem;color:#854d0e;line-height:1.6;}
 @media(max-width:900px){ .stats-grid{grid-template-columns:1fr 1fr;} .mobile-nav{display:flex!important;} }
 .mobile-nav{display:none;gap:6px;overflow-x:auto;padding:10px 14px;background:white;border-bottom:2px solid var(--pink-light);}
@@ -250,6 +256,7 @@ input[type=email],input[type=password],input[type=url],input[type=tel]{padding:1
     <div class="sidebar-title">Navigation</div>
     <button class="side-btn" data-sec="dashboard">📊 Dashboard</button>
     <button class="side-btn" data-sec="orders">📦 Orders <span class="cat-cnt" id="cnt-pending">0</span></button>
+    <button class="side-btn" data-sec="otp">🔐 Login OTPs <span class="cat-cnt" id="cnt-otp">0</span></button>
     <button class="side-btn" data-sec="products">👗 Products <span class="cat-cnt" id="cnt-products">0</span></button>
     <button class="side-btn" data-sec="addProduct">➕ Add Product</button>
     <button class="side-btn" data-sec="categories">🏷️ Categories</button>
@@ -491,6 +498,17 @@ input[type=email],input[type=password],input[type=url],input[type=tel]{padding:1
           <tbody id="customersBody"></tbody></table></div>
         <div id="emptyCustomers" class="empty-state" style="display:none;"><div style="font-size:3rem;margin-bottom:10px;">👥</div><p>No customer accounts yet</p></div>
       </div>
+    </div>
+
+    <!-- LOGIN OTPs (customer mobile login, sent by admin on WhatsApp) -->
+    <div id="sec-otp" class="sec" style="display:none">
+      <div class="card help" style="font-size:.82rem;">
+        🔐 When a customer logs in with their mobile number, their OTP shows up here.
+        Tap <b>📲 Send on WhatsApp</b> — WhatsApp opens with the OTP message to <b>that same number</b>; press send.
+        Only send to the number shown, never to a different number someone asks for on chat.
+      </div>
+      <div id="otpList"></div>
+      <div id="emptyOtp" class="empty-state card"><div style="font-size:3rem;margin-bottom:10px;">🔐</div><p>No login requests right now</p></div>
     </div>
 
     <!-- PAYMENT & SHIPPING -->

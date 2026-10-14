@@ -20,6 +20,9 @@ const fake = createServer((req, res) => {
 
 const ENV = {
   FIREBASE_PROJECT_ID: 'hmi-fashion-store', FIRESTORE_EMULATOR_HOST: '127.0.0.1:8085', AUTH_EMULATOR: 'true',
+  AUTH_EMULATOR_HOST: '127.0.0.1:9099',
+  // OTP login: 'screen' shows the code in the browser; OTP_DELIVERY=admin to try the admin WhatsApp queue
+  OTP_DELIVERY: process.env.OTP_DELIVERY || 'screen', OTP_TTL_MINUTES: '10',
   RAZORPAY_KEY_ID: 'rzp_test_dev', RAZORPAY_KEY_SECRET: 'rzp_secret', RAZORPAY_WEBHOOK_SECRET: 'wh_secret',
   RAZORPAY_API_BASE: 'http://127.0.0.1:8788', IMGBB_API_KEY: 'dev', IMGBB_API_BASE: 'http://127.0.0.1:8788',
   ALLOWED_ORIGINS: 'http://localhost:5500,http://127.0.0.1:5500',
