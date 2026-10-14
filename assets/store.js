@@ -83,12 +83,11 @@ function startCatalogue() {
 
 function renderCatalogue() {
   renderCategories(); renderProducts(); renderKids();
-  $('statProducts').textContent = state.products.length ? state.products.length + '+' : '—';
+  renderHeroImage();
 }
 
 function renderShipTexts() {
   const { shipping, freeAbove } = state.settings;
-  $('statShip').textContent = shipping ? '₹' + shipping : 'FREE';
   $('heroShip').textContent = shipping === 0 ? '🚚 Pan India Delivery — FREE!'
     : freeAbove ? `🚚 Delivery ₹${shipping} — FREE on orders ₹${freeAbove.toLocaleString('en-IN')}+!` : `🚚 Pan India Delivery — Only ₹${shipping}!`;
   $('whyShipTitle').textContent = shipping ? 'Delivery @ ₹' + shipping : 'Free Delivery';
@@ -105,11 +104,42 @@ function productInCat(p, catId) {
 function renderCategories() {
   const grid = $('categoriesGrid');
   if (state.activeCat !== 'all' && !state.categories.some((c) => c.id === state.activeCat)) state.activeCat = 'all';
-  const card = (id, icon, name, sub) => `
+  const card = (id, icon, name, sub) => {
+    const product = state.products.find((p) => (id === 'all' || productInCat(p, id)) && p.images[0] && safeUrl(p.images[0]));
+    const src = product && safeUrl(product.images[0]);
+    return `
     <div class="category-card ${state.activeCat === id ? 'active' : ''}" data-cat="${esc(id)}" role="button" tabindex="0">
-      <div class="category-icon">${esc(icon)}</div><h3>${esc(name)}</h3>${sub ? `<p>${esc(sub)}</p>` : ''}</div>`;
+      ${src ? `<img class="category-photo" src="${src}" alt="" loading="lazy">` : ''}
+      <div class="category-fallback" ${src ? 'hidden' : ''}>${esc(icon)}</div>
+      <div class="category-label"><h3>${esc(name)}</h3></div></div>`;
+  };
   grid.innerHTML = card('all', '🛍️', 'All Items', 'Full Collection')
     + state.categories.map((c) => card(c.id, c.icon || '🏷️', c.name, c.sub)).join('');
+  grid.querySelectorAll('.category-photo').forEach((img) => {
+    img.addEventListener('error', () => {
+      img.hidden = true;
+      img.nextElementSibling.hidden = false;
+    }, { once: true });
+  });
+}
+
+function renderHeroImage() {
+  const img = $('heroCampaignImage');
+  const fallback = $('heroImageFallback');
+  const product = state.products.find((p) => p.images[0] && safeUrl(p.images[0]));
+  const src = product && safeUrl(product.images[0]);
+  if (!src) {
+    img.hidden = true;
+    fallback.style.display = 'flex';
+    return;
+  }
+  img.onerror = () => {
+    img.hidden = true;
+    fallback.style.display = 'flex';
+  };
+  img.src = product.images[0];
+  img.hidden = false;
+  fallback.style.display = 'none';
 }
 
 function visibleProducts() {
@@ -138,7 +168,7 @@ function renderProducts() {
   const list = visibleProducts();
   const grid = $('productsGrid');
   const isAll = state.activeCat === 'all' && !state.search;
-  $('shopTitle').textContent = state.search ? `Results for "${state.search}"` : state.activeCat === 'all' ? 'Latest Collection' : catName(state.activeCat);
+  $('shopTitle').textContent = state.search ? `Results for "${state.search}"` : state.activeCat === 'all' ? 'New Arrivals' : catName(state.activeCat);
   $('shopCount').textContent = list.length + (list.length === 1 ? ' product' : ' products');
   $('shopClear').style.display = isAll ? 'none' : 'inline-flex';
   if (!state.catalogueReady && !state.products.length) return;
@@ -674,7 +704,15 @@ auth.onAuthStateChanged(async (user) => {
   if (state.ordersUnsub) { state.ordersUnsub(); state.ordersUnsub = null; }
   state.profile = null; state.orders = [];
   $('accountBtn').textContent = user ? '😊' : '👤';
-  if (!user) { loadLocalWishlist(); renderAccount(); return; }
+  $('navAuth').textContent = user ? '↪' : '👤';
+  $('navAuth').setAttribute('aria-label', user ? 'Sign out' : 'Sign in');
+  renderUserBar();
+  if (!user) {
+    loadLocalWishlist(); renderAccount();
+    // Logged out during checkout → back to the login step
+    if (state.step >= 3 && $('cartSidebar').classList.contains('open')) goStep(2);
+    return;
+  }
 
   const ref = db.collection('users').doc(user.uid);
   try {
@@ -740,6 +778,26 @@ function renderWishState() {
   if ($('accountOverlay').classList.contains('open') && state.accountTab === 'wishlist') renderAccount();
 }
 
+function userLabel() {
+  const u = state.user;
+  if (!u) return '';
+  return (u.phoneNumber && u.phoneNumber.replace(/^\+91/, '+91 ')) || u.email || (state.profile && state.profile.name) || 'Customer';
+}
+function userBarHtml() {
+  return state.user ? `<span>✅ Logged in as <b>${esc(userLabel())}</b></span>
+    <button type="button" class="mini-btn danger" data-logout>🚪 Logout</button>` : '';
+}
+function renderUserBar() { $('checkoutUser').innerHTML = userBarHtml(); }
+
+async function logout() {
+  if (!state.user || !confirm('Log out of your account?')) return;
+  try {
+    await auth.signOut();
+    closeAccount();
+    flash('👋 Logged out');
+  } catch (e) { flash('❌ ' + e.message, '#dc2626'); }
+}
+
 function openAccount(tab) {
   state.accountTab = tab || state.accountTab;
   $('accountOverlay').classList.add('open');
@@ -762,10 +820,11 @@ function renderAccount() {
   $('accTabs').style.display = state.user ? 'flex' : 'none';
   $('accountSub').textContent = state.user ? (state.profile && state.profile.name) || state.user.phoneNumber || state.user.email || 'My Account' : 'Wishlist';
   document.querySelectorAll('#accTabs button').forEach((b) => b.classList.toggle('active', b.dataset.tab === tab));
-  if (tab === 'orders') body.innerHTML = renderOrdersTab();
-  if (tab === 'wishlist') body.innerHTML = renderWishlistTab();
-  if (tab === 'addresses') body.innerHTML = renderAddressesTab();
-  if (tab === 'profile') body.innerHTML = renderProfileTab();
+  const bar = state.user ? `<div class="acc-user">${userBarHtml()}</div>` : '';
+  if (tab === 'orders') body.innerHTML = bar + renderOrdersTab();
+  if (tab === 'wishlist') body.innerHTML = bar + renderWishlistTab();
+  if (tab === 'addresses') body.innerHTML = bar + renderAddressesTab();
+  if (tab === 'profile') body.innerHTML = bar + renderProfileTab();
 }
 
 function renderOrdersTab() {
@@ -882,7 +941,7 @@ document.addEventListener('click', (e) => {
     db.collection('users').doc(state.user.uid).update({ name, updatedAt: Date.now() })
       .then(() => flash('✅ Saved')).catch((err) => flash('❌ ' + err.message, '#dc2626'));
   }
-  if (e.target.id === 'logoutBtn') { auth.signOut(); closeAccount(); flash('Logged out'); }
+  if (e.target.id === 'logoutBtn' || e.target.closest('[data-logout]')) logout();
 });
 document.addEventListener('keydown', (e) => {
   if (e.key !== 'Escape') return;
@@ -902,6 +961,11 @@ $('pdpOverlay').addEventListener('click', (e) => { if (e.target.id === 'pdpOverl
 $('pdpAddCart').addEventListener('click', pdpAdd);
 $('pdpWish').addEventListener('click', () => pdp.p && toggleWish(pdp.p.id));
 $('accountClose').addEventListener('click', closeAccount);
+$('navAuth').addEventListener('click', (e) => {
+  e.preventDefault();
+  $('navMenu').classList.remove('open');
+  if (state.user) logout(); else openAccount('orders');
+});
 $('accountOverlay').addEventListener('click', (e) => { if (e.target.id === 'accountOverlay') closeAccount(); });
 $('successCloseBtn').addEventListener('click', () => $('successOverlay').classList.remove('open'));
 $('successOrdersBtn').addEventListener('click', () => { $('successOverlay').classList.remove('open'); openAccount('orders'); });
@@ -909,7 +973,15 @@ $('shopClear').addEventListener('click', () => { state.activeCat = 'all'; state.
 let searchTimer;
 $('searchInput').addEventListener('input', (e) => {
   clearTimeout(searchTimer);
-  searchTimer = setTimeout(() => { state.search = e.target.value; renderProducts(); }, 200);
+  searchTimer = setTimeout(() => {
+    state.search = e.target.value;
+    renderProducts();
+  }, 200);
+});
+$('searchInput').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && $('searchInput').value.trim()) {
+    $('products').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
 });
 $('sortSelect').addEventListener('change', (e) => { state.sort = e.target.value; renderProducts(); });
 document.querySelectorAll('#navMenu a[href^="#"]').forEach((a) => a.addEventListener('click', () => $('navMenu').classList.remove('open')));
