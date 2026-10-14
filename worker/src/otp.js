@@ -59,12 +59,39 @@ function deliveryMode(env) {
 }
 
 // Admin queue: shows up in admin.html -> "Login OTPs", admin sends it on WhatsApp
-async function queueForAdmin(fs, { phone, code, expiresAt }, reason) {
+async function queueForAdmin(env, fs, { phone, code, expiresAt }, reason) {
   await fs.commit([{
     op: 'set', path: `otpRequests/${phone}`,
     data: { phone: '+91' + phone, code, status: 'pending', createdAt: Date.now(), expiresAt, ...(reason ? { reason } : {}) },
   }]);
+  await notifyAdmin(env, { phone, code, expiresAt });
   return { delivery: 'admin' };
+}
+
+// Phone notification for the admin through ntfy (free app for iPhone/Android).
+// Secret NTFY_TOPIC = a long random topic name the admin subscribes to in the app.
+// Tapping the notification opens WhatsApp to the customer with the OTP typed in.
+// Best effort: a failed notification never blocks the login.
+async function notifyAdmin(env, { phone, code, expiresAt }) {
+  if (!env.NTFY_TOPIC) return;
+  const mins = Math.max(1, Math.round((expiresAt - Date.now()) / 60000));
+  const wa = `https://wa.me/91${phone}?text=${encodeURIComponent(
+    `Your HMI Fashion Store login OTP is ${code}. It works for ${mins} minutes. Do not share it with anyone.`)}`;
+  try {
+    const res = await fetch(`${env.NTFY_URL || 'https://ntfy.sh'}/${encodeURIComponent(env.NTFY_TOPIC)}`, {
+      method: 'POST',
+      headers: {
+        Title: `Login OTP for +91 ${phone}`,
+        Priority: 'high',
+        Tags: 'key',
+        Click: wa,
+        Actions: `view, Send on WhatsApp, ${wa}; view, Admin panel, https://shop.hmitechnology.co.in/admin.html`,
+      },
+      body: `OTP ${code} - tap to send it on WhatsApp (works ${mins} min)`,
+      signal: AbortSignal.timeout(4000),
+    });
+    if (!res.ok) console.error('ntfy', res.status, await res.text().catch(() => ''));
+  } catch (e) { console.error('ntfy failed', e); }
 }
 
 // SMS through an Android phone running "SMS Gateway for Android" (sms-gate.app,
@@ -84,15 +111,15 @@ async function sendSms(env, phone, text) {
 async function deliverOtp(env, fs, { phone, code, expiresAt }) {
   const mode = deliveryMode(env);
   if (mode === 'screen') return { delivery: 'screen', devCode: code }; // emulator only
-  if (mode === 'admin') return queueForAdmin(fs, { phone, code, expiresAt });
+  if (mode === 'admin') return queueForAdmin(env, fs, { phone, code, expiresAt });
 
   // sms: a SIM pack allows ~100 SMS a day, keep a margin; anything that goes
   // wrong (phone offline, limit reached) falls back to the admin queue
-  if (!env.SMS_GATEWAY_USER || !env.SMS_GATEWAY_PASS) return queueForAdmin(fs, { phone, code, expiresAt }, 'SMS gateway not set up');
+  if (!env.SMS_GATEWAY_USER || !env.SMS_GATEWAY_PASS) return queueForAdmin(env, fs, { phone, code, expiresAt }, 'SMS gateway not set up');
   const today = istDay(Date.now());
   const counter = await fs.get('otpLimits/sms');
   const sentToday = counter && counter.day === today ? counter.count || 0 : 0;
-  if (sentToday >= (Number(env.SMS_DAILY_LIMIT) || 90)) return queueForAdmin(fs, { phone, code, expiresAt }, 'Daily SMS limit reached');
+  if (sentToday >= (Number(env.SMS_DAILY_LIMIT) || 90)) return queueForAdmin(env, fs, { phone, code, expiresAt }, 'Daily SMS limit reached');
   const mins = Math.round((expiresAt - Date.now()) / 60000);
   // Last line in WebOTP format so Chrome on Android can fill the code in by itself
   const text = `${code} is your HMI Fashion Store login OTP. It works for ${mins} minutes. Do not share it with anyone.\n\n@shop.hmitechnology.co.in #${code}`;
@@ -100,7 +127,7 @@ async function deliverOtp(env, fs, { phone, code, expiresAt }) {
     await sendSms(env, phone, text);
   } catch (e) {
     console.error('SMS failed', e);
-    return queueForAdmin(fs, { phone, code, expiresAt }, 'SMS phone did not respond');
+    return queueForAdmin(env, fs, { phone, code, expiresAt }, 'SMS phone did not respond');
   }
   await fs.commit([{ op: 'set', path: 'otpLimits/sms', data: { day: today, count: sentToday + 1 } }]);
   return { delivery: 'sms' };

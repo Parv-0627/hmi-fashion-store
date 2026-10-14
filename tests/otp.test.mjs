@@ -12,7 +12,7 @@ const AUTH = 'http://127.0.0.1:9099';
 let env;
 
 // Fake "SMS Gateway for Android" cloud API
-const sms = { sent: [], fail: false, url: '' };
+const sms = { sent: [], fail: false, url: '', notes: [], ntfyFail: false, base: '' };
 let smsServer;
 const SMS_ENV = () => ({ OTP_DELIVERY: 'sms', SMS_GATEWAY_URL: sms.url, SMS_GATEWAY_USER: 'gwuser', SMS_GATEWAY_PASS: 'gwpass' });
 
@@ -60,18 +60,24 @@ before(async () => {
     let body = '';
     req.on('data', (c) => { body += c; });
     req.on('end', () => {
+      if (req.url.startsWith('/ntfy/')) { // fake ntfy server
+        if (sms.ntfyFail) { res.statusCode = 500; return res.end('down'); }
+        sms.notes.push({ path: req.url, headers: req.headers, body });
+        return res.end('{}');
+      }
       if (sms.fail) { res.statusCode = 503; return res.end('device offline'); }
       sms.sent.push({ auth: req.headers.authorization, path: req.url, body: JSON.parse(body) });
       res.statusCode = 202; res.end('{"id":"m1","state":"Pending"}');
     });
   });
   await new Promise((r) => smsServer.listen(0, '127.0.0.1', r));
-  sms.url = `http://127.0.0.1:${smsServer.address().port}/3rdparty/v1/messages`;
+  sms.base = `http://127.0.0.1:${smsServer.address().port}`;
+  sms.url = `${sms.base}/3rdparty/v1/messages`;
   env = await initializeTestEnvironment({ projectId: PROJECT, firestore: { host: '127.0.0.1', port: 8085 } });
 });
 after(async () => { await env.cleanup(); smsServer.close(); });
 beforeEach(async () => {
-  sms.sent.length = 0; sms.fail = false;
+  sms.sent.length = 0; sms.fail = false; sms.notes.length = 0; sms.ntfyFail = false;
   await env.clearFirestore();
   await fetch(`${AUTH}/emulator/v1/projects/${PROJECT}/accounts`, { method: 'DELETE' });
 });
@@ -204,4 +210,26 @@ test('sms delivery falls back to the admin queue when the phone is offline or ou
 
   const noKeys = await send('9000000001', { envExtra: { ...SMS_ENV(), SMS_GATEWAY_PASS: '' } });
   assert.equal(noKeys.data.delivery, 'admin');
+});
+
+test('admin gets a phone notification that opens WhatsApp with the OTP', async () => {
+  const ntfy = { OTP_DELIVERY: 'admin', NTFY_URL: `${sms.base}/ntfy`, NTFY_TOPIC: 'hmi-otp-secret' };
+  const s = await send('9876543210', { envExtra: ntfy });
+  assert.equal(s.status, 200, JSON.stringify(s.data));
+  const code = (await read('otpRequests/9876543210')).code;
+  assert.equal(sms.notes.length, 1);
+  const n = sms.notes[0];
+  assert.equal(n.path, '/ntfy/hmi-otp-secret');
+  assert.equal(n.headers.title, 'Login OTP for +91 9876543210');
+  assert.match(n.headers.click, /^https:\/\/wa\.me\/919876543210\?text=/);
+  assert.ok(decodeURIComponent(n.headers.click).includes(`OTP is ${code}`));
+  assert.match(n.body, new RegExp(code));
+
+  // no topic set -> no notification; ntfy down -> login still works
+  await send('9123456780', { envExtra: { OTP_DELIVERY: 'admin' } });
+  assert.equal(sms.notes.length, 1);
+  sms.ntfyFail = true;
+  const down = await send('9000000002', { envExtra: ntfy });
+  assert.equal(down.status, 200);
+  assert.equal((await verify('9000000002', (await read('otpRequests/9000000002')).code)).status, 200);
 });

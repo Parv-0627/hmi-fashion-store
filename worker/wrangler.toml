@@ -13,8 +13,7 @@ RAZORPAY_KEY_ID = "rzp_live_TnR12I3DTaSWej"   # public key id (live)
 #                         is offline or SMS_DAILY_LIMIT is reached, the OTP falls back to:
 #   OTP_DELIVERY "admin": the code appears in admin.html -> "Login OTPs" and the
 #                         admin sends it on WhatsApp. ("screen" only works in test mode.)
-# "sms" is safe before the phone is set up: without the two secrets it uses the admin queue.
-OTP_DELIVERY = "sms"
+OTP_DELIVERY = "admin"
 SMS_DAILY_LIMIT = "90"    # SIM packs allow ~100 SMS a day
 OTP_TTL_MINUTES = "10"    # how long a code works (1-30); admin delivery is manual, so 10
 OTP_DAILY_LIMIT = "300"   # max OTPs per day for the whole store
@@ -24,6 +23,8 @@ OTP_DAILY_LIMIT = "300"   # max OTPs per day for the whole store
 #   RAZORPAY_KEY_SECRET
 #   RAZORPAY_WEBHOOK_SECRET    any long random text, same as in the Razorpay webhook
 #   IMGBB_API_KEY              new ImgBB key (the old one was public)
+#   NTFY_TOPIC                 optional: long random ntfy topic; admin's phone gets a
+#                              notification for every OTP request (tap = WhatsApp)
 #   SMS_GATEWAY_USER           username shown in the SMS Gateway app (Cloud server)
 #   SMS_GATEWAY_PASS           password shown in the SMS Gateway app
 #   OTP_SECRET                 optional: any long random text for hashing OTPs

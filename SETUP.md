@@ -116,7 +116,19 @@ Order zaroori hai — pehle server aur rules, phir website:
 - [ ] Ab website push/deploy karein.
 - [ ] Test: apna number daal kar OTP maangein → admin panel mein dikhega → WhatsApp se bhejein → login.
 
-### 7.1 Automatic SMS (Android phone se, free)
+### 7.1 iPhone / mobile par notification (ntfy, free)
+Har OTP request par aapke phone par notification aayega; tap karte hi WhatsApp customer ke chat mein OTP ke saath khulega — bas **Send** dabana hai.
+- [ ] Worker wale terminal mein (Cloudflare login wala) ek random topic banayein aur secret mein daalein:
+  ```bash
+  T=hmi-otp-$(openssl rand -hex 12); echo $T
+  echo $T | npx wrangler secret put NTFY_TOPIC
+  ```
+  Jo topic print hua use khud ko WhatsApp kar dein (iPhone par copy karne ke liye). Ye topic kisi ko na batayein.
+- [ ] iPhone par App Store se **ntfy** app install karein → **+** → topic paste karein → Subscribe → notifications **Allow**
+- [ ] Test: kisi number se OTP maangein → iPhone par notification → tap → WhatsApp → Send
+
+### 7.2 (Baad ke liye) Automatic SMS — Android phone se, free
+Abhi band hai (`OTP_DELIVERY = "admin"`). Chalu karna ho to `worker/wrangler.toml` mein `OTP_DELIVERY = "sms"` karke deploy karein.
 Ek Android phone jisme SIM ho (unlimited SMS pack ke saath), hamesha charge aur internet par rahe:
 - [ ] Phone par **SMS Gateway for Android** app install karein (sms-gate.app / GitHub: capcom6/android-sms-gateway)
 - [ ] App mein **Cloud Server** on karein → **Offline** dabayein → **Online** ho jayega → wahan **username** aur **password** dikhega
