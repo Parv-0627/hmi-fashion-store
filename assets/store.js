@@ -703,7 +703,7 @@ auth.onAuthStateChanged(async (user) => {
   if (state.profileUnsub) { state.profileUnsub(); state.profileUnsub = null; }
   if (state.ordersUnsub) { state.ordersUnsub(); state.ordersUnsub = null; }
   state.profile = null; state.orders = [];
-  $('accountBtn').textContent = user ? '😊' : '👤';
+  if ($('accountBtn')) $('accountBtn').textContent = user ? '😊' : '👤'; // removed from the new header
   $('navAuth').textContent = user ? '↪' : '👤';
   $('navAuth').setAttribute('aria-label', user ? 'Sign out' : 'Sign in');
   renderUserBar();
