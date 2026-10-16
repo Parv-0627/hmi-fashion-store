@@ -14,6 +14,8 @@ window.HMI_CONFIG = {
   // phoneOtp: Firebase SMS OTP, costs money (Blaze plan), so it is off.
   pinLogin: true,
   phoneOtp: false,
+  // Front-page brand photo (left half of the hero). Empty = wine & gold pattern.
+  heroImage: "",
   storeName: "HMI Fashion Store",
   whatsapp: "919560291565"
 };

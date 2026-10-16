@@ -83,13 +83,13 @@ function startCatalogue() {
 
 function renderCatalogue() {
   renderCategories(); renderProducts(); renderKids();
-  renderHeroImage();
+  renderHeroImage(); renderHeroProducts();
 }
 
 function renderShipTexts() {
   const { shipping, freeAbove } = state.settings;
-  $('heroShip').textContent = shipping === 0 ? '🚚 Pan India Delivery — FREE!'
-    : freeAbove ? `🚚 Delivery ₹${shipping} — FREE on orders ₹${freeAbove.toLocaleString('en-IN')}+!` : `🚚 Pan India Delivery — Only ₹${shipping}!`;
+  $('heroShip').textContent = shipping === 0 ? 'Free Pan India delivery'
+    : freeAbove ? `Free delivery above ₹${freeAbove.toLocaleString('en-IN')}` : `Pan India delivery ₹${shipping}`;
   $('whyShipTitle').textContent = shipping ? 'Delivery @ ₹' + shipping : 'Free Delivery';
   $('whyShipText').textContent = freeAbove && shipping ? `FREE delivery above ₹${freeAbove.toLocaleString('en-IN')}` : 'Fast & safe Pan India delivery';
   $('footShip').textContent = shipping ? `🚚 Pan India Delivery — ₹${shipping}` : '🚚 Pan India Delivery — FREE';
@@ -123,23 +123,36 @@ function renderCategories() {
   });
 }
 
+// Hero: brand photo (config heroImage) on the left, newest products on the right
 function renderHeroImage() {
-  const img = $('heroCampaignImage');
-  const fallback = $('heroImageFallback');
-  const product = state.products.find((p) => p.images[0] && safeUrl(p.images[0]));
-  const src = product && safeUrl(product.images[0]);
-  if (!src) {
-    img.hidden = true;
-    fallback.style.display = 'flex';
-    return;
-  }
-  img.onerror = () => {
-    img.hidden = true;
-    fallback.style.display = 'flex';
-  };
-  img.src = product.images[0];
-  img.hidden = false;
-  fallback.style.display = 'none';
+  const img = $('heroBrandImg');
+  if (!cfg.heroImage || img.dataset.src === cfg.heroImage) return;
+  img.dataset.src = cfg.heroImage;
+  img.onload = () => { img.hidden = false; $('heroBrand').classList.add('has-photo'); };
+  img.onerror = () => { img.hidden = true; $('heroBrand').classList.remove('has-photo'); };
+  img.src = cfg.heroImage;
+}
+function renderHeroProducts() {
+  const grid = $('heroProducts');
+  if (!state.catalogueReady && !state.products.length) return;
+  const picks = [...state.products]
+    .sort((a, b) => Number(outOfStock(a)) - Number(outOfStock(b)) || (b.createdAt || 0) - (a.createdAt || 0))
+    .slice(0, 4);
+  const cards = picks.map((p) => {
+    const src = p.images[0] && safeUrl(p.images[0]);
+    return `
+    <div class="hero2-card" data-pdp="${esc(p.id)}" role="button" tabindex="0">
+      ${p.badge ? `<span class="hero2-tag">${esc(p.badge)}</span>` : ''}
+      <div class="hero2-card-img" style="${src ? '' : `background:${esc(p.bg)}`}">${src ? `<img src="${src}" alt="${esc(p.name)}" loading="lazy">` : esc(p.emoji)}</div>
+      <div class="hero2-card-info">
+        <h3>${esc(p.name)}</h3>
+        <div class="hero2-price">${rs(p.price)}${hasMrp(p) ? `<s>${rs(p.mrp)}</s><small>${offPct(p)}% off</small>` : ''}</div>
+      </div>
+    </div>`;
+  });
+  if (cards.length < 4) cards.push('<a class="hero2-more" href="#products"><b>The full collection</b><span>Shop now →</span></a>');
+  grid.dataset.count = cards.length;
+  grid.innerHTML = cards.join('');
 }
 
 function visibleProducts() {
@@ -605,11 +618,11 @@ function renderLogin(box, subtitle) {
   box.innerHTML = `
     <div class="login-box">
       <div class="otp-icon">📱</div>
-      <div class="otp-title">Log in</div>
+      <div class="otp-title">Welcome to HMI Fashion</div>
       <div class="otp-sub">${esc(subtitle || 'Log in for your orders and wishlist')}</div>
       ${pinOn ? `
       <div data-phase="pin">
-        <div class="pin-mode" data-el="pinTitle">🔓 Log in with your PIN</div>
+        <div class="pin-mode" data-el="pinTitle">Log in with mobile &amp; PIN</div>
         <div class="phone-row"><span class="cc">+91</span>
           <input class="field-input" data-el="pinPhone" type="tel" inputmode="numeric" maxlength="10" placeholder="10-digit mobile number" autocomplete="tel-national"></div>
         <input class="field-input otp-input" data-el="pin" type="password" inputmode="numeric" maxlength="4" placeholder="4-digit PIN" autocomplete="current-password">
@@ -617,9 +630,9 @@ function renderLogin(box, subtitle) {
           <div class="otp-sub" data-el="pinNewMsg" style="margin:4px 0 8px"></div>
           <input class="field-input otp-input" data-el="pin2" type="password" inputmode="numeric" maxlength="4" placeholder="Confirm PIN" autocomplete="new-password">
         </div>
-        <button class="cart-footer-btn btn-proceed" type="button" data-act="pinGo">🔓 Log in</button>
+        <button class="cart-footer-btn btn-proceed" type="button" data-act="pinGo">Log in</button>
         <div class="pin-links">
-          <button class="link-like" type="button" data-act="pinMode">🆕 Generate PIN</button>
+          <button class="link-like" type="button" data-act="pinMode">New here? Generate PIN</button>
           <button class="link-like" type="button" data-el="pinForgot">Forgot PIN?</button>
         </div>
       </div>` : ''}
@@ -637,16 +650,17 @@ function renderLogin(box, subtitle) {
       <div class="form-err" data-el="err"></div>
       ${pinOn && otpOn ? '<button class="link-like" type="button" data-act="otpToggle">Use SMS OTP instead</button>' : ''}
       ${pinOn || otpOn ? '<div class="or-line">or</div>' : ''}
-      <button class="google-btn" type="button" data-act="google"><img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18" height="18" alt=""> Log in with Google</button>
-      <button class="google-btn" type="button" data-act="emailToggle" style="margin-top:10px">✉️ Log in with email link</button>
+      <button class="google-btn" type="button" data-act="google"><img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18" height="18" alt=""> Continue with Google</button>
+      <button class="google-btn" type="button" data-act="emailToggle" style="margin-top:10px">Continue with email link</button>
       <div data-phase="email" style="display:none;margin-top:10px">
         <input class="field-input" data-el="email" type="email" placeholder="Your email address" autocomplete="email">
         <button class="cart-footer-btn btn-proceed" type="button" data-act="sendLink">✉️ Send login link</button>
       </div>
       <div class="cart-note" data-el="emailSent" style="display:none"></div>
+      <div class="login-secure">🔒 Secure login · we never share your number</div>
     </div>`;
   const q = (s) => box.querySelector(s);
-  const err = (m) => { q('[data-el=err]').textContent = m ? '❌ ' + m : ''; };
+  const err = (m) => { q('[data-el=err]').textContent = m || ''; };
   const busy = (btn, on, label) => { btn.disabled = on; if (label) btn.textContent = label; };
 
   if (pinOn) {
@@ -654,15 +668,15 @@ function renderLogin(box, subtitle) {
     const digits = (el) => el.value.replace(/\D/g, '');
     // Two modes: log in with an existing PIN, or generate (create) a new one
     let creating = false;
-    const goLabel = () => (creating ? '✅ Generate PIN' : '🔓 Log in');
+    const goLabel = () => (creating ? 'Generate PIN' : 'Log in');
     const setMode = (create, msg) => {
       creating = create;
       pinNew.style.display = create ? 'block' : 'none';
       q('[data-el=pinNewMsg]').textContent = msg || 'Enter the same PIN again to confirm. Remember this PIN for next time.';
-      q('[data-el=pinTitle]').textContent = create ? '🆕 Generate your PIN' : '🔓 Log in with your PIN';
+      q('[data-el=pinTitle]').textContent = create ? 'Create your PIN' : 'Log in with mobile & PIN';
       q('[data-el=pin]').placeholder = create ? 'Choose a 4-digit PIN' : '4-digit PIN';
       q('[data-el=pin]').autocomplete = create ? 'new-password' : 'current-password';
-      q('[data-act=pinMode]').textContent = create ? 'Already have a PIN? Log in' : '🆕 Generate PIN';
+      q('[data-act=pinMode]').textContent = create ? 'Already have a PIN? Log in' : 'New here? Generate PIN';
       q('[data-el=pinForgot]').style.display = create ? 'none' : '';
       q('[data-el=pin2]').value = '';
       go.textContent = goLabel();
@@ -684,11 +698,11 @@ function renderLogin(box, subtitle) {
       if (!/^[6-9]\d{9}$/.test(phone)) return err('Please enter a valid 10-digit mobile number');
       if (pin.length !== 4) return err('Please enter a 4-digit PIN');
       if (creating && digits(q('[data-el=pin2]')) !== pin) return err('The two PINs do not match');
-      err(''); busy(go, true, '⏳ Please wait...');
+      err(''); busy(go, true, 'Please wait…');
       try {
         const r = await HMI.callWorker('/pin/login', { phone, pin, create: creating });
         if (r.status === 'new') { // logging in with a number that has no PIN yet
-          setMode(true, '👋 This number is new. Enter the same PIN again to generate your PIN.');
+          setMode(true, 'This number is new. Enter the same PIN again to create your account.');
           q('[data-el=pin2]').focus();
           return;
         }
