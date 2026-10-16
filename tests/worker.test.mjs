@@ -345,3 +345,15 @@ test('PIN login: wrong PINs lock the number, longer each time', async () => {
   assert.ok(wrong <= 5, `${wrong} guesses got through`);
   assert.equal((await read('pinLogins/9812345678')).fails, wrong);
 });
+
+test('Forgot PIN: only an admin can reset, then the customer generates a new PIN on the same account', async () => {
+  await call('/pin/login', { body: { phone: '9812345678', pin: '4826', create: true } });
+  assert.equal((await call('/admin/reset-pin', { uid: 'alice', body: { phone: '9812345678' } })).status, 403);
+  assert.equal((await call('/admin/reset-pin', { body: { phone: '9812345678' } })).status, 401);
+  const ok = await call('/admin/reset-pin', { uid: 'boss', body: { phone: '9812345678' } });
+  assert.equal(ok.status, 200, JSON.stringify(ok.data));
+  assert.equal(await read('pinLogins/9812345678'), undefined);
+  assert.equal((await call('/admin/reset-pin', { uid: 'boss', body: { phone: '9812345678' } })).status, 404);
+  const fresh = await call('/pin/login', { body: { phone: '9812345678', pin: '7391', create: true } });
+  assert.equal(pinUid(fresh.data.token), 'pin_9812345678');
+});

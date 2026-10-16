@@ -620,7 +620,7 @@ function renderLogin(box, subtitle) {
         <button class="cart-footer-btn btn-proceed" type="button" data-act="pinGo">🔓 Log in</button>
         <div class="pin-links">
           <button class="link-like" type="button" data-act="pinMode">🆕 Generate PIN</button>
-          <a href="https://wa.me/${WA}?text=${encodeURIComponent('Hello HMI Fashion! I forgot my login PIN. Please reset it for my number: ')}" target="_blank" rel="noopener" class="link-like" data-el="pinForgot">Forgot PIN?</a>
+          <button class="link-like" type="button" data-el="pinForgot">Forgot PIN?</button>
         </div>
       </div>` : ''}
       <div data-phase="phone"${!otpOn || pinOn ? ' style="display:none"' : ''}>
@@ -668,6 +668,17 @@ function renderLogin(box, subtitle) {
       go.textContent = goLabel();
     };
     q('[data-act=pinMode]').addEventListener('click', () => { err(''); setMode(!creating); q('[data-el=pinPhone]').focus(); });
+    // Forgot PIN: WhatsApp us with the number and a one-tap reset link for the admin
+    q('[data-el=pinForgot]').addEventListener('click', () => {
+      const phone = digits(q('[data-el=pinPhone]'));
+      if (!/^[6-9]\d{9}$/.test(phone)) { err('Enter your mobile number above first, then tap "Forgot PIN?"'); q('[data-el=pinPhone]').focus(); return; }
+      err('');
+      const resetLink = location.origin + location.pathname.replace(/[^/]*$/, '') + 'admin.html#resetpin=' + phone;
+      const msg = `Hello HMI Fashion! I forgot my login PIN for +91 ${phone}. Please reset it.\n\nReset link (for HMI admin): ${resetLink}`;
+      window.open(`https://wa.me/${WA}?text=${encodeURIComponent(msg)}`, '_blank', 'noopener');
+      q('[data-el=pinNewMsg]').textContent = '';
+      flash('📲 Send the WhatsApp message. We will reset your PIN, then tap "Generate PIN".');
+    });
     const submit = async () => {
       const phone = digits(q('[data-el=pinPhone]')), pin = digits(q('[data-el=pin]'));
       if (!/^[6-9]\d{9}$/.test(phone)) return err('Please enter a valid 10-digit mobile number');

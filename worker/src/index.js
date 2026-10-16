@@ -7,6 +7,7 @@
 //   POST /orders/cancel      customer cancels a Pending order (stock goes back)
 //   POST /admin/upload-image admin product photo upload (ImgBB key stays secret here)
 //   POST /pin/login          free login with mobile number + 4-digit PIN
+//   POST /admin/reset-pin    admin clears a customer's PIN ("Forgot PIN?")
 import '../../assets/pricing.js';
 import { Firestore } from './firestore.js';
 import { verifyIdToken, hmacHex, safeEqual, AuthError, createCustomToken, sha256Hex } from './google.js';
@@ -323,8 +324,9 @@ async function uploadImage(req, env, fs) {
 // first time. The number is NOT verified, so these accounts are separate from
 // SMS-OTP accounts (uid "pin_<number>") and never see an OTP customer's orders.
 // Wrong PINs lock the number for longer and longer, so a PIN cannot be guessed.
-// Forgot PIN: delete pinLogins/<number> in Firebase Console; the customer sets a
-// new PIN and keeps the same account and orders.
+// Forgot PIN: the customer's WhatsApp message carries an admin.html#resetpin=<number>
+// link; the admin taps it and /admin/reset-pin deletes pinLogins/<number>. The
+// customer then generates a new PIN and keeps the same account and orders.
 const PIN_TRIES = 5;
 const PIN_LOCK_MINUTES = 15;
 
@@ -384,6 +386,16 @@ async function pinLogin(req, env, fs) {
   throw new HttpError(503, 'Server is busy, please try again');
 }
 
+async function resetPin(req, env, fs) {
+  const user = await requireUser(req, env);
+  if (!(await fs.get(`admins/${user.uid}`))) throw new HttpError(403, 'Only an admin can reset a PIN');
+  const phone = str((await readJson(req)).phone, 20).replace(/\D/g, '').slice(-10);
+  if (!/^[6-9]\d{9}$/.test(phone)) throw new HttpError(400, 'Invalid mobile number');
+  if (!(await fs.get(`pinLogins/${phone}`))) throw new HttpError(404, 'This number has no PIN yet. The customer can tap "Generate PIN".');
+  await fs.commit([{ op: 'delete', path: `pinLogins/${phone}` }]);
+  return { ok: true };
+}
+
 const ROUTES = {
   'POST /checkout/start': checkoutStart,
   'POST /checkout/confirm': checkoutConfirm,
@@ -391,6 +403,7 @@ const ROUTES = {
   'POST /orders/cancel': cancelOrder,
   'POST /admin/upload-image': uploadImage,
   'POST /pin/login': pinLogin,
+  'POST /admin/reset-pin': resetPin,
   'GET /health': async () => ({ ok: true }),
   // Confirms the service account can reach Firestore (no data is returned)
   'GET /health/db': async (req, env, fs) => {

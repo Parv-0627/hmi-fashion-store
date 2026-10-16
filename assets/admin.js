@@ -111,6 +111,7 @@ function buildNav() {
 function startApp() {
   if (unsubs.length) return;
   buildNav();
+  resetPinFromLink();
   showSection(sessionStorage.getItem('hmi_admin_section') || 'dashboard');
   const onErr = (what) => (e) => { console.error(what, e); toast('❌ ' + what + ' failed to load: ' + e.message, 'error'); };
 
@@ -165,6 +166,24 @@ function renderAll() {
   $('cnt-products').textContent = products.length;
   $('cnt-pending').textContent = orders.filter((o) => o.status === 'Pending').length;
   $('cnt-customers').textContent = customers.length;
+}
+
+// =====================================================================
+// FORGOT PIN: the customer's WhatsApp message has an admin.html#resetpin=<number> link
+// =====================================================================
+async function resetPinFromLink() {
+  const phone = (location.hash.match(/^#resetpin=(\d{10})$/) || [])[1];
+  if (!phone) return;
+  history.replaceState(null, '', location.pathname + location.search);
+  if (!confirm(`Reset the login PIN for +91 ${phone}?\n\nFirst check that this WhatsApp request came from this same number (+91 ${phone}).`)) return;
+  try {
+    await HMI.callWorker('/admin/reset-pin', { phone });
+    toast('🔑 PIN reset for +91 ' + phone);
+    if (confirm('PIN reset ✅\n\nOpen WhatsApp to tell the customer?')) {
+      const text = 'Hello! Your HMI Fashion login PIN has been reset. Please open the website, tap Log in → "Generate PIN" and choose a new PIN with the same number. Your orders are safe.';
+      location.href = `https://wa.me/91${phone}?text=${encodeURIComponent(text)}`;
+    }
+  } catch (e) { toast('❌ ' + e.message, 'error'); }
 }
 
 // =====================================================================

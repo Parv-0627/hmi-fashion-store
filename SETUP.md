@@ -109,8 +109,8 @@ Purani ImgBB key public ho chuki thi.
 Customer mobile number + apna 4-digit PIN daalta hai. Pehli baar PIN do baar daal kar account banta hai, agli baar wahi PIN.
 - [ ] Pehle worker deploy karein (`cd worker && npx wrangler deploy`), **phir** website push karein. Ulta karne par login button "Not found" dikhayega.
 - [ ] 5 galat PIN par number 15 minute lock hota hai. Agli baar 30 minute, phir 1 ghanta... (max 1 din).
-- **PIN bhool gaya?** Customer "Forgot PIN?" se WhatsApp par message karega. Pakka kar lein ki number usi ka hai, phir
-  Firebase Console → Firestore → `pinLogins` → us number wala document **Delete**. Customer naya PIN bana lega, purane orders wahi rahenge.
+- **PIN bhool gaya?** Customer number daal kar "Forgot PIN?" dabata hai → aapko WhatsApp aata hai jisme ek **reset link** hota hai.
+  Check karein ki message usi number se aaya hai → link par tap → admin login → **OK**. Customer "Generate PIN" se naya PIN banata hai, purane orders wahi rahenge.
 - PIN se number verify nahi hota, isliye PIN accounts SMS OTP accounts se alag hain (ek customer ka OTP wala account PIN se nahi khulta).
 
 ---
