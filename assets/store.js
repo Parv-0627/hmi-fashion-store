@@ -609,16 +609,19 @@ function renderLogin(box, subtitle) {
       <div class="otp-sub">${esc(subtitle || 'Log in for your orders and wishlist')}</div>
       ${pinOn ? `
       <div data-phase="pin">
+        <div class="pin-mode" data-el="pinTitle">🔓 Log in with your PIN</div>
         <div class="phone-row"><span class="cc">+91</span>
           <input class="field-input" data-el="pinPhone" type="tel" inputmode="numeric" maxlength="10" placeholder="10-digit mobile number" autocomplete="tel-national"></div>
         <input class="field-input otp-input" data-el="pin" type="password" inputmode="numeric" maxlength="4" placeholder="4-digit PIN" autocomplete="current-password">
         <div data-el="pinNew" style="display:none">
-          <div class="otp-sub" style="margin:4px 0 8px">👋 New here! Enter the same PIN again to create your account. Remember this PIN for next time.</div>
+          <div class="otp-sub" data-el="pinNewMsg" style="margin:4px 0 8px"></div>
           <input class="field-input otp-input" data-el="pin2" type="password" inputmode="numeric" maxlength="4" placeholder="Confirm PIN" autocomplete="new-password">
         </div>
         <button class="cart-footer-btn btn-proceed" type="button" data-act="pinGo">🔓 Log in</button>
-        <div class="otp-sub" style="margin:8px 0 0">First time? Just choose any 4-digit PIN.
-          <a href="https://wa.me/${WA}?text=${encodeURIComponent('Hello HMI Fashion! I forgot my login PIN. Please reset it for my number: ')}" target="_blank" rel="noopener" class="link-like">Forgot PIN?</a></div>
+        <div class="pin-links">
+          <button class="link-like" type="button" data-act="pinMode">🆕 Generate PIN</button>
+          <a href="https://wa.me/${WA}?text=${encodeURIComponent('Hello HMI Fashion! I forgot my login PIN. Please reset it for my number: ')}" target="_blank" rel="noopener" class="link-like" data-el="pinForgot">Forgot PIN?</a>
+        </div>
       </div>` : ''}
       <div data-phase="phone"${!otpOn || pinOn ? ' style="display:none"' : ''}>
         <div class="phone-row"><span class="cc">+91</span>
@@ -649,28 +652,41 @@ function renderLogin(box, subtitle) {
   if (pinOn) {
     const pinNew = q('[data-el=pinNew]'), go = q('[data-act=pinGo]');
     const digits = (el) => el.value.replace(/\D/g, '');
-    const notNew = () => { pinNew.style.display = 'none'; q('[data-el=pin2]').value = ''; go.textContent = '🔓 Log in'; };
-    q('[data-el=pinPhone]').addEventListener('input', notNew);
+    // Two modes: log in with an existing PIN, or generate (create) a new one
+    let creating = false;
+    const goLabel = () => (creating ? '✅ Generate PIN' : '🔓 Log in');
+    const setMode = (create, msg) => {
+      creating = create;
+      pinNew.style.display = create ? 'block' : 'none';
+      q('[data-el=pinNewMsg]').textContent = msg || 'Enter the same PIN again to confirm. Remember this PIN for next time.';
+      q('[data-el=pinTitle]').textContent = create ? '🆕 Generate your PIN' : '🔓 Log in with your PIN';
+      q('[data-el=pin]').placeholder = create ? 'Choose a 4-digit PIN' : '4-digit PIN';
+      q('[data-el=pin]').autocomplete = create ? 'new-password' : 'current-password';
+      q('[data-act=pinMode]').textContent = create ? 'Already have a PIN? Log in' : '🆕 Generate PIN';
+      q('[data-el=pinForgot]').style.display = create ? 'none' : '';
+      q('[data-el=pin2]').value = '';
+      go.textContent = goLabel();
+    };
+    q('[data-act=pinMode]').addEventListener('click', () => { err(''); setMode(!creating); q('[data-el=pinPhone]').focus(); });
     const submit = async () => {
       const phone = digits(q('[data-el=pinPhone]')), pin = digits(q('[data-el=pin]'));
       if (!/^[6-9]\d{9}$/.test(phone)) return err('Please enter a valid 10-digit mobile number');
       if (pin.length !== 4) return err('Please enter a 4-digit PIN');
-      const creating = pinNew.style.display !== 'none';
       if (creating && digits(q('[data-el=pin2]')) !== pin) return err('The two PINs do not match');
       err(''); busy(go, true, '⏳ Please wait...');
-      let label = creating ? '✅ Create account' : '🔓 Log in';
       try {
         const r = await HMI.callWorker('/pin/login', { phone, pin, create: creating });
-        if (r.status === 'new') {
-          pinNew.style.display = 'block'; label = '✅ Create account';
+        if (r.status === 'new') { // logging in with a number that has no PIN yet
+          setMode(true, '👋 This number is new. Enter the same PIN again to generate your PIN.');
           q('[data-el=pin2]').focus();
           return;
         }
         await auth.signInWithCustomToken(r.token);
-        flash('✅ Logged in');
+        flash(creating ? '✅ PIN generated, you are logged in' : '✅ Logged in');
       } catch (e) {
+        if (creating && /already has a PIN/.test(e.message)) setMode(false);
         err(e.code ? friendlyAuth(e) : e.message);
-      } finally { busy(go, false, label); }
+      } finally { busy(go, false, goLabel()); }
     };
     go.addEventListener('click', submit);
     ['pin', 'pin2'].forEach((n) => q(`[data-el=${n}]`).addEventListener('keydown', (e) => { if (e.key === 'Enter') submit(); }));

@@ -299,8 +299,13 @@ test('PIN login: first time creates the account, next time the same PIN logs in'
   const again = await call('/pin/login', { body: { phone: '+91 98123 45678', pin: '4826' } });
   assert.equal(again.status, 200);
   assert.equal(pinUid(again.data.token), 'pin_9812345678');
-  // "create" cannot overwrite someone's existing PIN
-  assert.equal((await call('/pin/login', { body: { phone: '9812345678', pin: '7391', create: true } })).status, 401);
+  // "create" cannot overwrite someone's existing PIN, and is not a way to guess it
+  for (const pin of ['7391', '4826']) {
+    const r = await call('/pin/login', { body: { phone: '9812345678', pin, create: true } });
+    assert.equal(r.status, 409);
+    assert.match(r.data.error, /already has a PIN/);
+  }
+  assert.equal((await read('pinLogins/9812345678')).fails, 0);
 });
 
 test('PIN login: easy PINs and bad input are refused', async () => {

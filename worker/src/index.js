@@ -357,6 +357,9 @@ async function pinLogin(req, env, fs) {
         await fs.commit([{ op: 'create', path, data: { salt, pinHash: await pinHash(salt, pin), fails: 0, lockedUntil: 0, createdAt: now, lastLoginAt: now } }], tx);
         return login();
       }
+      if (b.create) {
+        throw new HttpError(409, 'This number already has a PIN. Please log in with it, or tap "Forgot PIN?".');
+      }
       if (acc.lockedUntil > now) {
         throw new HttpError(429, `Too many wrong PINs. Please try again after ${Math.ceil((acc.lockedUntil - now) / 60000)} minutes, or log in with Google / email.`);
       }
