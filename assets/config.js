@@ -10,6 +10,10 @@ window.HMI_CONFIG = {
   },
   // Checkout server (Cloudflare Worker). Set this after deploying worker/ — see worker/README.md
   workerUrl: "https://hmi-checkout.hmi-fashion.workers.dev",
+  // Login buttons. pinLogin: free mobile number + 4-digit PIN (needs the worker deployed).
+  // phoneOtp: Firebase SMS OTP, costs money (Blaze plan), so it is off.
+  pinLogin: true,
+  phoneOtp: false,
   storeName: "HMI Fashion Store",
   whatsapp: "919560291565"
 };

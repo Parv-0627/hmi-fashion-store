@@ -1,6 +1,7 @@
 // Google auth for the worker:
 //  - verifyIdToken: checks a Firebase Auth ID token sent by the browser
 //  - getAccessToken: service-account token for the Firestore REST API
+//  - createCustomToken: log a customer in after the worker checked them (PIN login)
 // Uses WebCrypto only, so it runs on Cloudflare Workers and in Node tests.
 
 const b64url = {
@@ -68,27 +69,54 @@ function pemToPkcs8(pem) {
   return Uint8Array.from(atob(body), (c) => c.charCodeAt(0));
 }
 
-export async function getAccessToken(serviceAccountJson) {
-  if (tokenCache.token && Date.now() < tokenCache.expires) return tokenCache.token;
-  const sa = typeof serviceAccountJson === 'string' ? JSON.parse(serviceAccountJson) : serviceAccountJson;
-  const now = Math.floor(Date.now() / 1000);
-  const enc = (o) => b64url.encode(new TextEncoder().encode(JSON.stringify(o)));
-  const unsigned = enc({ alg: 'RS256', typ: 'JWT' }) + '.' + enc({
-    iss: sa.client_email, scope: 'https://www.googleapis.com/auth/datastore',
-    aud: 'https://oauth2.googleapis.com/token', iat: now, exp: now + 3600,
-  });
+const encJson = (o) => b64url.encode(new TextEncoder().encode(JSON.stringify(o)));
+const parseSa = (sa) => (typeof sa === 'string' ? JSON.parse(sa) : sa);
+
+async function signJwt(sa, payload) {
+  const unsigned = encJson({ alg: 'RS256', typ: 'JWT' }) + '.' + encJson(payload);
   const key = await crypto.subtle.importKey('pkcs8', pemToPkcs8(sa.private_key),
     { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' }, false, ['sign']);
   const sig = await crypto.subtle.sign('RSASSA-PKCS1-v1_5', key, new TextEncoder().encode(unsigned));
+  return unsigned + '.' + b64url.encode(sig);
+}
+
+export async function getAccessToken(serviceAccountJson) {
+  if (tokenCache.token && Date.now() < tokenCache.expires) return tokenCache.token;
+  const sa = parseSa(serviceAccountJson);
+  const now = Math.floor(Date.now() / 1000);
+  const assertion = await signJwt(sa, {
+    iss: sa.client_email,
+    scope: 'https://www.googleapis.com/auth/datastore',
+    aud: 'https://oauth2.googleapis.com/token', iat: now, exp: now + 3600,
+  });
   const res = await fetch('https://oauth2.googleapis.com/token', {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: 'grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Ajwt-bearer&assertion=' + unsigned + '.' + b64url.encode(sig),
+    body: 'grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Ajwt-bearer&assertion=' + assertion,
   });
   const data = await res.json();
   if (!data.access_token) throw new Error('Service account login failed: ' + (data.error_description || data.error));
   tokenCache = { token: data.access_token, expires: Date.now() + (data.expires_in - 120) * 1000 };
   return tokenCache.token;
+}
+
+// ---------------- Logging a customer in from the worker ----------------
+// Firebase custom token; the browser exchanges it with signInWithCustomToken.
+// The Auth emulator accepts unsigned tokens, so tests need no real key.
+export async function createCustomToken(serviceAccountJson, uid, { emulator = false } = {}) {
+  const now = Math.floor(Date.now() / 1000);
+  const aud = 'https://identitytoolkit.googleapis.com/google.identity.identitytoolkit.v1.IdentityToolkit';
+  if (emulator) {
+    const iss = 'firebase-auth-emulator@example.com';
+    return encJson({ alg: 'none', typ: 'JWT' }) + '.' + encJson({ iss, sub: iss, aud, iat: now, exp: now + 3600, uid }) + '.';
+  }
+  const sa = parseSa(serviceAccountJson);
+  return signJwt(sa, { iss: sa.client_email, sub: sa.client_email, aud, iat: now, exp: now + 3600, uid });
+}
+
+export async function sha256Hex(message) {
+  const d = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(message));
+  return [...new Uint8Array(d)].map((b) => b.toString(16).padStart(2, '0')).join('');
 }
 
 export async function hmacHex(secret, message) {

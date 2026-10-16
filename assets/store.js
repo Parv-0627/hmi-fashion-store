@@ -424,8 +424,8 @@ function renderAddressStep() {
       <span><b>${esc(a.name)}</b> · ${esc(a.phone)}<br>${esc(addressText(a))}</span></label>`).join('')
     + `<label class="addr-card ${selectedAddressIndex === -1 ? 'selected' : ''}"><input type="radio" name="addrPick" value="-1" ${selectedAddressIndex === -1 ? 'checked' : ''}><span>➕ New address</span></label>` : '';
   $('addressForm').style.display = selectedAddressIndex === -1 ? 'block' : 'none';
-  if (selectedAddressIndex === -1 && !$('custPhone').value && state.user && state.user.phoneNumber) {
-    $('custPhone').value = state.user.phoneNumber.replace(/^\+91/, '');
+  if (selectedAddressIndex === -1 && !$('custPhone').value && userPhone(state.user)) {
+    $('custPhone').value = userPhone(state.user).replace(/^\+91/, '');
   }
   if (selectedAddressIndex === -1 && !$('custName').value && state.profile && state.profile.name) $('custName').value = state.profile.name;
   $('addrErr').textContent = '';
@@ -571,9 +571,15 @@ function orderPlaced(orderNo) {
 }
 
 // =====================================================================
-// LOGIN (Phone OTP, Google, email link) — used in checkout and in My Account
+// LOGIN (number + PIN, Phone OTP, Google, email link) — used in checkout and in My Account
 // =====================================================================
 let recaptcha = null, confirmation = null;
+// +91 number of the logged-in customer: from SMS OTP, or from a PIN account's uid ("pin_<number>")
+function userPhone(u) {
+  if (!u) return '';
+  if (u.phoneNumber) return u.phoneNumber;
+  return /^pin_\d{10}$/.test(u.uid) ? '+91' + u.uid.slice(4) : '';
+}
 function friendlyAuth(e) {
   const map = {
     'auth/invalid-phone-number': 'Invalid mobile number.',
@@ -595,12 +601,26 @@ function friendlyAuth(e) {
   return map[e.code] || e.message;
 }
 function renderLogin(box, subtitle) {
+  const pinOn = cfg.pinLogin !== false, otpOn = cfg.phoneOtp !== false;
   box.innerHTML = `
     <div class="login-box">
       <div class="otp-icon">📱</div>
       <div class="otp-title">Log in</div>
       <div class="otp-sub">${esc(subtitle || 'Log in for your orders and wishlist')}</div>
-      <div data-phase="phone">
+      ${pinOn ? `
+      <div data-phase="pin">
+        <div class="phone-row"><span class="cc">+91</span>
+          <input class="field-input" data-el="pinPhone" type="tel" inputmode="numeric" maxlength="10" placeholder="10-digit mobile number" autocomplete="tel-national"></div>
+        <input class="field-input otp-input" data-el="pin" type="password" inputmode="numeric" maxlength="4" placeholder="4-digit PIN" autocomplete="current-password">
+        <div data-el="pinNew" style="display:none">
+          <div class="otp-sub" style="margin:4px 0 8px">👋 New here! Enter the same PIN again to create your account. Remember this PIN for next time.</div>
+          <input class="field-input otp-input" data-el="pin2" type="password" inputmode="numeric" maxlength="4" placeholder="Confirm PIN" autocomplete="new-password">
+        </div>
+        <button class="cart-footer-btn btn-proceed" type="button" data-act="pinGo">🔓 Log in</button>
+        <div class="otp-sub" style="margin:8px 0 0">First time? Just choose any 4-digit PIN.
+          <a href="https://wa.me/${WA}?text=${encodeURIComponent('Hello HMI Fashion! I forgot my login PIN. Please reset it for my number: ')}" target="_blank" rel="noopener" class="link-like">Forgot PIN?</a></div>
+      </div>` : ''}
+      <div data-phase="phone"${!otpOn || pinOn ? ' style="display:none"' : ''}>
         <div class="phone-row"><span class="cc">+91</span>
           <input class="field-input" data-el="phone" type="tel" inputmode="numeric" maxlength="10" placeholder="10-digit mobile number" autocomplete="tel-national"></div>
         <button class="cart-footer-btn btn-proceed" type="button" data-act="send">📲 Send OTP</button>
@@ -612,7 +632,8 @@ function renderLogin(box, subtitle) {
         <button class="link-like" type="button" data-act="change" style="margin-top:10px">Change number</button>
       </div>
       <div class="form-err" data-el="err"></div>
-      <div class="or-line">or</div>
+      ${pinOn && otpOn ? '<button class="link-like" type="button" data-act="otpToggle">Use SMS OTP instead</button>' : ''}
+      ${pinOn || otpOn ? '<div class="or-line">or</div>' : ''}
       <button class="google-btn" type="button" data-act="google"><img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18" height="18" alt=""> Log in with Google</button>
       <button class="google-btn" type="button" data-act="emailToggle" style="margin-top:10px">✉️ Log in with email link</button>
       <div data-phase="email" style="display:none;margin-top:10px">
@@ -624,6 +645,46 @@ function renderLogin(box, subtitle) {
   const q = (s) => box.querySelector(s);
   const err = (m) => { q('[data-el=err]').textContent = m ? '❌ ' + m : ''; };
   const busy = (btn, on, label) => { btn.disabled = on; if (label) btn.textContent = label; };
+
+  if (pinOn) {
+    const pinNew = q('[data-el=pinNew]'), go = q('[data-act=pinGo]');
+    const digits = (el) => el.value.replace(/\D/g, '');
+    const notNew = () => { pinNew.style.display = 'none'; q('[data-el=pin2]').value = ''; go.textContent = '🔓 Log in'; };
+    q('[data-el=pinPhone]').addEventListener('input', notNew);
+    const submit = async () => {
+      const phone = digits(q('[data-el=pinPhone]')), pin = digits(q('[data-el=pin]'));
+      if (!/^[6-9]\d{9}$/.test(phone)) return err('Please enter a valid 10-digit mobile number');
+      if (pin.length !== 4) return err('Please enter a 4-digit PIN');
+      const creating = pinNew.style.display !== 'none';
+      if (creating && digits(q('[data-el=pin2]')) !== pin) return err('The two PINs do not match');
+      err(''); busy(go, true, '⏳ Please wait...');
+      let label = creating ? '✅ Create account' : '🔓 Log in';
+      try {
+        const r = await HMI.callWorker('/pin/login', { phone, pin, create: creating });
+        if (r.status === 'new') {
+          pinNew.style.display = 'block'; label = '✅ Create account';
+          q('[data-el=pin2]').focus();
+          return;
+        }
+        await auth.signInWithCustomToken(r.token);
+        flash('✅ Logged in');
+      } catch (e) {
+        err(e.code ? friendlyAuth(e) : e.message);
+      } finally { busy(go, false, label); }
+    };
+    go.addEventListener('click', submit);
+    ['pin', 'pin2'].forEach((n) => q(`[data-el=${n}]`).addEventListener('keydown', (e) => { if (e.key === 'Enter') submit(); }));
+    if (otpOn) {
+      q('[data-act=otpToggle]').addEventListener('click', (ev) => {
+        const toOtp = q('[data-phase=pin]').style.display !== 'none';
+        q('[data-phase=pin]').style.display = toOtp ? 'none' : 'block';
+        q('[data-phase=phone]').style.display = toOtp ? 'block' : 'none';
+        q('[data-phase=otp]').style.display = 'none';
+        ev.target.textContent = toOtp ? 'Use PIN instead' : 'Use SMS OTP instead';
+        err('');
+      });
+    }
+  }
 
   q('[data-act=send]').addEventListener('click', async (ev) => {
     const phone = q('[data-el=phone]').value.replace(/\D/g, '');
@@ -720,7 +781,7 @@ auth.onAuthStateChanged(async (user) => {
     const localWish = [...state.wishlist];
     if (!snap.exists) {
       await ref.set({
-        name: user.displayName || '', email: user.email || '', phone: user.phoneNumber || '',
+        name: user.displayName || '', email: user.email || '', phone: userPhone(user),
         addresses: [], wishlist: localWish.slice(0, 200), createdAt: Date.now(), updatedAt: Date.now(),
       });
     } else if (localWish.length) {
@@ -781,7 +842,7 @@ function renderWishState() {
 function userLabel() {
   const u = state.user;
   if (!u) return '';
-  return (u.phoneNumber && u.phoneNumber.replace(/^\+91/, '+91 ')) || u.email || (state.profile && state.profile.name) || 'Customer';
+  return userPhone(u).replace(/^\+91/, '+91 ') || u.email || (state.profile && state.profile.name) || 'Customer';
 }
 function userBarHtml() {
   return state.user ? `<span>✅ Logged in as <b>${esc(userLabel())}</b></span>
@@ -818,7 +879,7 @@ function renderAccount() {
     return;
   }
   $('accTabs').style.display = state.user ? 'flex' : 'none';
-  $('accountSub').textContent = state.user ? (state.profile && state.profile.name) || state.user.phoneNumber || state.user.email || 'My Account' : 'Wishlist';
+  $('accountSub').textContent = state.user ? (state.profile && state.profile.name) || userPhone(state.user) || state.user.email || 'My Account' : 'Wishlist';
   document.querySelectorAll('#accTabs button').forEach((b) => b.classList.toggle('active', b.dataset.tab === tab));
   const bar = state.user ? `<div class="acc-user">${userBarHtml()}</div>` : '';
   if (tab === 'orders') body.innerHTML = bar + renderOrdersTab();
@@ -875,7 +936,7 @@ function renderProfileTab() {
   const p = state.profile || {};
   return `<label class="check-line" style="display:block;font-weight:700;">Name</label>
     <input class="field-input" id="profName" value="${esc(p.name || '')}" maxlength="100" placeholder="Your name">
-    <div class="ship-to" style="margin-bottom:12px;">📱 ${esc(state.user.phoneNumber || p.phone || '—')}<br>📧 ${esc(state.user.email || p.email || '—')}</div>
+    <div class="ship-to" style="margin-bottom:12px;">📱 ${esc(userPhone(state.user) || p.phone || '—')}<br>📧 ${esc(state.user.email || p.email || '—')}</div>
     <button type="button" class="cart-footer-btn btn-proceed" id="profSave">💾 Save</button>
     <button type="button" class="cart-footer-btn btn-back" id="logoutBtn">🚪 Logout</button>`;
 }

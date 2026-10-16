@@ -3,7 +3,7 @@
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { generateKeyPairSync, createSign, createVerify } from 'node:crypto';
-import { verifyIdToken, getAccessToken } from '../worker/src/google.js';
+import { verifyIdToken, getAccessToken, createCustomToken } from '../worker/src/google.js';
 
 const { privateKey, publicKey } = generateKeyPairSync('rsa', { modulusLength: 2048 });
 const jwk = { ...publicKey.export({ format: 'jwk' }), kid: 'test-kid', alg: 'RS256', use: 'sig' };
@@ -60,4 +60,16 @@ test('service-account token request is a valid RS256 JWT', async () => {
   const claims = JSON.parse(Buffer.from(p, 'base64url'));
   assert.equal(claims.iss, sa.client_email);
   assert.equal(claims.scope, 'https://www.googleapis.com/auth/datastore');
+});
+
+test('custom login token is signed by the service account for one uid', async () => {
+  const sa = { client_email: 'worker@hmi.iam.gserviceaccount.com', private_key: privateKey.export({ type: 'pkcs8', format: 'pem' }) };
+  const [h, p, s] = (await createCustomToken(JSON.stringify(sa), 'cust1')).split('.');
+  assert.ok(createVerify('RSA-SHA256').update(`${h}.${p}`).verify(publicKey, Buffer.from(s, 'base64url')));
+  const claims = JSON.parse(Buffer.from(p, 'base64url'));
+  assert.equal(claims.uid, 'cust1');
+  assert.equal(claims.iss, sa.client_email);
+  assert.equal(claims.sub, sa.client_email);
+  assert.equal(claims.aud, 'https://identitytoolkit.googleapis.com/google.identity.identitytoolkit.v1.IdentityToolkit');
+  assert.ok(claims.exp - claims.iat <= 3600);
 });

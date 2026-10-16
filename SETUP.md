@@ -105,6 +105,16 @@ Purani ImgBB key public ho chuki thi.
 
 ---
 
+## 7. Number + PIN login (free, koi setup nahi)
+Customer mobile number + apna 4-digit PIN daalta hai. Pehli baar PIN do baar daal kar account banta hai, agli baar wahi PIN.
+- [ ] Pehle worker deploy karein (`cd worker && npx wrangler deploy`), **phir** website push karein. Ulta karne par login button "Not found" dikhayega.
+- [ ] 5 galat PIN par number 15 minute lock hota hai. Agli baar 30 minute, phir 1 ghanta... (max 1 din).
+- **PIN bhool gaya?** Customer "Forgot PIN?" se WhatsApp par message karega. Pakka kar lein ki number usi ka hai, phir
+  Firebase Console → Firestore → `pinLogins` → us number wala document **Delete**. Customer naya PIN bana lega, purane orders wahi rahenge.
+- PIN se number verify nahi hota, isliye PIN accounts SMS OTP accounts se alag hain (ek customer ka OTP wala account PIN se nahi khulta).
+
+---
+
 ## Developer notes
 - `npm test` — security rules + checkout server ke saare tests (local emulator par, live data nahi chhoota).
 - Local testing: `npm run emulators`, `node tests/dev-seed.mjs --catalogue`, `node tests/dev-worker.mjs`, `python3 -m http.server 5500`,

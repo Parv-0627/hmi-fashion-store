@@ -1,5 +1,5 @@
 // Checkout worker tests: run the worker's fetch handler in Node against the
-// Firestore emulator, with fake Razorpay and ImgBB servers. Run: npm test
+// Firestore and Auth emulators, with fake Razorpay and ImgBB servers. Run: npm test
 import { test, before, after, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
@@ -270,4 +270,73 @@ test('CORS only for the store origins', async () => {
   const evil = await worker.fetch(new Request('https://worker.test/checkout/start', { method: 'OPTIONS', headers: { Origin: 'https://evil.example' } }), ENV());
   assert.equal(evil.headers.get('Access-Control-Allow-Origin'), null);
   assert.equal((await call('/nope')).status, 404);
+});
+
+// The Auth emulator must accept the custom token the worker hands out
+async function emulatorSignIn(customToken) {
+  const res = await fetch('http://127.0.0.1:9099/identitytoolkit.googleapis.com/v1/accounts:signInWithCustomToken?key=fake', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token: customToken, returnSecureToken: true }),
+  });
+  assert.equal(res.status, 200);
+  return { uid: JSON.parse(Buffer.from(customToken.split('.')[1], 'base64url')).uid };
+}
+
+// ---------------------------------------------------------------- PIN login
+const pinUid = (t) => JSON.parse(Buffer.from(t.split('.')[1], 'base64url')).uid;
+
+test('PIN login: first time creates the account, next time the same PIN logs in', async () => {
+  const first = await call('/pin/login', { body: { phone: '9812345678', pin: '4826' } });
+  assert.deepEqual(first.data, { status: 'new' });
+  assert.equal(await read('pinLogins/9812345678'), undefined); // nothing saved until confirmed
+
+  const created = await call('/pin/login', { body: { phone: '9812345678', pin: '4826', create: true } });
+  assert.equal(created.status, 200, JSON.stringify(created.data));
+  assert.equal(pinUid(created.data.token), 'pin_9812345678');
+  assert.equal((await emulatorSignIn(created.data.token)).uid, 'pin_9812345678');
+  const saved = await read('pinLogins/9812345678');
+  assert.ok(!JSON.stringify(saved).includes('4826')); // only a salted hash is stored
+
+  const again = await call('/pin/login', { body: { phone: '+91 98123 45678', pin: '4826' } });
+  assert.equal(again.status, 200);
+  assert.equal(pinUid(again.data.token), 'pin_9812345678');
+  // "create" cannot overwrite someone's existing PIN
+  assert.equal((await call('/pin/login', { body: { phone: '9812345678', pin: '7391', create: true } })).status, 401);
+});
+
+test('PIN login: easy PINs and bad input are refused', async () => {
+  for (const pin of ['1111', '1234', '4321', '9812', '5678']) {
+    const r = await call('/pin/login', { body: { phone: '9812345678', pin, create: true } });
+    assert.equal(r.status, 400, pin);
+    assert.match(r.data.error, /too easy/);
+  }
+  assert.equal((await call('/pin/login', { body: { phone: '12345', pin: '4826' } })).status, 400);
+  assert.equal((await call('/pin/login', { body: { phone: '9812345678', pin: '48' } })).status, 400);
+});
+
+test('PIN login: wrong PINs lock the number, longer each time', async () => {
+  await call('/pin/login', { body: { phone: '9812345678', pin: '4826', create: true } });
+  for (let i = 1; i <= 4; i++) {
+    const r = await call('/pin/login', { body: { phone: '9812345678', pin: '0007' } });
+    assert.equal(r.status, 401);
+    assert.match(r.data.error, new RegExp(`${5 - i} tr`));
+  }
+  assert.match((await call('/pin/login', { body: { phone: '9812345678', pin: '0007' } })).data.error, /locked/);
+  // locked: even the right PIN waits
+  const locked = await call('/pin/login', { body: { phone: '9812345678', pin: '4826' } });
+  assert.equal(locked.status, 429);
+  assert.match(locked.data.error, /15 minutes/);
+
+  // after the lock, 5 more mistakes lock for 30 minutes
+  const acc = await read('pinLogins/9812345678');
+  await write('pinLogins/9812345678', { ...acc, lockedUntil: Date.now() - 1 });
+  for (let i = 0; i < 5; i++) await call('/pin/login', { body: { phone: '9812345678', pin: '0007' } });
+  assert.match((await call('/pin/login', { body: { phone: '9812345678', pin: '4826' } })).data.error, /30 minutes/);
+
+  // guesses sent all at once are still counted one by one
+  await write('pinLogins/9812345678', { ...acc, fails: 0, lockedUntil: 0 });
+  const burst = await Promise.all(Array.from({ length: 8 }, () => call('/pin/login', { body: { phone: '9812345678', pin: '0007' } })));
+  assert.ok(burst.every((r) => r.status !== 200));
+  const wrong = burst.filter((r) => r.status === 401).length;
+  assert.ok(wrong <= 5, `${wrong} guesses got through`);
+  assert.equal((await read('pinLogins/9812345678')).fails, wrong);
 });

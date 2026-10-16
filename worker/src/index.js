@@ -6,9 +6,10 @@
 //   POST /razorpay/webhook   places the order even if the customer closed the browser after paying
 //   POST /orders/cancel      customer cancels a Pending order (stock goes back)
 //   POST /admin/upload-image admin product photo upload (ImgBB key stays secret here)
+//   POST /pin/login          free login with mobile number + 4-digit PIN
 import '../../assets/pricing.js';
 import { Firestore } from './firestore.js';
-import { verifyIdToken, hmacHex, safeEqual, AuthError } from './google.js';
+import { verifyIdToken, hmacHex, safeEqual, AuthError, createCustomToken, sha256Hex } from './google.js';
 
 const { calcTotals, paySettings } = globalThis.HMIPricing;
 
@@ -37,18 +38,21 @@ function reply(env, req, status, body) {
 async function readJson(req) {
   try { return await req.json(); } catch { throw new HttpError(400, 'Invalid request'); }
 }
+const authEmulator = (env) => env.AUTH_EMULATOR === 'true' && !!env.FIRESTORE_EMULATOR_HOST;
 async function requireUser(req, env) {
   const token = (req.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '');
-  return verifyIdToken(token, env.FIREBASE_PROJECT_ID, { emulator: env.AUTH_EMULATOR === 'true' && !!env.FIRESTORE_EMULATOR_HOST });
+  return verifyIdToken(token, env.FIREBASE_PROJECT_ID, { emulator: authEmulator(env) });
 }
 const str = (v, max) => String(v === undefined || v === null ? '' : v).trim().slice(0, max);
 
+function randomCode(n) {
+  const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  return [...crypto.getRandomValues(new Uint8Array(n))].map((b) => alphabet[b % alphabet.length]).join('');
+}
 function newOrderNo() {
   const d = new Date(Date.now() + 5.5 * 3600 * 1000); // IST date
   const ymd = d.toISOString().slice(2, 10).replace(/-/g, '');
-  const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  const rnd = crypto.getRandomValues(new Uint8Array(6));
-  return `HMI-${ymd}-${[...rnd].map((b) => alphabet[b % alphabet.length]).join('')}`;
+  return `HMI-${ymd}-${randomCode(6)}`;
 }
 
 function cleanAddress(a) {
@@ -314,12 +318,76 @@ async function uploadImage(req, env, fs) {
   return { url: data.data.url };
 }
 
+// ---------------------------------------------------------------- PIN login
+// Free login without SMS: mobile number + a 4-digit PIN the customer chooses the
+// first time. The number is NOT verified, so these accounts are separate from
+// SMS-OTP accounts (uid "pin_<number>") and never see an OTP customer's orders.
+// Wrong PINs lock the number for longer and longer, so a PIN cannot be guessed.
+// Forgot PIN: delete pinLogins/<number> in Firebase Console; the customer sets a
+// new PIN and keeps the same account and orders.
+const PIN_TRIES = 5;
+const PIN_LOCK_MINUTES = 15;
+
+function weakPin(pin, phone) {
+  return /^(\d)\1{3}$/.test(pin) || '0123456789'.includes(pin) || '9876543210'.includes(pin)
+    || phone.startsWith(pin) || phone.endsWith(pin);
+}
+const pinHash = (salt, pin) => sha256Hex(`${salt}:${pin}`);
+
+async function pinLogin(req, env, fs) {
+  const b = await readJson(req);
+  const phone = str(b.phone, 20).replace(/\D/g, '').slice(-10), pin = str(b.pin, 10);
+  if (!/^[6-9]\d{9}$/.test(phone)) throw new HttpError(400, 'Please enter a valid 10-digit mobile number');
+  if (!/^\d{4}$/.test(pin)) throw new HttpError(400, 'PIN must be 4 digits');
+  const path = `pinLogins/${phone}`;
+  const login = async () => ({
+    status: 'ok', token: await createCustomToken(env.FIREBASE_SERVICE_ACCOUNT, `pin_${phone}`, { emulator: authEmulator(env) }),
+  });
+
+  for (let attempt = 0; attempt < 4; attempt++) {
+    const tx = await fs.beginTransaction();
+    let result;
+    try {
+      const [acc] = await fs.getMany([path], tx);
+      const now = Date.now();
+      if (!acc) {
+        if (!b.create) { await fs.rollback(tx); return { status: 'new' }; }
+        if (weakPin(pin, phone)) throw new HttpError(400, 'This PIN is too easy to guess. Please choose another one.');
+        const salt = randomCode(16);
+        await fs.commit([{ op: 'create', path, data: { salt, pinHash: await pinHash(salt, pin), fails: 0, lockedUntil: 0, createdAt: now, lastLoginAt: now } }], tx);
+        return login();
+      }
+      if (acc.lockedUntil > now) {
+        throw new HttpError(429, `Too many wrong PINs. Please try again after ${Math.ceil((acc.lockedUntil - now) / 60000)} minutes, or log in with Google / email.`);
+      }
+      if (safeEqual(acc.pinHash, await pinHash(acc.salt, pin))) {
+        await fs.commit([{ op: 'update', path, data: { fails: 0, lockedUntil: 0, lastLoginAt: now } }], tx);
+        return login();
+      }
+      // Wrong PIN: every PIN_TRIES mistakes lock the number, each lock twice as long (max 1 day)
+      const fails = (acc.fails || 0) + 1;
+      const lockedUntil = fails % PIN_TRIES === 0
+        ? now + Math.min(PIN_LOCK_MINUTES * 2 ** (fails / PIN_TRIES - 1), 24 * 60) * 60000 : 0;
+      await fs.commit([{ op: 'update', path, data: { fails, lockedUntil } }], tx);
+      const left = PIN_TRIES - (fails % PIN_TRIES);
+      result = new HttpError(401, lockedUntil ? 'Wrong PIN. Too many tries, this number is locked for a while.' : `Wrong PIN. ${left} ${left === 1 ? 'try' : 'tries'} left.`);
+    } catch (e) {
+      await fs.rollback(tx);
+      if (e.firestoreStatus !== 'ABORTED' || attempt === 3) throw e; // ABORTED = another login for this number at the same time
+      continue;
+    }
+    throw result;
+  }
+  throw new HttpError(503, 'Server is busy, please try again');
+}
+
 const ROUTES = {
   'POST /checkout/start': checkoutStart,
   'POST /checkout/confirm': checkoutConfirm,
   'POST /razorpay/webhook': razorpayWebhook,
   'POST /orders/cancel': cancelOrder,
   'POST /admin/upload-image': uploadImage,
+  'POST /pin/login': pinLogin,
   'GET /health': async () => ({ ok: true }),
   // Confirms the service account can reach Firestore (no data is returned)
   'GET /health/db': async (req, env, fs) => {
