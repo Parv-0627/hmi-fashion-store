@@ -573,7 +573,7 @@ function orderPlaced(orderNo) {
 // =====================================================================
 // LOGIN (Phone OTP, Google, email link) — used in checkout and in My Account
 // =====================================================================
-let otpPhone = '', resendTimer = null, otpAutofill = null;
+let recaptcha = null, confirmation = null;
 function friendlyAuth(e) {
   const map = {
     'auth/invalid-phone-number': 'Invalid mobile number.',
@@ -606,14 +606,10 @@ function renderLogin(box, subtitle) {
         <button class="cart-footer-btn btn-proceed" type="button" data-act="send">📲 Send OTP</button>
       </div>
       <div data-phase="otp" style="display:none">
-        <div class="otp-sub">OTP for: <b data-el="sentTo"></b></div>
-        <div class="otp-how" data-el="otpNote"></div>
+        <div class="otp-sub">OTP sent to: <b data-el="sentTo"></b></div>
         <input class="field-input otp-input" data-el="code" type="tel" inputmode="numeric" maxlength="6" placeholder="••••••" autocomplete="one-time-code">
         <button class="cart-footer-btn btn-proceed" type="button" data-act="verify">✅ Verify OTP</button>
-        <div style="margin-top:10px">
-          <button class="link-like" type="button" data-act="resend">Resend OTP</button> ·
-          <button class="link-like" type="button" data-act="change">Change number</button>
-        </div>
+        <button class="link-like" type="button" data-act="change" style="margin-top:10px">Change number</button>
       </div>
       <div class="form-err" data-el="err"></div>
       <div class="or-line">or</div>
@@ -629,73 +625,33 @@ function renderLogin(box, subtitle) {
   const err = (m) => { q('[data-el=err]').textContent = m ? '❌ ' + m : ''; };
   const busy = (btn, on, label) => { btn.disabled = on; if (label) btn.textContent = label; };
 
-  // OTP comes from the checkout worker (worker/src/otp.js); how it reaches
-  // the customer (admin on WhatsApp now, an SMS gateway later) is decided there
-  const resendBtn = q('[data-act=resend]');
-  const startResendWait = (sec) => {
-    clearInterval(resendTimer);
-    const tick = () => {
-      if (!document.body.contains(resendBtn) || sec <= 0) { clearInterval(resendTimer); resendBtn.disabled = false; resendBtn.textContent = 'Resend OTP'; return; }
-      resendBtn.disabled = true; resendBtn.textContent = `Resend OTP (${sec--}s)`;
-    };
-    tick(); resendTimer = setInterval(tick, 1000);
-  };
-  const sendOtp = async (btn, phone) => {
-    err(''); const label = btn.textContent; busy(btn, true, '⏳ Sending...');
+  q('[data-act=send]').addEventListener('click', async (ev) => {
+    const phone = q('[data-el=phone]').value.replace(/\D/g, '');
+    if (!/^[6-9]\d{9}$/.test(phone)) return err('Please enter a valid 10-digit mobile number');
+    err(''); busy(ev.target, true, '⏳ Sending...');
     try {
-      const r = await HMI.callWorker('/auth/otp/send', { phone });
-      otpPhone = phone;
+      if (!recaptcha) recaptcha = new firebase.auth.RecaptchaVerifier('recaptcha-container', { size: 'invisible' });
+      confirmation = await auth.signInWithPhoneNumber('+91' + phone, recaptcha);
       q('[data-phase=phone]').style.display = 'none';
       q('[data-phase=otp]').style.display = 'block';
       q('[data-el=sentTo]').textContent = '+91 ' + phone;
-      const ask = `https://wa.me/${WA}?text=${encodeURIComponent(`Hello HMI Fashion! Please send my login OTP for +91 ${phone}.`)}`;
-      const mins = Math.max(1, Math.round((r.expiresAt - Date.now()) / 60000));
-      q('[data-el=otpNote]').innerHTML = r.devCode
-        ? `🧪 Test OTP: <b>${esc(r.devCode)}</b>`
-        : r.delivery === 'sms'
-          ? `📩 OTP sent by <b>SMS</b> to this number. It works for ${mins} minutes.
-             <a href="${ask}" target="_blank" rel="noopener">💬 No SMS in 2 minutes? Message us on WhatsApp</a>`
-          : `📲 Our team will send your OTP on <b>WhatsApp</b> to this number in a few minutes (10 AM – 9 PM). It works for ${mins} minutes.
-             <a href="${ask}" target="_blank" rel="noopener">💬 Didn't get it? Message us on WhatsApp</a>`;
-      q('[data-el=code]').value = '';
       q('[data-el=code]').focus();
-      startResendWait(60);
-      if (r.delivery === 'sms') listenForSmsCode();
-    } catch (e) { err(e.message); } finally { busy(btn, false, label); }
-  };
-  q('[data-act=send]').addEventListener('click', (ev) => {
-    const phone = q('[data-el=phone]').value.replace(/\D/g, '');
-    if (!/^[6-9]\d{9}$/.test(phone)) return err('Please enter a valid 10-digit mobile number');
-    sendOtp(ev.target, phone);
+      if (HMI.emulator) { // test mode: show the OTP instead of sending an SMS
+        const r = await fetch(`${HMI.emulatorAuthUrl}/emulator/v1/projects/${cfg.firebase.projectId}/verificationCodes`).then((x) => x.json());
+        const c = (r.verificationCodes || []).filter((v) => v.phoneNumber === '+91' + phone).pop();
+        if (c) q('[data-el=sentTo]').textContent += ` — 🧪 Test OTP: ${c.code}`;
+      }
+    } catch (e) {
+      err(friendlyAuth(e));
+      try { recaptcha && recaptcha.clear(); } catch { /* already cleared */ }
+      recaptcha = null;
+    } finally { busy(ev.target, false, '📲 Send OTP'); }
   });
-  resendBtn.addEventListener('click', () => sendOtp(resendBtn, otpPhone));
-  // Chrome on Android: reads the SMS (WebOTP line) and fills the code in itself
-  const listenForSmsCode = () => {
-    if (!('OTPCredential' in window)) return;
-    if (otpAutofill) otpAutofill.abort();
-    otpAutofill = new AbortController();
-    navigator.credentials.get({ otp: { transport: ['sms'] }, signal: otpAutofill.signal })
-      .then((c) => {
-        if (!c || !c.code || !document.body.contains(box)) return;
-        q('[data-el=code]').value = c.code;
-        verify(q('[data-act=verify]'));
-      })
-      .catch(() => { /* customer can still type it */ });
-  };
   const verify = async (btn) => {
     const code = q('[data-el=code]').value.replace(/\D/g, '');
     if (code.length !== 6) return err('Please enter the 6-digit OTP');
-    if (btn.disabled) return; // already checking (typing the 6th digit also verifies)
     err(''); busy(btn, true, '⏳ Verifying...');
-    try {
-      const r = await HMI.callWorker('/auth/otp/verify', { phone: otpPhone, code });
-      await auth.signInWithCustomToken(r.token);
-      clearInterval(resendTimer);
-      if (otpAutofill) otpAutofill.abort();
-    } catch (e) {
-      err(e.code ? friendlyAuth(e) : e.message);
-      q('[data-el=code]').select();
-    } finally { busy(btn, false, '✅ Verify OTP'); }
+    try { await confirmation.confirm(code); } catch (e) { err(friendlyAuth(e)); } finally { busy(btn, false, '✅ Verify OTP'); }
   };
   q('[data-act=verify]').addEventListener('click', (ev) => verify(ev.target));
   q('[data-el=code]').addEventListener('input', (ev) => { if (ev.target.value.replace(/\D/g, '').length === 6) verify(q('[data-act=verify]')); });

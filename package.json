@@ -3,7 +3,7 @@
   "private": true,
   "description": "Dev tooling only: Firestore rules tests and the checkout worker. The store itself is static HTML.",
   "scripts": {
-    "test": "firebase emulators:exec --only firestore,auth --project demo-hmi \"node --test tests/*.test.mjs\"",
+    "test": "firebase emulators:exec --only firestore --project demo-hmi \"node --test tests/*.test.mjs\"",
     "test:rules": "firebase emulators:exec --only firestore --project demo-hmi \"node --test tests/firestore.rules.test.mjs\"",
     "emulators": "firebase emulators:start --only firestore,auth --project hmi-fashion-store",
     "seed": "node tests/dev-seed.mjs",

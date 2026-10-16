@@ -145,23 +145,3 @@ test('everything else is closed', async () => {
   await assertFails(getDoc(doc(admin(), 'secrets/razorpay')));
   await assertFails(setDoc(doc(alice(), 'anything/x'), { a: 1 }));
 });
-
-test('login OTPs: only the admin sees the WhatsApp queue; hashes and limits are closed', async () => {
-  await env.withSecurityRulesDisabled(async (ctx) => {
-    const db = ctx.firestore();
-    await setDoc(doc(db, 'otpRequests/9876543210'), { phone: '+919876543210', code: '123456', status: 'pending', expiresAt: 1 });
-    await setDoc(doc(db, 'otps/9876543210'), { hash: 'x', tries: 0 });
-    await setDoc(doc(db, 'otpLimits/global'), { day: '2026-10-14', count: 1 });
-  });
-  await assertSucceeds(getDocs(collection(admin(), 'otpRequests')));
-  await assertSucceeds(updateDoc(doc(admin(), 'otpRequests/9876543210'), { status: 'sent', sentAt: 2 }));
-  await assertFails(updateDoc(doc(admin(), 'otpRequests/9876543210'), { code: '000000' }));
-  await assertFails(setDoc(doc(admin(), 'otpRequests/9000000000'), { code: '111111' }));
-  await assertFails(getDoc(doc(alice(), 'otpRequests/9876543210')));
-  await assertFails(getDocs(collection(alice(), 'otpRequests')));
-  await assertFails(getDoc(doc(admin(), 'otps/9876543210')));
-  await assertFails(getDoc(doc(alice(), 'otps/9876543210')));
-  await assertFails(setDoc(doc(alice(), 'otps/9876543210'), { hash: 'mine', tries: 0 }));
-  await assertFails(updateDoc(doc(alice(), 'otpLimits/global'), { count: 0 }));
-  await assertSucceeds(deleteDoc(doc(admin(), 'otpRequests/9876543210')));
-});

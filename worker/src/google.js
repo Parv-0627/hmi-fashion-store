@@ -1,7 +1,6 @@
 // Google auth for the worker:
 //  - verifyIdToken: checks a Firebase Auth ID token sent by the browser
-//  - getAccessToken: service-account token for Google APIs (Firestore, Auth admin)
-//  - createCustomToken: Firebase custom token for a phone (OTP) login
+//  - getAccessToken: service-account token for the Firestore REST API
 // Uses WebCrypto only, so it runs on Cloudflare Workers and in Node tests.
 
 const b64url = {
@@ -62,81 +61,34 @@ export async function verifyIdToken(token, projectId, { emulator = false } = {})
 }
 
 // ---------------- Service account access token ----------------
-const DATASTORE_SCOPE = 'https://www.googleapis.com/auth/datastore';
-const tokenCache = {};
+let tokenCache = { token: null, expires: 0 };
 
 function pemToPkcs8(pem) {
   const body = pem.replace(/-----[^-]+-----/g, '').replace(/\s+/g, '');
   return Uint8Array.from(atob(body), (c) => c.charCodeAt(0));
 }
-const parseSa = (sa) => (typeof sa === 'string' ? JSON.parse(sa) : sa);
-const encJson = (o) => b64url.encode(new TextEncoder().encode(JSON.stringify(o)));
 
-// RS256 JWT signed with the service account's private key
-async function signJwt(sa, payload) {
-  const unsigned = encJson({ alg: 'RS256', typ: 'JWT' }) + '.' + encJson(payload);
+export async function getAccessToken(serviceAccountJson) {
+  if (tokenCache.token && Date.now() < tokenCache.expires) return tokenCache.token;
+  const sa = typeof serviceAccountJson === 'string' ? JSON.parse(serviceAccountJson) : serviceAccountJson;
+  const now = Math.floor(Date.now() / 1000);
+  const enc = (o) => b64url.encode(new TextEncoder().encode(JSON.stringify(o)));
+  const unsigned = enc({ alg: 'RS256', typ: 'JWT' }) + '.' + enc({
+    iss: sa.client_email, scope: 'https://www.googleapis.com/auth/datastore',
+    aud: 'https://oauth2.googleapis.com/token', iat: now, exp: now + 3600,
+  });
   const key = await crypto.subtle.importKey('pkcs8', pemToPkcs8(sa.private_key),
     { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' }, false, ['sign']);
   const sig = await crypto.subtle.sign('RSASSA-PKCS1-v1_5', key, new TextEncoder().encode(unsigned));
-  return unsigned + '.' + b64url.encode(sig);
-}
-
-export async function getAccessToken(serviceAccountJson, scope = DATASTORE_SCOPE) {
-  const cached = tokenCache[scope];
-  if (cached && Date.now() < cached.expires) return cached.token;
-  const sa = parseSa(serviceAccountJson);
-  const now = Math.floor(Date.now() / 1000);
-  const assertion = await signJwt(sa, {
-    iss: sa.client_email, scope, aud: 'https://oauth2.googleapis.com/token', iat: now, exp: now + 3600,
-  });
   const res = await fetch('https://oauth2.googleapis.com/token', {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: 'grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Ajwt-bearer&assertion=' + assertion,
+    body: 'grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Ajwt-bearer&assertion=' + unsigned + '.' + b64url.encode(sig),
   });
   const data = await res.json();
   if (!data.access_token) throw new Error('Service account login failed: ' + (data.error_description || data.error));
-  tokenCache[scope] = { token: data.access_token, expires: Date.now() + (data.expires_in - 120) * 1000 };
-  return data.access_token;
-}
-
-// ---------------- Firebase Auth (phone OTP login) ----------------
-const CUSTOM_TOKEN_AUD = 'https://identitytoolkit.googleapis.com/google.identity.identitytoolkit.v1.IdentityToolkit';
-
-// The browser signs in with this via auth.signInWithCustomToken().
-// `emulator` returns an unsigned token, which only the Auth emulator accepts.
-export async function createCustomToken(serviceAccountJson, uid, { emulator = false } = {}) {
-  const now = Math.floor(Date.now() / 1000);
-  if (emulator) {
-    const iss = 'firebase-auth-emulator@example.com';
-    return encJson({ alg: 'none', typ: 'JWT' }) + '.' + encJson({ iss, sub: iss, aud: CUSTOM_TOKEN_AUD, iat: now, exp: now + 3600, uid }) + '.';
-  }
-  const sa = parseSa(serviceAccountJson);
-  return signJwt(sa, { iss: sa.client_email, sub: sa.client_email, aud: CUSTOM_TOKEN_AUD, iat: now, exp: now + 3600, uid });
-}
-
-// Finds the Firebase user with this phone number (+91...) or creates one, and
-// returns its uid. Setting the real phone number on the account keeps
-// user.phoneNumber working in the store, and is the same account Firebase's
-// own SMS login would use if it is switched on later.
-export async function phoneUserUid(env, phoneE164) {
-  const emu = env.AUTH_EMULATOR_HOST;
-  const base = `${emu ? `http://${emu}/` : 'https://'}identitytoolkit.googleapis.com/v1/projects/${env.FIREBASE_PROJECT_ID}`;
-  const token = emu ? 'owner' : await getAccessToken(env.FIREBASE_SERVICE_ACCOUNT, 'https://www.googleapis.com/auth/cloud-platform');
-  const call = async (path, body) => {
-    const res = await fetch(base + path, {
-      method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify(body),
-    });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(`Firebase Auth ${res.status}: ${data.error?.message || res.statusText}`);
-    return data;
-  };
-  const found = (await call('/accounts:lookup', { phoneNumber: [phoneE164] })).users?.[0];
-  if (found) {
-    if (found.disabled) throw new AuthError('This account has been blocked. Please contact us on WhatsApp.');
-    return found.localId;
-  }
-  return (await call('/accounts', { phoneNumber: phoneE164 })).localId;
+  tokenCache = { token: data.access_token, expires: Date.now() + (data.expires_in - 120) * 1000 };
+  return tokenCache.token;
 }
 
 export async function hmacHex(secret, message) {
