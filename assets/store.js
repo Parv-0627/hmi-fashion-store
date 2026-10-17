@@ -161,7 +161,7 @@ function renderHeroProducts() {
     return `
     <div class="hero2-card" data-pdp="${esc(p.id)}" role="button" tabindex="0">
       ${p.badge ? `<span class="hero2-tag">${esc(p.badge)}</span>` : ''}
-      <div class="hero2-card-img" style="${src ? '' : `background:${esc(p.bg)}`}">${src ? `<img src="${src}" alt="${esc(p.name)}" loading="lazy">` : esc(p.emoji)}</div>
+      <div class="hero2-card-img" style="${src ? '' : `background:${esc(p.bg)}`}">${cardGallery(p, src ? `<img src="${src}" alt="${esc(p.name)}" loading="lazy">` : esc(p.emoji))}</div>
       <div class="hero2-card-info">
         <h3>${esc(p.name)}</h3>
         <div class="hero2-price">${rs(p.price)}${hasMrp(p) ? `<s>${rs(p.mrp)}</s><small>${offPct(p)}% off</small>` : ''}</div>
@@ -171,6 +171,7 @@ function renderHeroProducts() {
   if (cards.length < 4) cards.push('<a class="hero2-more" href="#products"><b>The full collection</b><span>Shop now →</span></a>');
   grid.dataset.count = cards.length;
   grid.innerHTML = cards.join('');
+  initGalleries(grid);
 }
 
 function visibleProducts() {
@@ -212,7 +213,7 @@ function renderProducts() {
     return `
     <div class="product-card" data-pdp="${esc(p.id)}" style="cursor:pointer;">
       <div class="product-img" style="background:${esc(p.bg)}">
-        ${imgOrEmoji(p, '', 'width:100%;height:100%;object-fit:cover;')}
+        ${cardGallery(p, imgOrEmoji(p, '', 'width:100%;height:100%;object-fit:cover;'))}
         ${p.badge ? `<div class="product-badge">${esc(p.badge)}</div>` : ''}
         <button type="button" class="wish-btn ${wished ? 'on' : ''}" data-wish="${esc(p.id)}" aria-label="Wishlist">${wished ? '♥' : '♡'}</button>
       </div>
@@ -230,6 +231,7 @@ function renderProducts() {
       </div>
     </div>`;
   }).join('');
+  initGalleries(grid);
 }
 
 function renderKids() {
@@ -242,6 +244,55 @@ function renderKids() {
       <div class="koverlay"><h4>${esc(p.name)}</h4><p>${rs(p.price)}</p></div></div>`;
   }).join('') : '<div class="kids-empty">Kids collection coming soon! 😍</div>';
 }
+
+// =====================================================================
+// CARD GALLERY: products with several photos show dots on the card; the photo
+// changes by itself, and with a swipe, a tap on a dot, or a press-and-hold
+// =====================================================================
+function cardGallery(p, fallback) {
+  const imgs = p.images.map((u) => safeUrl(u)).filter(Boolean).slice(0, 8);
+  if (imgs.length < 2) return fallback;
+  return `<div class="pc-gallery" data-gallery>
+    <div class="pc-track">${imgs.map((src, i) => `<img src="${src}" alt="${esc(p.name)}" loading="${i ? 'lazy' : 'eager'}" draggable="false">`).join('')}</div>
+    <div class="pc-dots">${imgs.map((_, i) => `<button type="button" class="${i ? '' : 'on'}" data-dot="${i}" aria-label="Photo ${i + 1} of ${imgs.length}"></button>`).join('')}</div>
+  </div>`;
+}
+const galleryAuto = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const visibleGalleries = new Set();
+const galleryObserver = 'IntersectionObserver' in window
+  ? new IntersectionObserver((entries) => entries.forEach((en) => (en.isIntersecting ? visibleGalleries.add(en.target) : visibleGalleries.delete(en.target))), { threshold: 0.6 })
+  : null;
+function initGalleries(root) {
+  root.querySelectorAll('[data-gallery]').forEach((g) => {
+    if (g.go) return;
+    const track = g.querySelector('.pc-track'), dots = [...g.querySelectorAll('[data-dot]')];
+    let idx = 0, holdTimer = null;
+    const later = (ms) => { g.nextAt = Date.now() + ms + Math.random() * 1500; };
+    g.go = (i) => { i = (i + dots.length) % dots.length; track.scrollTo({ left: i * track.clientWidth, behavior: 'smooth' }); later(3500); };
+    track.addEventListener('scroll', () => {
+      clearTimeout(holdTimer);
+      const i = Math.round(track.scrollLeft / Math.max(1, track.clientWidth));
+      if (i !== idx) { idx = i; dots.forEach((d, k) => d.classList.toggle('on', k === i)); }
+      later(4000);
+    }, { passive: true });
+    // press and hold = next photo (and the tap that ends it does not open the product)
+    g.addEventListener('pointerdown', () => { clearTimeout(holdTimer); holdTimer = setTimeout(() => { g.held = true; g.go(idx + 1); }, 450); });
+    ['pointerup', 'pointerleave', 'pointercancel'].forEach((ev) => g.addEventListener(ev, () => clearTimeout(holdTimer)));
+    g.addEventListener('click', (e) => { if (g.held) { g.held = false; e.stopPropagation(); e.preventDefault(); } }, true);
+    g.addEventListener('contextmenu', (e) => e.preventDefault());
+    g.idx = () => idx;
+    later(2500);
+    if (galleryObserver) galleryObserver.observe(g); else visibleGalleries.add(g);
+  });
+}
+setInterval(() => {
+  if (!galleryAuto || document.hidden) return;
+  const now = Date.now();
+  visibleGalleries.forEach((g) => {
+    if (!g.isConnected) { visibleGalleries.delete(g); return; }
+    if (now >= g.nextAt) g.go(g.idx() + 1);
+  });
+}, 1000);
 
 // =====================================================================
 // PRODUCT DETAIL
@@ -1012,6 +1063,8 @@ async function cancelMyOrder(orderNo) {
 // EVENTS
 // =====================================================================
 document.addEventListener('click', (e) => {
+  const dot = e.target.closest('[data-dot]');
+  if (dot) { const g = dot.closest('[data-gallery]'); if (g && g.go) g.go(Number(dot.dataset.dot)); return; }
   const t = e.target.closest('[data-wish],[data-add],[data-pdp],[data-cat],[data-account],[data-step],[data-pay],[data-qty],[data-remove],[data-cancel],[data-del-addr],[data-tab],[data-thumb],[data-size],[data-color],[data-close-account]');
   if (!t) return;
   if (t.dataset.wish !== undefined) { e.stopPropagation(); toggleWish(t.dataset.wish); return; }
