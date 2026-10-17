@@ -164,6 +164,7 @@ function startApp() {
   $('p-name').addEventListener('input', showNameDup);
   $('homeHeroInput').addEventListener('change', (e) => uploadHomeHero(e.target));
   $('homeProductSearch').addEventListener('input', renderHomeForm);
+  HERO_TEXT_KEYS.forEach((k) => $('hm-' + k).addEventListener('input', (e) => { homeDraft[k] = e.target.value.trim() ? e.target.value : ''; setHomeDirty(true); }));
 }
 
 function renderAll() {
@@ -777,14 +778,24 @@ function readHome(raw) {
   return {
     heroImage: typeof r.heroImage === 'string' ? r.heroImage : '',   // '' = default banner, 'none' = no photo
     newArrivals: Array.isArray(r.newArrivals) ? r.newArrivals.map(String).slice(0, 4) : [],
+    ...Object.fromEntries(Object.keys(HMI.HERO_TEXT).map((k) => [k, typeof r[k] === 'string' ? r[k] : ''])),
   };
 }
 function setHomeDirty(on) {
   homeDirty = on;
   $('homeDirtyNote').textContent = on ? '⚠️ Not saved yet' : '';
 }
+const HERO_TEXT_KEYS = Object.keys(HMI.HERO_TEXT);
+function fillHomeText() {
+  HERO_TEXT_KEYS.forEach((k) => { $('hm-' + k).value = homeDraft[k]; $('hm-' + k).placeholder = HMI.HERO_TEXT[k]; });
+}
+function homeTextDefault() {
+  HERO_TEXT_KEYS.forEach((k) => { homeDraft[k] = ''; });
+  fillHomeText(); setHomeDirty(true);
+}
 function fillHomeForm() {
   homeDraft = readHome(homeSettings);
+  fillHomeText();
   setHomeDirty(false);
   renderHomeForm();
 }
@@ -850,7 +861,9 @@ async function uploadHomeHero(input) {
 }
 async function saveHomeSettings() {
   try {
-    await db.collection('settings').doc('home').set({ ...homeDraft, updatedAt: Date.now() });
+    const data = { ...homeDraft, updatedAt: Date.now() };
+    HERO_TEXT_KEYS.forEach((k) => { data[k] = String(data[k] || '').trim(); });
+    await db.collection('settings').doc('home').set(data);
     setHomeDirty(false);
     toast('✅ Homepage saved, live on the store now');
   } catch (e) { toast('❌ ' + e.message, 'error'); }

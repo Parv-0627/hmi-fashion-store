@@ -165,9 +165,17 @@
     toastTimer = setTimeout(() => t.classList.remove('show'), 3200);
   }
 
+  // Front-page hero text when admin → Homepage leaves a field empty
+  const HERO_TEXT = {
+    heroEyebrow: 'HMI Fashion · Ladies Suits & Kurtis',
+    heroTitle1: 'Elegance in',
+    heroTitle2: 'every thread.',
+    heroText: 'Handpicked kurtis, salwar suits and dupatta sets. Easy for every day, graceful for every occasion.',
+  };
+
   window.HMI = {
     cfg, db, auth, emulator, emulatorAuthUrl: isLocal ? 'http://127.0.0.1:9099' : location.origin, esc, safeUrl, rs, ts, fmtDate,
     normalizeProduct, inStock, normalizeOrder, payLabel, STATUS, STATUS_ICON,
-    callWorker, toast, pricing: window.HMIPricing,
+    callWorker, toast, pricing: window.HMIPricing, HERO_TEXT,
   };
 })();

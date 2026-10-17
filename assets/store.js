@@ -80,6 +80,10 @@ function startCatalogue() {
       heroImage: typeof h.heroImage === 'string' ? h.heroImage : '',
       newArrivals: Array.isArray(h.newArrivals) ? h.newArrivals.map(String) : [],
     };
+    // hero words from admin → Homepage; an empty field keeps the default
+    Object.keys(HMI.HERO_TEXT).forEach((k) => {
+      $(k).textContent = (typeof h[k] === 'string' && h[k].trim()) || HMI.HERO_TEXT[k];
+    });
     renderHeroImage(); renderHeroProducts();
   }, (e) => console.error('Homepage settings', e));
 
