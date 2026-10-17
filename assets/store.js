@@ -12,7 +12,7 @@ const state = {
   cart: [], wishlist: new Set(),
   activeCat: 'all', search: '', sort: 'new',
   step: 1, address: null, payMethod: '', placing: false,
-  accountTab: 'orders', orders: [], ordersUnsub: null, profileUnsub: null,
+  accountTab: 'orders', accAddrEdit: null, orders: [], ordersUnsub: null, profileUnsub: null,
   catalogueReady: false,
 };
 
@@ -467,10 +467,19 @@ function goStep(n) {
 }
 
 // ---------- address ----------
-function readAddressForm() {
-  const v = (id) => $(id).value.trim();
-  return { name: v('custName'), phone: v('custPhone').replace(/\D/g, '').slice(-10), line1: v('custAddr1'), line2: v('custAddr2'),
-    landmark: v('custLandmark'), city: v('custCity'), state: v('custState'), pincode: v('custPincode'), altPhone: v('custAltPhone') };
+// Address form fields: checkout uses ids custName…, My Account uses accName…
+const ADDR_FIELDS = { name: 'Name', phone: 'Phone', line1: 'Addr1', line2: 'Addr2', landmark: 'Landmark', city: 'City', state: 'State', pincode: 'Pincode', altPhone: 'AltPhone' };
+function readAddressForm(prefix = 'cust') {
+  const a = {};
+  for (const [k, id] of Object.entries(ADDR_FIELDS)) a[k] = $(prefix + id).value.trim();
+  a.phone = a.phone.replace(/\D/g, '').slice(-10);
+  return a;
+}
+function fillAddressForm(prefix, a) {
+  for (const [k, id] of Object.entries(ADDR_FIELDS)) $(prefix + id).value = (a && a[k]) || '';
+}
+async function saveAddressList(list) {
+  await db.collection('users').doc(state.user.uid).update({ addresses: list.slice(0, 10), updatedAt: Date.now() });
 }
 function addressError(a) {
   if (!a.name || a.name.length < 2) return 'Please enter your name';
@@ -486,15 +495,19 @@ function addressText(a) {
 }
 let selectedAddressIndex = -1;
 let addressPicked = false; // the customer chose a card themselves (e.g. "New address"): don't auto-select
+let editAddressIndex = -1;  // checkout: the saved address being edited in the form
 function renderAddressStep() {
   const saved = (state.profile && state.profile.addresses) || [];
   if (selectedAddressIndex >= saved.length) selectedAddressIndex = -1;
   if (selectedAddressIndex === -1 && saved.length && !addressPicked && !$('custName').value) selectedAddressIndex = 0;
+  if (editAddressIndex >= saved.length) editAddressIndex = -1;
   $('savedAddresses').innerHTML = saved.length ? saved.map((a, i) => `
     <label class="addr-card ${selectedAddressIndex === i ? 'selected' : ''}">
       <input type="radio" name="addrPick" value="${i}" ${selectedAddressIndex === i ? 'checked' : ''}>
-      <span><b>${esc(a.name)}</b> · ${esc(a.phone)}<br>${esc(addressText(a))}</span></label>`).join('')
-    + `<label class="addr-card ${selectedAddressIndex === -1 ? 'selected' : ''}"><input type="radio" name="addrPick" value="-1" ${selectedAddressIndex === -1 ? 'checked' : ''}><span>➕ New address</span></label>` : '';
+      <span><b>${esc(a.name)}</b> · ${esc(a.phone)}<br>${esc(addressText(a))}</span>
+      <button type="button" class="addr-edit" data-edit-addr="${i}">✏️ Edit</button></label>`).join('')
+    + `<label class="addr-card ${selectedAddressIndex === -1 ? 'selected' : ''}"><input type="radio" name="addrPick" value="-1" ${selectedAddressIndex === -1 ? 'checked' : ''}><span>${editAddressIndex >= 0 ? '✏️ Editing saved address' : '➕ New address'}</span></label>` : '';
+  $('saveAddress').closest('label').style.display = editAddressIndex >= 0 ? 'none' : '';
   $('addressForm').style.display = selectedAddressIndex === -1 ? 'block' : 'none';
   if (selectedAddressIndex === -1 && !$('custPhone').value && userPhone(state.user)) {
     $('custPhone').value = userPhone(state.user).replace(/^\+91/, '');
@@ -510,7 +523,11 @@ async function toPayment() {
     a = readAddressForm();
     const err = addressError(a);
     if (err) { $('addrErr').textContent = '❌ ' + err; return; }
-    if ($('saveAddress').checked) await saveAddressToProfile(a);
+    if (editAddressIndex >= 0 && saved[editAddressIndex]) {
+      const list = [...saved]; list[editAddressIndex] = a;
+      try { await saveAddressList(list); } catch (e) { console.error('Address update', e); }
+      selectedAddressIndex = editAddressIndex; editAddressIndex = -1;
+    } else if ($('saveAddress').checked) await saveAddressToProfile(a);
   }
   state.address = a;
   goStep(4);
@@ -984,7 +1001,12 @@ function renderAccount() {
   const bar = state.user ? `<div class="acc-user">${userBarHtml()}</div>` : '';
   if (tab === 'orders') body.innerHTML = bar + renderOrdersTab();
   if (tab === 'wishlist') body.innerHTML = bar + renderWishlistTab();
-  if (tab === 'addresses') body.innerHTML = bar + renderAddressesTab();
+  if (tab === 'addresses') {
+    // keep what the customer is typing if the profile updates in the background
+    if (state.accAddrEdit !== null && $('accAddrForm') && body.dataset.addrForm === String(state.accAddrEdit)) return;
+    body.innerHTML = bar + renderAddressesTab();
+    body.dataset.addrForm = state.accAddrEdit === null ? '' : String(state.accAddrEdit);
+  }
   if (tab === 'profile') body.innerHTML = bar + renderProfileTab();
 }
 
@@ -1028,9 +1050,58 @@ function renderWishlistTab() {
 }
 function renderAddressesTab() {
   const list = (state.profile && state.profile.addresses) || [];
-  if (!list.length) return '<div class="empty-msg"><div class="big">📍</div>No saved addresses.<br>Your address will be saved at checkout.</div>';
+  if (state.accAddrEdit !== null) {
+    return `<div id="accAddrForm">
+      <div class="addr-title">${state.accAddrEdit === -1 ? '➕ New address' : '✏️ Edit address'}</div>
+      <input class="field-input" id="accName" placeholder="Full Name *" autocomplete="name" maxlength="80">
+      <input class="field-input" id="accPhone" placeholder="Mobile number (10 digit) *" type="tel" inputmode="numeric" maxlength="10" autocomplete="tel-national">
+      <input class="field-input" id="accAddr1" placeholder="House / Flat No, Street *" autocomplete="address-line1" maxlength="200">
+      <input class="field-input" id="accAddr2" placeholder="Area, Colony" autocomplete="address-line2" maxlength="200">
+      <input class="field-input" id="accLandmark" placeholder="Landmark (optional)" maxlength="120">
+      <div class="field-row">
+        <input class="field-input" id="accCity" placeholder="City *" autocomplete="address-level2" maxlength="80">
+        <select class="field-input state-select" id="accState" autocomplete="address-level1" required>${$('custState').innerHTML}</select>
+      </div>
+      <div class="field-row">
+        <input class="field-input" id="accPincode" placeholder="Pincode *" type="tel" inputmode="numeric" maxlength="6" autocomplete="postal-code">
+        <input class="field-input" id="accAltPhone" placeholder="Alt. Phone (optional)" type="tel" inputmode="numeric" maxlength="10">
+      </div>
+      <div class="form-err" id="accAddrErr"></div>
+      <div class="acc-addr-btns">
+        <button type="button" class="cart-footer-btn btn-proceed" id="accAddrSave">💾 Save address</button>
+        <button type="button" class="cart-footer-btn btn-back" data-acc-addr-cancel>Cancel</button>
+      </div></div>`;
+  }
+  const add = '<button type="button" class="cart-footer-btn btn-back" data-acc-addr-new style="margin-top:4px">➕ Add address</button>';
+  if (!list.length) return '<div class="empty-msg"><div class="big">📍</div>No saved addresses yet.</div>' + add;
   return list.map((a, i) => `<div class="addr-card" style="cursor:default"><span><b>${esc(a.name)}</b> · ${esc(a.phone)}<br>${esc(addressText(a))}</span>
-    <button type="button" class="addr-del" data-del-addr="${i}" aria-label="Delete">🗑️</button></div>`).join('');
+    <button type="button" class="addr-edit" data-acc-addr-edit="${i}">✏️ Edit</button>
+    <button type="button" class="addr-del" data-del-addr="${i}" aria-label="Delete">🗑️</button></div>`).join('') + add;
+}
+// My Account → Address: open the form (index, or -1 for a new one), save, cancel
+function openAccAddressForm(i) {
+  const list = (state.profile && state.profile.addresses) || [];
+  state.accAddrEdit = i;
+  renderAccount();
+  fillAddressForm('acc', i >= 0 ? list[i] : { name: (state.profile && state.profile.name) || '', phone: userPhone(state.user).replace(/^\+91/, '') });
+  $(i >= 0 ? 'accAddr1' : 'accName').focus();
+}
+function closeAccAddressForm() { state.accAddrEdit = null; renderAccount(); }
+async function saveAccAddress() {
+  const a = readAddressForm('acc');
+  const err = addressError(a);
+  if (err) { $('accAddrErr').textContent = '❌ ' + err; return; }
+  const list = [...((state.profile && state.profile.addresses) || [])];
+  if (state.accAddrEdit >= 0 && list[state.accAddrEdit]) list[state.accAddrEdit] = a; else list.unshift(a);
+  $('accAddrSave').disabled = true;
+  try {
+    await saveAddressList(list);
+    flash('✅ Address saved');
+    closeAccAddressForm();
+  } catch (e) {
+    $('accAddrErr').textContent = '❌ ' + e.message;
+    $('accAddrSave').disabled = false;
+  }
 }
 function renderProfileTab() {
   const p = state.profile || {};
@@ -1079,7 +1150,7 @@ document.addEventListener('click', (e) => {
     db.collection('users').doc(state.user.uid).update({ addresses: list, updatedAt: Date.now() }).catch((err) => flash('❌ ' + err.message, '#dc2626'));
     return;
   }
-  if (t.dataset.tab !== undefined) { state.accountTab = t.dataset.tab; renderAccount(); return; }
+  if (t.dataset.tab !== undefined) { state.accountTab = t.dataset.tab; state.accAddrEdit = null; renderAccount(); return; }
   if (t.dataset.thumb !== undefined) {
     $('pdpActiveImg').src = t.src;
     document.querySelectorAll('.pdp-thumb').forEach((x) => x.classList.toggle('active', x === t));
@@ -1097,7 +1168,7 @@ document.addEventListener('click', (e) => {
 });
 document.addEventListener('change', (e) => {
   if (e.target.name === 'addrPick') {
-    selectedAddressIndex = Number(e.target.value); addressPicked = true;
+    selectedAddressIndex = Number(e.target.value); addressPicked = true; editAddressIndex = -1;
     // a fresh form for the new address (name and mobile usually stay the same)
     if (selectedAddressIndex === -1) ['custAddr1', 'custAddr2', 'custLandmark', 'custCity', 'custState', 'custPincode', 'custAltPhone'].forEach((id) => { $(id).value = ''; });
     renderAddressStep();
@@ -1111,6 +1182,22 @@ document.addEventListener('click', (e) => {
       .then(() => flash('✅ Saved')).catch((err) => flash('❌ ' + err.message, '#dc2626'));
   }
   if (e.target.id === 'logoutBtn' || e.target.closest('[data-logout]')) logout();
+  if (e.target.id === 'accAddrSave') saveAccAddress();
+  const accEdit = e.target.closest('[data-acc-addr-edit]');
+  if (accEdit) openAccAddressForm(Number(accEdit.dataset.accAddrEdit));
+  if (e.target.closest('[data-acc-addr-new]')) openAccAddressForm(-1);
+  if (e.target.closest('[data-acc-addr-cancel]')) closeAccAddressForm();
+  // Checkout: edit a saved address in the form below the cards
+  const coEdit = e.target.closest('[data-edit-addr]');
+  if (coEdit) {
+    e.preventDefault();
+    const i = Number(coEdit.dataset.editAddr), saved = (state.profile && state.profile.addresses) || [];
+    if (!saved[i]) return;
+    editAddressIndex = i; selectedAddressIndex = -1; addressPicked = true;
+    fillAddressForm('cust', saved[i]);
+    renderAddressStep();
+    $('custAddr1').focus();
+  }
 });
 document.addEventListener('keydown', (e) => {
   if (e.key !== 'Escape') return;
