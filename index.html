@@ -4,14 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>HMI Fashion Store</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Nunito:wght@300;400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Jost:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
   --pink:#f472b6;--pink-light:#fce7f3;--pink-deep:#db2777;
   --gold:#d4a843;--gold-dark:#92650a;--gray:#6b7280;--dark:#1f1224;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:'Nunito',sans-serif;background:#fffdfd;color:var(--dark);line-height:1.5;}
+body{font-family:'Jost',system-ui,sans-serif;background:#fffdfd;color:var(--dark);line-height:1.5;}
 
 /* NAV */
 nav{background:rgba(255,255,255,.88);backdrop-filter:blur(10px);border-bottom:1px solid rgba(244,114,182,.12);padding:0 5%;display:flex;align-items:center;justify-content:space-between;height:72px;position:sticky;top:0;z-index:100;box-shadow:0 10px 30px rgba(17,24,39,.03);}
@@ -77,10 +77,10 @@ nav ul li a:hover{color:var(--pink-deep);}
 .otp-icon{font-size:3rem;margin-bottom:12px;}
 .otp-title{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;margin-bottom:6px;}
 .otp-sub{font-size:.85rem;color:var(--gray);margin-bottom:20px;}
-.field-input{width:100%;padding:13px 16px;border:2px solid var(--pink-light);border-radius:12px;font-size:1rem;font-family:'Nunito',sans-serif;outline:none;transition:border .2s;margin-bottom:10px;}
+.field-input{width:100%;padding:13px 16px;border:2px solid var(--pink-light);border-radius:12px;font-size:1rem;font-family:'Jost',system-ui,sans-serif;outline:none;transition:border .2s;margin-bottom:10px;}
 .field-input:focus{border-color:var(--pink);}
 .otp-boxes{display:flex;gap:10px;justify-content:center;margin:16px 0;}
-.otp-box{width:48px;height:52px;border:2px solid var(--pink-light);border-radius:12px;text-align:center;font-size:1.4rem;font-weight:700;font-family:'Nunito',sans-serif;outline:none;transition:border .2s;}
+.otp-box{width:48px;height:52px;border:2px solid var(--pink-light);border-radius:12px;text-align:center;font-size:1.4rem;font-weight:700;font-family:'Jost',system-ui,sans-serif;outline:none;transition:border .2s;}
 .otp-box:focus{border-color:var(--pink-deep);}
 .resend-link{font-size:.82rem;color:var(--pink-deep);cursor:pointer;font-weight:700;margin-top:8px;display:inline-block;}
 .otp-note{font-size:.75rem;color:var(--gray);margin-top:6px;}
@@ -93,7 +93,7 @@ nav ul li a:hover{color:var(--pink-deep);}
 .pay-title{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;margin-bottom:6px;}
 .pay-amount-badge{background:linear-gradient(135deg,var(--pink-deep),var(--gold));color:white;font-size:1.3rem;font-weight:700;padding:10px 20px;border-radius:14px;display:inline-block;margin-bottom:16px;}
 .pay-methods{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
-.pay-method-btn{padding:14px 10px;border:2px solid var(--pink-light);border-radius:14px;background:white;cursor:pointer;text-align:center;font-weight:700;font-size:.88rem;font-family:'Nunito',sans-serif;transition:all .3s;}
+.pay-method-btn{padding:14px 10px;border:2px solid var(--pink-light);border-radius:14px;background:white;cursor:pointer;text-align:center;font-weight:700;font-size:.88rem;font-family:'Jost',system-ui,sans-serif;transition:all .3s;}
 .pay-method-btn:hover,.pay-method-btn.selected{border-color:var(--pink-deep);background:var(--pink-light);color:var(--pink-deep);}
 .pay-method-btn .pm-icon{font-size:1.6rem;display:block;margin-bottom:4px;}
 
@@ -112,7 +112,7 @@ nav ul li a:hover{color:var(--pink-deep);}
 .pdp-cod-tag.yes{background:#fef9c3;color:#92650a;}
 .pdp-cod-tag.no{background:#f1f5f9;color:var(--gray);}
 .upi-apps{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;}
-.upi-app-btn{padding:6px 14px;border:2px solid var(--pink-light);border-radius:10px;background:white;cursor:pointer;font-size:.78rem;font-weight:700;font-family:'Nunito',sans-serif;transition:all .2s;}
+.upi-app-btn{padding:6px 14px;border:2px solid var(--pink-light);border-radius:10px;background:white;cursor:pointer;font-size:.78rem;font-weight:700;font-family:'Jost',system-ui,sans-serif;transition:all .2s;}
 .upi-app-btn.selected{border-color:var(--pink-deep);background:var(--pink-light);}
 
 .qr-box{text-align:center;background:#f9fafb;border:2px solid var(--pink-light);border-radius:16px;padding:16px;margin-bottom:12px;}
@@ -142,9 +142,9 @@ nav ul li a:hover{color:var(--pink-deep);}
 .tracker-header{background:linear-gradient(135deg,var(--pink-deep),var(--gold-dark));color:white;padding:18px 22px;border-radius:22px 22px 0 0;display:flex;align-items:center;justify-content:space-between;}
 .tracker-body{padding:22px;}
 .tracker-input-wrap{display:flex;gap:8px;margin-bottom:6px;}
-.tracker-input{flex:1;padding:12px 16px;border:2px solid var(--pink-light);border-radius:12px;font-family:'Nunito',sans-serif;font-size:.95rem;outline:none;transition:border .2s;}
+.tracker-input{flex:1;padding:12px 16px;border:2px solid var(--pink-light);border-radius:12px;font-family:'Jost',system-ui,sans-serif;font-size:.95rem;outline:none;transition:border .2s;}
 .tracker-input:focus{border-color:var(--pink-deep);}
-.tracker-btn{padding:12px 20px;background:linear-gradient(135deg,var(--pink-deep),var(--gold));color:white;border:none;border-radius:12px;font-family:'Nunito',sans-serif;font-weight:700;font-size:.9rem;cursor:pointer;white-space:nowrap;}
+.tracker-btn{padding:12px 20px;background:linear-gradient(135deg,var(--pink-deep),var(--gold));color:white;border:none;border-radius:12px;font-family:'Jost',system-ui,sans-serif;font-weight:700;font-size:.9rem;cursor:pointer;white-space:nowrap;}
 
 /* TRACKER TIMELINE */
 .track-timeline{margin:18px 0;}
@@ -257,7 +257,7 @@ nav ul li a:hover{color:var(--pink-deep);}
 /* SIZE & COLOR */
 .variant-label{font-size:.72rem;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;display:block;}
 .size-opts{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;}
-.size-btn{min-width:36px;height:32px;padding:0 9px;border:2px solid #e5e7eb;border-radius:8px;background:white;font-size:.78rem;font-weight:700;cursor:pointer;color:var(--dark);transition:all .2s;font-family:'Nunito',sans-serif;}
+.size-btn{min-width:36px;height:32px;padding:0 9px;border:2px solid #e5e7eb;border-radius:8px;background:white;font-size:.78rem;font-weight:700;cursor:pointer;color:var(--dark);transition:all .2s;font-family:'Jost',system-ui,sans-serif;}
 .size-btn:hover{border-color:var(--pink);color:var(--pink-deep);}
 .size-btn.selected{border-color:var(--pink-deep);background:var(--pink-deep);color:white;}
 .color-opts-store{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center;}
@@ -397,7 +397,7 @@ footer{background:var(--dark);color:white;padding:55px 5% 25px;}
 .shop-bar-left{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;}
 .shop-bar h2{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;color:var(--dark);}
 #shopCount{font-size:.85rem;color:var(--gray);font-weight:600;}
-#shopClear{display:none;align-items:center;gap:6px;background:var(--pink-light);color:var(--pink-deep);border:none;border-radius:20px;padding:7px 14px;font:700 .8rem 'Nunito',sans-serif;cursor:pointer;}
+#shopClear{display:none;align-items:center;gap:6px;background:var(--pink-light);color:var(--pink-deep);border:none;border-radius:20px;padding:7px 14px;font:700 .8rem 'Jost',system-ui,sans-serif;cursor:pointer;}
 .products-grid{grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:16px;max-width:1240px;}
 .product-card{border:1px solid #eee;border-radius:10px;box-shadow:none;}
 .product-card:hover{transform:none;box-shadow:0 6px 18px rgba(0,0,0,.08);border-color:#e5e7eb;}
@@ -406,7 +406,7 @@ footer{background:var(--dark);color:white;padding:55px 5% 25px;}
 .product-badge{top:8px;left:8px;font-size:.62rem;padding:2px 8px;}
 .product-info{padding:10px 12px 12px;display:flex;flex-direction:column;}
 .product-info .category-tag{display:none;}
-.product-info h3{order:1;font-family:'Nunito',sans-serif;font-size:.92rem;font-weight:600;color:#555;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:4px;}
+.product-info h3{order:1;font-family:'Jost',system-ui,sans-serif;font-size:.92rem;font-weight:600;color:#555;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:4px;}
 .product-price{order:2;margin-bottom:8px;gap:6px;}
 .rating-row{order:3;gap:6px;margin-bottom:10px;}
 .product-btns{order:4;}
@@ -450,7 +450,7 @@ button.cart-btn{font-family:inherit;color:var(--pink-deep);}
 .phone-row{display:flex;gap:8px;align-items:stretch;}
 .phone-row .cc{padding:13px 12px;border:2px solid var(--pink-light);border-radius:12px;font-weight:700;color:var(--gray);background:#fff9fb;margin-bottom:10px;}
 .otp-input{letter-spacing:10px;text-align:center;font-size:1.4rem!important;font-weight:800;}
-.google-btn{width:100%;padding:13px;border:2px solid #e5e7eb;border-radius:12px;background:white;font-family:'Nunito',sans-serif;font-weight:700;font-size:.95rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;}
+.google-btn{width:100%;padding:13px;border:2px solid #e5e7eb;border-radius:12px;background:white;font-family:'Jost',system-ui,sans-serif;font-weight:700;font-size:.95rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;}
 .google-btn:hover{border-color:var(--pink);}
 .or-line{display:flex;align-items:center;gap:10px;color:var(--gray);font-size:.75rem;margin:14px 0;}
 .or-line::before,.or-line::after{content:"";flex:1;height:1px;background:#e5e7eb;}
@@ -461,7 +461,7 @@ button.cart-btn{font-family:inherit;color:var(--pink-deep);}
 .account-modal{max-width:560px;}
 .modal-x{background:rgba(255,255,255,.2);border:none;color:white;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:1rem;}
 .acc-tabs{display:flex;gap:6px;padding:10px 14px 0;overflow-x:auto;border-bottom:2px solid var(--pink-light);}
-.acc-tabs button{background:none;border:none;padding:9px 12px;font-family:'Nunito',sans-serif;font-weight:700;font-size:.85rem;color:var(--gray);cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;}
+.acc-tabs button{background:none;border:none;padding:9px 12px;font-family:'Jost',system-ui,sans-serif;font-weight:700;font-size:.85rem;color:var(--gray);cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;}
 .acc-tabs button.active{color:var(--pink-deep);border-bottom-color:var(--pink-deep);}
 .order-card{border:1.5px solid var(--pink-light);border-radius:14px;padding:12px 14px;margin-bottom:12px;background:#fff;}
 .order-card-head{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px;}
@@ -472,7 +472,7 @@ button.cart-btn{font-family:inherit;color:var(--pink-deep);}
 .order-line{display:flex;gap:10px;align-items:center;font-size:.82rem;margin:6px 0;}
 .order-line img,.order-line .oemoji{width:40px;height:40px;border-radius:8px;object-fit:cover;background:#fce7f3;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .order-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
-.mini-btn{padding:7px 12px;border-radius:10px;border:1.5px solid var(--pink-light);background:white;color:var(--pink-deep);font-weight:700;font-size:.78rem;cursor:pointer;font-family:'Nunito',sans-serif;text-decoration:none;display:inline-flex;align-items:center;gap:5px;}
+.mini-btn{padding:7px 12px;border-radius:10px;border:1.5px solid var(--pink-light);background:white;color:var(--pink-deep);font-weight:700;font-size:.78rem;cursor:pointer;font-family:'Jost',system-ui,sans-serif;text-decoration:none;display:inline-flex;align-items:center;gap:5px;}
 .mini-btn.danger{border-color:#fca5a5;color:#dc2626;}
 .mini-btn.wa{border-color:#86efac;color:#15803d;}
 .addr-card{border:2px solid var(--pink-light);border-radius:12px;padding:10px 12px;margin-bottom:8px;font-size:.82rem;line-height:1.5;cursor:pointer;display:flex;gap:10px;align-items:flex-start;}
@@ -483,9 +483,9 @@ button.cart-btn{font-family:inherit;color:var(--pink-deep);}
 .empty-msg .big{font-size:2.6rem;margin-bottom:8px;}
 
 .shop-tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
-.shop-search{padding:9px 12px;border:1px solid rgba(244,114,182,.18);border-radius:22px;font-family:'Nunito',sans-serif;font-size:.8rem;outline:none;min-width:180px;background:#fffafc;}
+.shop-search{padding:9px 12px;border:1px solid rgba(244,114,182,.18);border-radius:22px;font-family:'Jost',system-ui,sans-serif;font-size:.8rem;outline:none;min-width:180px;background:#fffafc;}
 .shop-search:focus{border-color:var(--pink);}
-.shop-sort{padding:9px 10px;border:1px solid rgba(244,114,182,.18);border-radius:22px;font-family:'Nunito',sans-serif;font-size:.78rem;background:#fffafc;outline:none;cursor:pointer;}
+.shop-sort{padding:9px 10px;border:1px solid rgba(244,114,182,.18);border-radius:22px;font-family:'Jost',system-ui,sans-serif;font-size:.78rem;background:#fffafc;outline:none;cursor:pointer;}
 #shopClear{display:none;}
 .wish-btn{position:absolute;top:10px;right:10px;width:32px;height:32px;border-radius:50%;border:none;background:rgba(255,255,255,.92);box-shadow:0 2px 8px rgba(0,0,0,.12);cursor:pointer;font-size:1rem;color:var(--pink-deep);display:flex;align-items:center;justify-content:center;z-index:2;}
 .wish-btn.on{background:var(--pink-deep);color:white;}
@@ -509,7 +509,7 @@ nav ul li a{font-size:.84rem;white-space:nowrap}
 #navAuth.nav-icon-btn{width:34px;height:40px;padding:0;font-size:1.15rem!important}
 .nav-search{display:flex;align-items:center;gap:8px;width:min(245px,22vw);height:40px;padding:0 13px;background:#f7f7f8;border:1px solid #ececef;border-radius:5px;color:#777}
 .nav-search:focus-within{border-color:var(--pink)}
-.nav-search input{width:100%;min-width:0;border:0;outline:0;background:transparent;font:400 .82rem 'Nunito',sans-serif;color:var(--dark)}
+.nav-search input{width:100%;min-width:0;border:0;outline:0;background:transparent;font:400 .82rem 'Jost',system-ui,sans-serif;color:var(--dark)}
 .nav-icon-btn{border:0!important;background:transparent!important;width:38px;height:40px;font-size:1.25rem!important;color:#333!important}
 .hero{min-height:clamp(290px,34vw,430px);padding:24px 4%;background:#f8f1f3}
 .hero::before,.hero::after{display:none}
@@ -530,7 +530,7 @@ nav ul li a{font-size:.84rem;white-space:nowrap}
 .hero-image-fallback{display:none;position:absolute;inset:0;align-items:center;justify-content:center;background:linear-gradient(135deg,#f1dce5,#f5ead9);font-size:6rem}
 .category-ribbon{background:#fff;border-bottom:1px solid #f1edf0;padding:15px 4%}
 .category-ribbon .section-title{margin-bottom:13px}
-.category-ribbon .section-title h2{font:700 .82rem 'Nunito',sans-serif;text-transform:uppercase;letter-spacing:1.5px;color:#5b5358}
+.category-ribbon .section-title h2{font:700 .82rem 'Jost',system-ui,sans-serif;text-transform:uppercase;letter-spacing:1.5px;color:#5b5358}
 .category-ribbon .section-title p,.category-ribbon .divider{display:none}
 #categories.section{padding:14px 4% 22px;background:#fff}
 #categories .section-title{margin-bottom:14px}
@@ -553,7 +553,7 @@ nav ul li a{font-size:.84rem;white-space:nowrap}
 .product-img{aspect-ratio:3/4;height:auto;background:#f5f2f3!important}
 .product-img img{object-fit:cover!important;background:#f5f2f3}
 .product-info{padding:12px 13px 13px}
-.product-info h3{font-family:'Nunito',sans-serif;font-size:.9rem;color:#383238}
+.product-info h3{font-family:'Jost',system-ui,sans-serif;font-size:.9rem;color:#383238}
 .product-price{margin-bottom:10px}
 .price-current{font-size:1.03rem;color:#29242a}
 .btn-cart{background:#fff;border:1px solid #ddd5d9;border-radius:4px;color:#393239}
@@ -642,13 +642,13 @@ nav ul li a{font-size:.84rem;white-space:nowrap}
 .hero2-brand.has-photo .hero2-btns{margin-bottom:16px;}
 .hero2-brand.has-photo .hero2-trust{color:#6b5d63;}
 .hero2-copy{position:relative;z-index:1;padding:clamp(28px,5vw,64px);max-width:600px;}
-.hero2-eyebrow{font:700 .72rem 'Nunito',sans-serif;letter-spacing:2.5px;text-transform:uppercase;color:var(--gold2);margin-bottom:14px;display:flex;align-items:center;gap:10px;}
+.hero2-eyebrow{font:700 .72rem 'Jost',system-ui,sans-serif;letter-spacing:2.5px;text-transform:uppercase;color:var(--gold2);margin-bottom:14px;display:flex;align-items:center;gap:10px;}
 .hero2-eyebrow::before{content:'';width:28px;height:1px;background:var(--gold2);}
 .hero2 h1{font-family:'Playfair Display',serif;font-weight:600;font-size:clamp(2.3rem,4.6vw,4.2rem);line-height:1.04;letter-spacing:-.02em;margin-bottom:16px;}
 .hero2 h1 em{font-style:italic;color:#f3d9a4;}
 .hero2-copy p{font-size:1rem;line-height:1.65;color:rgba(255,255,255,.82);max-width:440px;margin-bottom:24px;}
 .hero2-btns{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:24px;}
-.hero2-btn{display:inline-flex;align-items:center;justify-content:center;padding:13px 24px;border-radius:2px;font:700 .82rem 'Nunito',sans-serif;letter-spacing:1.2px;text-transform:uppercase;text-decoration:none;transition:background .2s,color .2s,border-color .2s;}
+.hero2-btn{display:inline-flex;align-items:center;justify-content:center;padding:13px 24px;border-radius:2px;font:700 .82rem 'Jost',system-ui,sans-serif;letter-spacing:1.2px;text-transform:uppercase;text-decoration:none;transition:background .2s,color .2s,border-color .2s;}
 .hero2-btn.solid{background:var(--gold2);color:var(--wine-deep);}
 .hero2-btn.solid:hover{background:#e0bb66;}
 .hero2-btn.ghost{border:1px solid rgba(255,255,255,.55);color:#fff;}
@@ -659,7 +659,7 @@ nav ul li a{font-size:.84rem;white-space:nowrap}
 .hero2-shop{display:flex;flex-direction:column;padding:clamp(18px,2.6vw,36px);gap:16px;min-width:0;min-height:0;}
 .hero2-shop-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;}
 .hero2-shop-head h2{font-family:'Playfair Display',serif;font-size:clamp(1.3rem,2vw,1.75rem);font-weight:600;color:var(--ink);}
-.hero2-shop-head a{font:700 .75rem 'Nunito',sans-serif;letter-spacing:1.2px;text-transform:uppercase;color:var(--wine);text-decoration:none;}
+.hero2-shop-head a{font:700 .75rem 'Jost',system-ui,sans-serif;letter-spacing:1.2px;text-transform:uppercase;color:var(--wine);text-decoration:none;}
 .hero2-shop-head a:hover{text-decoration:underline;}
 .hero2-grid{flex:1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));gap:14px;min-height:0;}
 .hero2-grid[data-count="1"],.hero2-grid[data-count="2"]{grid-template-rows:minmax(0,1fr);}
@@ -669,14 +669,14 @@ nav ul li a{font-size:.84rem;white-space:nowrap}
 .hero2-card-img{position:relative;flex:1;min-height:0;background:#f4eef0;display:flex;align-items:center;justify-content:center;font-size:3rem;overflow:hidden;}
 .hero2-card-img img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;}
 .hero2-card-info{padding:10px 12px 12px;border-top:1px solid var(--line);}
-.hero2-card-info h3{font:600 .86rem 'Nunito',sans-serif;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px;}
+.hero2-card-info h3{font:600 .86rem 'Jost',system-ui,sans-serif;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px;}
 .hero2-price{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 7px;font-size:.92rem;font-weight:800;color:var(--ink);}
 .hero2-price s{font-size:.75rem;font-weight:600;color:#9b9097;}
 .hero2-price small{font-size:.72rem;font-weight:800;color:#15803d;}
-.hero2-tag{position:absolute;z-index:1;top:10px;left:10px;background:var(--wine);color:#fff;font:800 .62rem 'Nunito',sans-serif;letter-spacing:1px;text-transform:uppercase;padding:4px 8px;}
+.hero2-tag{position:absolute;z-index:1;top:10px;left:10px;background:var(--wine);color:#fff;font:800 .62rem 'Jost',system-ui,sans-serif;letter-spacing:1px;text-transform:uppercase;padding:4px 8px;}
 .hero2-more{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;padding:20px;text-decoration:none;color:var(--wine);background:linear-gradient(160deg,#fff,#f6ece9);border:1px dashed #d9c3cb;}
 .hero2-more b{font-family:'Playfair Display',serif;font-size:1.2rem;color:var(--ink);}
-.hero2-more span{font:700 .74rem 'Nunito',sans-serif;letter-spacing:1.2px;text-transform:uppercase;}
+.hero2-more span{font:700 .74rem 'Jost',system-ui,sans-serif;letter-spacing:1.2px;text-transform:uppercase;}
 .hero2-skel{background:linear-gradient(90deg,#f1eaed 25%,#f8f3f5 50%,#f1eaed 75%);background-size:200% 100%;animation:hero2skel 1.4s infinite linear;}
 @keyframes hero2skel{to{background-position:-200% 0}}
 @media(max-width:900px){
@@ -709,7 +709,7 @@ nav ul li a{font-size:.84rem;white-space:nowrap}
 .login-box .otp-icon{display:none;}
 .login-box .otp-title{font-family:'Playfair Display',serif;font-size:1.55rem;font-weight:600;color:var(--ink);margin-bottom:4px;}
 .login-box>.otp-sub{font-size:.86rem;margin-bottom:22px;}
-.pin-mode{font:800 .7rem 'Nunito',sans-serif;letter-spacing:1.8px;text-transform:uppercase;color:var(--wine);text-align:left;margin-bottom:10px;}
+.pin-mode{font:800 .7rem 'Jost',system-ui,sans-serif;letter-spacing:1.8px;text-transform:uppercase;color:var(--wine);text-align:left;margin-bottom:10px;}
 .login-box .field-input{border:1px solid #ddd3d8;border-radius:8px;padding:13px 14px;font-size:.95rem;background:#fff;transition:border-color .2s,box-shadow .2s;}
 .login-box .field-input:focus{border-color:var(--wine);box-shadow:0 0 0 3px rgba(91,21,48,.12);}
 .login-box .phone-row .cc{border:1px solid #ddd3d8;border-radius:8px;background:#faf7f8;color:#5d5258;font-size:.95rem;}
@@ -744,7 +744,7 @@ nav ul li a{font-size:.84rem;white-space:nowrap}
 .state-select:invalid{color:#9ca3af;}
 .state-select option{color:var(--dark);}
 /* Saved address cards: edit link; account address form buttons */
-.addr-edit{margin-left:auto;background:none;border:none;color:var(--pink-deep);font:700 .78rem 'Nunito',sans-serif;cursor:pointer;white-space:nowrap;padding:2px 4px;align-self:flex-start;}
+.addr-edit{margin-left:auto;background:none;border:none;color:var(--pink-deep);font:700 .78rem 'Jost',system-ui,sans-serif;cursor:pointer;white-space:nowrap;padding:2px 4px;align-self:flex-start;}
 .addr-edit + .addr-del{margin-left:4px;}
 .acc-addr-btns{display:flex;gap:8px;}
 .acc-addr-btns .cart-footer-btn{margin-top:4px;}
@@ -755,6 +755,81 @@ nav ul li a{font-size:.84rem;white-space:nowrap}
 .categories-grid.sliding .category-card{scroll-snap-align:none;}
 .login-secure{font-size:.72rem;color:#8a7f85;margin-top:14px;}
 </style>
+<style>
+/* ===================== Theme v2: wine · gold · cream, Jost + Playfair ===================== */
+:root{--pink:#8a2a4e;--pink-deep:#5b1530;--pink-light:#f4eaed;--gold:#b8913a;--gold-dark:#8c6a22;--dark:#241a1f;--gray:#6f6368;
+  --wine:#5b1530;--wine-deep:#3d0c20;--gold2:#b8913a;--cream:#faf6f2;--ink:#241a1f;--line:#e8e1e4;--ok:#2f7d4f;}
+body{font-family:'Jost',system-ui,sans-serif;color:var(--ink);background:#fff;letter-spacing:.1px;}
+button,input,select,textarea{font-family:inherit;}
+/* gradients-as-text become solid colours */
+.logo,.cart-header h2,.section-title h2 span,.footer-brand .footer-logo,.hero h1 em{background:none!important;-webkit-text-fill-color:currentColor!important;}
+.logo{color:var(--wine);font-weight:600;letter-spacing:-.01em;}
+.logo span{color:var(--gold-dark);}
+.section-title h2 span{color:var(--wine);}
+/* nav */
+.nav-icon-btn{color:var(--ink)!important;}
+.nav-icon-btn:hover{color:var(--wine)!important;}
+.nav-icon-btn svg{display:block;}
+.cart-count{background:var(--wine)!important;}
+nav ul li a{font-weight:500;letter-spacing:.2px;}
+/* buttons: solid wine, no glow */
+.btn-proceed,.pdp-add-cart,.btn-primary,.btn-continue,.nav-cta{background:var(--wine)!important;color:#fff!important;box-shadow:none!important;border-radius:6px!important;font-weight:600;letter-spacing:.3px;}
+.btn-proceed:hover,.pdp-add-cart:hover,.btn-primary:hover,.btn-continue:hover{background:var(--wine-deep)!important;transform:none!important;}
+.btn-back{background:#fff!important;color:var(--wine)!important;border:1px solid var(--line)!important;border-radius:6px!important;}
+.btn-cart{background:#fff!important;border:1px solid #d6ccd0!important;color:var(--ink)!important;border-radius:4px!important;font-weight:500;letter-spacing:.3px;}
+.btn-cart:hover:not(:disabled){background:var(--wine)!important;border-color:var(--wine)!important;color:#fff!important;}
+.btn-cart:disabled{color:#9b8f95!important;}
+.pdp-wa-btn{background:#fff!important;border:1px solid #cfe8d6!important;color:#1f7a45!important;border-radius:6px!important;}
+/* badges & prices */
+.product-badge,.pdp-badge-big{background:var(--wine)!important;color:#fff;border-radius:2px!important;box-shadow:none!important;font-weight:600;font-size:.6rem!important;letter-spacing:1px;text-transform:uppercase;padding:4px 8px!important;}
+.price-current{color:var(--ink)!important;font-weight:600;}
+.price-discount,.hero2-price small{color:var(--ok)!important;font-weight:600;}
+.product-info h3{font-weight:500!important;color:var(--ink)!important;}
+.category-tag{color:var(--gold-dark)!important;letter-spacing:1px;}
+.qty-badge{border-radius:2px!important;font-weight:500!important;}
+.wish-btn.on{background:var(--wine)!important;}
+.pdp-cod-tag.yes{background:#eef6f0;color:var(--ok);border-radius:4px;font-weight:500;}
+/* cart & checkout */
+.cart-header{background:#fff!important;border-bottom:1px solid var(--line)!important;}
+.cart-header h2{color:var(--ink);font-weight:600;}
+.cart-item{background:#fff!important;border:1px solid var(--line)!important;border-radius:8px!important;}
+.cart-item-info h4{font-weight:500;}
+.cart-item-price{color:var(--ink)!important;font-weight:600;}
+.qty-btn{border:1px solid #cfc4c9!important;color:var(--ink)!important;}
+.cart-variant-tag{background:var(--cream)!important;color:#5d5056!important;border-radius:3px!important;font-weight:500!important;}
+.remove-item{color:#9b8f95!important;font-size:1rem!important;}
+.remove-item:hover{color:var(--wine)!important;}
+.cart-summary-box{background:var(--cream)!important;border:1px solid var(--line);border-radius:8px!important;}
+.sum-row.shipping{color:var(--ok)!important;font-weight:500!important;}
+.step-dot.done{background:var(--wine)!important;border-color:var(--wine)!important;}
+.step-dot.active{background:var(--pink-light)!important;border-color:var(--wine)!important;color:var(--wine)!important;}
+.step-line.done{background:var(--wine)!important;}
+.addr-title,.pay-title{font-family:'Playfair Display',serif;font-weight:600;}
+.addr-card.selected{border-color:var(--wine)!important;background:#fdf9fa!important;}
+.addr-del{font-size:.78rem!important;font-weight:600;}
+.field-input{border:1px solid #ddd3d8!important;border-radius:8px!important;}
+.field-input:focus{border-color:var(--wine)!important;box-shadow:0 0 0 3px rgba(91,21,48,.1);}
+.cart-footer-btn{border-radius:6px!important;}
+/* why us */
+.why-section{background:var(--cream)!important;}
+.why-card{background:#fff!important;border:1px solid var(--line)!important;border-radius:8px!important;box-shadow:none!important;}
+.why-card:hover{transform:none!important;border-color:#d8c3a0!important;}
+.why-icon{color:var(--gold-dark);line-height:0;margin-bottom:14px!important;}
+.why-card h3{font-weight:600;}
+/* footer */
+footer{background:#2a0b18!important;}
+.footer-col a.foot-wa{display:inline;color:#f1dfb8;}
+/* product page */
+.pdp-img-pane,.pdp-main-img{background:var(--cream)!important;}
+.pdp-thumb.active{border-color:var(--wine)!important;}
+.pdp-wish{border:1px solid var(--line)!important;border-radius:6px!important;color:var(--wine)!important;}
+.pdp-wish.on{background:var(--wine)!important;color:#fff!important;}
+.sum-row.total{border-top:1px solid var(--line)!important;}
+.footer-brand .footer-logo{color:#f1dfb8;font-weight:600;}
+.footer-col h4{color:#f1dfb8!important;font-weight:500;letter-spacing:.5px;}
+.footer-col a:hover{color:#f1dfb8!important;}
+.footer-bottom{border-top-color:rgba(255,255,255,.12)!important;}
+</style>
 </head>
 <body>
 
@@ -763,18 +838,18 @@ nav ul li a{font-size:.84rem;white-space:nowrap}
   <div style="text-align:center;padding:20px;">
     <div style="font-family:'Playfair Display',serif;font-size:clamp(3rem,12vw,8rem);font-weight:300;color:white;line-height:1;margin-bottom:4px;">HMI</div>
     <div style="font-family:'Playfair Display',serif;font-size:clamp(2rem,7vw,5rem);font-weight:400;font-style:italic;background:linear-gradient(135deg,#f0c96a,#f472b6,#d4a843);background-size:200%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:splashShimmer 2.5s ease infinite;">Fashion</div>
-    <div style="font-family:'Nunito',sans-serif;font-size:.75rem;font-weight:300;letter-spacing:8px;text-transform:uppercase;color:rgba(255,255,255,.35);margin-top:12px;">Store</div>
+    <div style="font-family:'Jost',system-ui,sans-serif;font-size:.75rem;font-weight:300;letter-spacing:8px;text-transform:uppercase;color:rgba(255,255,255,.35);margin-top:12px;">Store</div>
     <div style="display:flex;align-items:center;gap:12px;justify-content:center;margin:20px auto;width:220px;">
       <div style="flex:1;height:1px;background:linear-gradient(to right,transparent,rgba(212,168,67,.5));"></div>
       <div style="width:7px;height:7px;background:#d4a843;transform:rotate(45deg);"></div>
       <div style="flex:1;height:1px;background:linear-gradient(to left,transparent,rgba(212,168,67,.5));"></div>
     </div>
-    <div style="font-family:'Nunito',sans-serif;font-size:.65rem;letter-spacing:3px;text-transform:uppercase;color:rgba(212,168,67,.5);">Ladies Suits · Kurtis · Dupatta Sets</div>
+    <div style="font-family:'Jost',system-ui,sans-serif;font-size:.65rem;letter-spacing:3px;text-transform:uppercase;color:rgba(212,168,67,.5);">Ladies Suits · Kurtis · Dupatta Sets</div>
     <div style="margin-top:36px;width:160px;margin-left:auto;margin-right:auto;">
       <div style="width:100%;height:1px;background:rgba(255,255,255,.08);overflow:hidden;"><div style="height:100%;background:linear-gradient(to right,transparent,#d4a843,#f472b6,transparent);animation:splashBar 2s ease 0.3s forwards;transform:translateX(-100%);"></div></div>
     </div>
-    <div style="margin-top:30px;font-size:.6rem;letter-spacing:4px;color:rgba(255,255,255,.18);font-family:'Nunito',sans-serif;text-transform:uppercase;">New Collection 2026</div>
-    <button onclick="doHideSplash()" style="margin-top:32px;background:transparent;border:1px solid rgba(212,168,67,.45);color:rgba(212,168,67,.75);font-family:'Nunito',sans-serif;font-size:.65rem;letter-spacing:5px;text-transform:uppercase;padding:11px 32px;cursor:pointer;transition:all .3s;" onmouseover="this.style.borderColor='rgba(212,168,67,.9)'" onmouseout="this.style.borderColor='rgba(212,168,67,.45)'">Enter Store</button>
+    <div style="margin-top:30px;font-size:.6rem;letter-spacing:4px;color:rgba(255,255,255,.18);font-family:'Jost',system-ui,sans-serif;text-transform:uppercase;">New Collection 2026</div>
+    <button onclick="doHideSplash()" style="margin-top:32px;background:transparent;border:1px solid rgba(212,168,67,.45);color:rgba(212,168,67,.75);font-family:'Jost',system-ui,sans-serif;font-size:.65rem;letter-spacing:5px;text-transform:uppercase;padding:11px 32px;cursor:pointer;transition:all .3s;" onmouseover="this.style.borderColor='rgba(212,168,67,.9)'" onmouseout="this.style.borderColor='rgba(212,168,67,.45)'">Enter Store</button>
   </div>
 </div>
 <style>
@@ -806,9 +881,9 @@ window.addEventListener('load',function(){setTimeout(doHideSplash,500);});
   </ul>
   <div class="nav-right">
     <label class="nav-search"><span aria-hidden="true">⌕</span><input type="search" id="searchInput" placeholder="Search products" aria-label="Search products"></label>
-    <a href="#" id="navAuth" class="cart-btn nav-icon-btn" aria-label="Sign in" title="Sign in">👤</a>
-    <button class="cart-btn nav-icon-btn" type="button" data-account="wishlist" title="Wishlist" aria-label="Wishlist">♡<span class="cart-count" id="wishCount">0</span></button>
-    <button class="cart-btn nav-icon-btn" type="button" id="cartBtn" title="Cart" aria-label="Cart">🛒<span class="cart-count" id="cartCount">0</span></button>
+    <a href="#" id="navAuth" class="cart-btn nav-icon-btn" aria-label="Sign in" title="Sign in"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg></a>
+    <button class="cart-btn nav-icon-btn" type="button" data-account="wishlist" title="Wishlist" aria-label="Wishlist"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg><span class="cart-count" id="wishCount">0</span></button>
+    <button class="cart-btn nav-icon-btn" type="button" id="cartBtn" title="Cart" aria-label="Cart"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 8h14l-1 12H6L5 8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg><span class="cart-count" id="cartCount">0</span></button>
     <button class="hamburger" type="button" aria-label="Menu" onclick="document.getElementById('navMenu').classList.toggle('open')"><span></span><span></span><span></span></button>
   </div>
 </nav>
@@ -817,7 +892,7 @@ window.addEventListener('load',function(){setTimeout(doHideSplash,500);});
 <div class="cart-overlay" id="cartOverlay"></div>
 <div class="cart-sidebar" id="cartSidebar" role="dialog" aria-label="Cart">
   <div class="cart-header">
-    <h2 id="cartTitle">🛒 My Cart</h2>
+    <h2 id="cartTitle">My Cart</h2>
     <button class="cart-close" type="button" id="cartClose" aria-label="Close">✕</button>
   </div>
   <div class="step-bar" id="stepBar" style="display:none">
@@ -833,7 +908,7 @@ window.addEventListener('load',function(){setTimeout(doHideSplash,500);});
     <div id="cartSummaryBox" style="display:none">
       <div class="cart-summary-box">
         <div class="sum-row"><span>Subtotal</span><span id="subtotalAmt">₹0</span></div>
-        <div class="sum-row shipping"><span>🚚 Shipping</span><span id="shipAmt">₹0</span></div>
+        <div class="sum-row shipping"><span>Shipping</span><span id="shipAmt">₹0</span></div>
         <div class="sum-row total"><span>Total</span><span id="totalAmt">₹0</span></div>
       </div>
       <div class="cart-note" id="freeShipNote"></div>
@@ -850,7 +925,7 @@ window.addEventListener('load',function(){setTimeout(doHideSplash,500);});
   <!-- STEP 3: ADDRESS -->
   <div class="cart-step" id="step3">
     <div class="acc-user" id="checkoutUser"></div>
-    <div class="addr-title">📍 Delivery Address</div>
+    <div class="addr-title">Delivery address</div>
     <div id="savedAddresses"></div>
     <div id="addressForm">
       <input class="field-input" id="custName" placeholder="Full Name *" autocomplete="name" maxlength="80">
@@ -918,7 +993,7 @@ window.addEventListener('load',function(){setTimeout(doHideSplash,500);});
 
   <!-- STEP 4: PAYMENT -->
   <div class="cart-step" id="step4">
-    <div class="pay-title">💳 Payment</div>
+    <div class="pay-title">Payment</div>
     <div class="pay-methods three" id="payMethods">
       <button class="pay-method-btn" type="button" id="pmOnline" data-pay="razorpay"><span class="pm-icon">💳</span>Pay Online<small>Card · UPI · Netbanking · Wallet</small></button>
       <button class="pay-method-btn" type="button" id="pmCOD" data-pay="cod"><span class="pm-icon">💵</span>Cash on Delivery<small id="codSmall"></small></button>
@@ -1032,10 +1107,10 @@ window.addEventListener('load',function(){setTimeout(doHideSplash,500);});
     <p>Quality, style, and trust — always</p>
   </div>
   <div class="why-grid">
-    <div class="why-card"><div class="why-icon">✨</div><h3>Premium Quality</h3><p>Every piece carefully selected for finest fabric</p></div>
-    <div class="why-card"><div class="why-icon">💰</div><h3>Best Prices</h3><p>Fashion-forward styles at unbeatable prices</p></div>
-    <div class="why-card"><div class="why-icon">🚚</div><h3 id="whyShipTitle">Pan India Delivery</h3><p id="whyShipText">Fast & safe delivery across India</p></div>
-    <div class="why-card"><div class="why-icon">🔒</div><h3>Secure Payment</h3><p>UPI, Card, Netbanking (Razorpay) or Cash on Delivery</p></div>
+    <div class="why-card"><div class="why-icon"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.6 6.6 19.5l1.2-6L3.3 9.3l6.1-.7z"/></svg></div><h3>Premium Quality</h3><p>Every piece carefully selected for finest fabric</p></div>
+    <div class="why-card"><div class="why-icon"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12V4h8l10 10-8 8L3 12z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg></div><h3>Best Prices</h3><p>Fashion-forward styles at unbeatable prices</p></div>
+    <div class="why-card"><div class="why-icon"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 6h12v10H2z"/><path d="M14 9h4l3 3v4h-7"/><circle cx="6.5" cy="18" r="2"/><circle cx="17.5" cy="18" r="2"/></svg></div><h3 id="whyShipTitle">Pan India Delivery</h3><p id="whyShipText">Fast & safe delivery across India</p></div>
+    <div class="why-card"><div class="why-icon"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div><h3>Secure Payment</h3><p>UPI, Card, Netbanking (Razorpay) or Cash on Delivery</p></div>
   </div>
 </section>
 
@@ -1046,9 +1121,9 @@ window.addEventListener('load',function(){setTimeout(doHideSplash,500);});
       <span class="footer-logo">HMI Fashion Store</span>
       <p>Your one-stop destination for ethnic & western fashion. Premium quality at best prices!</p>
       <br>
-      <p>📍 By Pass Colony, Khatima Road,<br>Near Tiranga Chowk, Sitarganj</p>
-      <p>🕐 Mon–Sun: 10:00 AM – 9:00 PM</p>
-      <p id="footShip">🚚 Pan India Delivery</p>
+      <p>By Pass Colony, Khatima Road,<br>Near Tiranga Chowk, Sitarganj</p>
+      <p>Mon–Sun: 10:00 AM – 9:00 PM</p>
+      <p id="footShip">Pan India Delivery</p>
     </div>
     <div class="footer-col">
       <h4>Quick Links</h4>
@@ -1068,9 +1143,9 @@ window.addEventListener('load',function(){setTimeout(doHideSplash,500);});
     </div>
     <div class="footer-col">
       <h4>Contact Us</h4>
-      <p>📱 WhatsApp:<br><a href="https://wa.me/919560291565" style="color:var(--pink)" target="_blank" rel="noopener">+91 9560291565</a></p>
+      <p>WhatsApp:<br><a href="https://wa.me/919560291565" class="foot-wa" target="_blank" rel="noopener">+91 9560291565</a></p>
       <br>
-      <p>🌐 shop.hmitechnology.co.in</p>
+      <p>shop.hmitechnology.co.in</p>
     </div>
   </div>
   <div class="footer-bottom">
@@ -1106,9 +1181,9 @@ window.addEventListener('load',function(){setTimeout(doHideSplash,500);});
         </div>
         <div class="pdp-hint" id="pdpHint"></div>
         <div class="pdp-actions">
-          <button class="pdp-add-cart" type="button" id="pdpAddCart">🛒 Add to Cart</button>
+          <button class="pdp-add-cart" type="button" id="pdpAddCart">Add to cart</button>
           <button class="pdp-wish" type="button" id="pdpWish" aria-label="Wishlist">♡</button>
-          <a class="pdp-wa-btn" id="pdpWaBtn" target="_blank" rel="noopener">💬 WhatsApp</a>
+          <a class="pdp-wa-btn" id="pdpWaBtn" target="_blank" rel="noopener">WhatsApp</a>
         </div>
       </div>
     </div>
@@ -1118,9 +1193,9 @@ window.addEventListener('load',function(){setTimeout(doHideSplash,500);});
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-<script src="assets/config.js?v=20261017l"></script>
-<script src="assets/pricing.js?v=20261017l"></script>
-<script src="assets/common.js?v=20261017l"></script>
-<script src="assets/store.js?v=20261017l"></script>
+<script src="assets/config.js?v=20261017m"></script>
+<script src="assets/pricing.js?v=20261017m"></script>
+<script src="assets/common.js?v=20261017m"></script>
+<script src="assets/store.js?v=20261017m"></script>
 </body>
 </html>

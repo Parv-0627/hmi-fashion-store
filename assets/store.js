@@ -101,7 +101,7 @@ function renderShipTexts() {
     : freeAbove ? `Free delivery above ₹${freeAbove.toLocaleString('en-IN')}` : `Pan India delivery ₹${shipping}`;
   $('whyShipTitle').textContent = shipping ? 'Delivery @ ₹' + shipping : 'Free Delivery';
   $('whyShipText').textContent = freeAbove && shipping ? `FREE delivery above ₹${freeAbove.toLocaleString('en-IN')}` : 'Fast & safe Pan India delivery';
-  $('footShip').textContent = shipping ? `🚚 Pan India Delivery — ₹${shipping}` : '🚚 Pan India Delivery — FREE';
+  $('footShip').textContent = shipping ? `Pan India Delivery — ₹${shipping}` : 'Pan India Delivery — FREE';
 }
 
 function productInCat(p, catId) {
@@ -271,7 +271,7 @@ function renderProducts() {
           ${hasMrp(p) ? `<span class="price-old">${rs(p.mrp)}</span><span class="price-discount">${offPct(p)}% OFF</span>` : ''}
         </div>
         <div class="product-btns">
-          <button class="btn-cart" type="button" data-add="${esc(p.id)}" ${oos ? 'disabled' : ''}>${oos ? '❌ Out of Stock' : '🛒 Add to Cart'}</button>
+          <button class="btn-cart" type="button" data-add="${esc(p.id)}" ${oos ? 'disabled' : ''}>${oos ? 'Out of stock' : 'Add to cart'}</button>
         </div>
       </div>
     </div>`;
@@ -352,7 +352,7 @@ function openPDP(id) {
       : p.stock <= 5 ? `<span class="pdp-qty-tag qty-low">Only ${p.stock} left!</span>` : '<span class="pdp-qty-tag qty-instock">In Stock</span>') : '');
   $('pdpDesc').textContent = p.desc || 'Premium quality product from HMI Fashion Store.';
   $('pdpCodTag').innerHTML = state.settings.codEnabled && p.cod
-    ? '<span class="pdp-cod-tag yes">💵 Cash on Delivery available</span>'
+    ? '<span class="pdp-cod-tag yes">✓ Cash on Delivery available</span>'
     : '<span class="pdp-cod-tag no">💳 Online payment only</span>';
   $('pdpSizeWrap').style.display = p.sizes.length ? 'block' : 'none';
   $('pdpSizes').innerHTML = p.sizes.map((s) => `<button type="button" class="size-btn ${pdp.size === s ? 'selected' : ''}" data-size="${esc(s)}">${esc(s)}</button>`).join('');
@@ -363,7 +363,7 @@ function openPDP(id) {
   const oos = outOfStock(p);
   $('pdpAddCart').disabled = oos;
   $('pdpAddCart').style.opacity = oos ? '.5' : '1';
-  $('pdpAddCart').textContent = oos ? '❌ Out of Stock' : '🛒 Add to Cart';
+  $('pdpAddCart').textContent = oos ? 'Out of stock' : 'Add to cart';
   renderPdpWish();
   $('pdpWaBtn').href = `https://wa.me/${WA}?text=${encodeURIComponent(`Hello HMI! I'd like to know more about *${p.name}* (${rs(p.price)}).`)}`;
   $('pdpOverlay').classList.add('open');
@@ -459,7 +459,7 @@ function renderCart() {
       ${src ? `<img src="${src}" class="cart-thumb" alt="">` : `<div class="cart-item-emoji" style="background:${esc(p.bg)}">${esc(p.emoji)}</div>`}
       <div class="cart-item-info">
         <h4>${esc(p.name)}</h4>
-        ${l.size ? `<span class="cart-variant-tag">📐 ${esc(l.size)}</span>` : ''}${l.color ? `<span class="cart-variant-tag">🎨 ${esc(l.color)}</span>` : ''}
+        ${l.size ? `<span class="cart-variant-tag">Size: ${esc(l.size)}</span>` : ''}${l.color ? `<span class="cart-variant-tag">Colour: ${esc(l.color)}</span>` : ''}
         <div class="cart-item-price">${rs(p.price * l.qty)}</div>
         ${short ? `<div style="color:#dc2626;font-size:.72rem;font-weight:700;">Only ${p.stock} left — please reduce qty</div>` : ''}
         <div class="cart-item-qty">
@@ -468,7 +468,7 @@ function renderCart() {
           <button class="qty-btn" type="button" data-qty="${i}" data-d="1" aria-label="Increase">+</button>
         </div>
       </div>
-      <button class="remove-item" type="button" data-remove="${i}" aria-label="Remove">🗑️</button>
+      <button class="remove-item" type="button" data-remove="${i}" aria-label="Remove" title="Remove">✕</button>
     </div>`;
   }).join('');
   const t = calcTotals(lines.map((l) => ({ price: l.p.price, qty: l.qty })), state.settings, 'prepaid');
@@ -501,7 +501,7 @@ function goStep(n) {
   state.step = n;
   document.querySelectorAll('.cart-step').forEach((s) => s.classList.remove('active'));
   $('step' + n).classList.add('active');
-  $('cartTitle').textContent = { 1: '🛒 My Cart', 2: '📱 Login', 3: '📍 Address', 4: '💳 Payment' }[n];
+  $('cartTitle').textContent = { 1: 'My Cart', 2: 'Log in', 3: 'Address', 4: 'Payment' }[n];
   $('stepBar').style.display = n > 1 ? 'flex' : 'none';
   for (let i = 1; i <= 4; i++) $('sdot' + i).className = 'step-dot' + (i < n ? ' done' : i === n ? ' active' : '');
   for (let i = 1; i <= 3; i++) $('sline' + i).className = 'step-line' + (i < n ? ' done' : '');
@@ -651,8 +651,8 @@ function renderPayment() {
 
   const t = calcTotals(lines, s, state.payMethod === 'cod' ? 'cod' : 'prepaid');
   let html = `<div class="sum-row"><span>Subtotal</span><span>${rs(t.sub)}</span></div>
-    <div class="sum-row"><span>🚚 Shipping</span><span>${t.ship ? rs(t.ship) : 'FREE'}</span></div>`;
-  if (t.codCharge) html += `<div class="sum-row"><span>💵 COD charge</span><span>${rs(t.codCharge)}</span></div>`;
+    <div class="sum-row"><span>Shipping</span><span>${t.ship ? rs(t.ship) : 'FREE'}</span></div>`;
+  if (t.codCharge) html += `<div class="sum-row"><span>COD charge</span><span>${rs(t.codCharge)}</span></div>`;
   html += `<div class="sum-row total"><span>Total</span><span>${rs(t.total)}</span></div>`;
   if (state.payMethod === 'cod') {
     if (t.advance) html += `<div class="sum-row adv"><span>Advance (pay now)</span><span>${rs(t.advance)}</span></div>`;
@@ -751,6 +751,8 @@ function orderPlaced(orderNo) {
 // LOGIN (number + PIN, Phone OTP, Google, email link) — used in checkout and in My Account
 // =====================================================================
 let recaptcha = null, confirmation = null;
+const NAV_ICON_USER = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>';
+const NAV_ICON_OUT = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h5v16h-5"/><path d="M10 8l-4 4 4 4"/><path d="M6 12h9"/></svg>';
 // +91 number of the logged-in customer: from SMS OTP, or from a PIN account's uid ("pin_<number>")
 function userPhone(u) {
   if (!u) return '';
@@ -970,7 +972,8 @@ auth.onAuthStateChanged(async (user) => {
   if (state.ordersUnsub) { state.ordersUnsub(); state.ordersUnsub = null; }
   state.profile = null; state.orders = [];
   if ($('accountBtn')) $('accountBtn').textContent = user ? '😊' : '👤'; // removed from the new header
-  $('navAuth').textContent = user ? '↪' : '👤';
+  $('navAuth').innerHTML = user ? NAV_ICON_OUT : NAV_ICON_USER;
+  $('navAuth').dataset.state = user ? 'in' : 'out';
   $('navAuth').setAttribute('aria-label', user ? 'Sign out' : 'Sign in');
   renderUserBar();
   if (!user) {
@@ -1165,7 +1168,7 @@ function renderAddressesTab() {
   if (!list.length) return '<div class="empty-msg"><div class="big">📍</div>No saved addresses yet.</div>' + add;
   return list.map((a, i) => `<div class="addr-card" style="cursor:default"><span><b>${esc(a.name)}</b> · ${esc(a.phone)}<br>${esc(addressText(a))}</span>
     <button type="button" class="addr-edit" data-acc-addr-edit="${i}">✏️ Edit</button>
-    <button type="button" class="addr-del" data-del-addr="${i}" aria-label="Delete">🗑️</button></div>`).join('') + add;
+    <button type="button" class="addr-del" data-del-addr="${i}" aria-label="Delete">Delete</button></div>`).join('') + add;
 }
 // My Account → Address: open the form (index, or -1 for a new one), save, cancel
 function openAccAddressForm(i) {
