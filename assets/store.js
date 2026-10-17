@@ -140,7 +140,7 @@ const catSlide = { raf: 0 };
 function startCategorySlide(grid, html, count) {
   cancelAnimationFrame(catSlide.raf);
   grid.classList.remove('sliding');
-  if (count < 2 || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  if (count < 2) return; // runs even with "reduce motion" (often switched on by battery saver): it is slow and stops on touch
   // enough copies that two of them are wider than the screen
   const oneSet = grid.scrollWidth;
   const copies = Math.max(2, Math.ceil((grid.clientWidth * 2) / Math.max(1, oneSet)) + 1);
@@ -291,7 +291,7 @@ function cardGallery(p, fallback) {
     <div class="pc-dots">${imgs.map((_, i) => `<button type="button" class="${i ? '' : 'on'}" data-dot="${i}" aria-label="Photo ${i + 1} of ${imgs.length}"></button>`).join('')}</div>
   </div>`;
 }
-const galleryAuto = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const galleryAuto = true; // like the category slide, also with "reduce motion"; a touch pauses it
 const visibleGalleries = new Set();
 const galleryObserver = 'IntersectionObserver' in window
   ? new IntersectionObserver((entries) => entries.forEach((en) => (en.isIntersecting ? visibleGalleries.add(en.target) : visibleGalleries.delete(en.target))), { threshold: 0.6 })
