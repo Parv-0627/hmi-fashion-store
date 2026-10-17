@@ -163,6 +163,7 @@ function startApp() {
   $('imgInput').addEventListener('change', (e) => handleImageUpload(e.target));
   $('p-name').addEventListener('input', showNameDup);
   $('homeHeroInput').addEventListener('change', (e) => uploadHomeHero(e.target));
+  $('homeAllInput').addEventListener('change', (e) => uploadHomeImage(e.target, 1200, setHomeAll, 'Photo'));
   $('homeProductSearch').addEventListener('input', renderHomeForm);
   HERO_TEXT_KEYS.forEach((k) => $('hm-' + k).addEventListener('input', (e) => { homeDraft[k] = e.target.value.trim() ? e.target.value : ''; setHomeDirty(true); }));
 }
@@ -777,6 +778,7 @@ function readHome(raw) {
   const r = raw || {};
   return {
     heroImage: typeof r.heroImage === 'string' ? r.heroImage : '',   // '' = default banner, 'none' = no photo
+    allItemsImage: typeof r.allItemsImage === 'string' ? r.allItemsImage : '', // '' = first product's photo
     newArrivals: Array.isArray(r.newArrivals) ? r.newArrivals.map(String).slice(0, 4) : [],
     ...Object.fromEntries(Object.keys(HMI.HERO_TEXT).map((k) => [k, typeof r[k] === 'string' ? r[k] : ''])),
   };
@@ -799,7 +801,35 @@ function fillHomeForm() {
   setHomeDirty(false);
   renderHomeForm();
 }
+function renderHomeAllPreview() {
+  const own = homeDraft.allItemsImage && safeUrl(homeDraft.allItemsImage);
+  const first = products.find((p) => p.active && p.images[0] && safeUrl(p.images[0]));
+  const src = own || (first && safeUrl(first.images[0]));
+  $('homeAllPreview').innerHTML = (src ? `<img src="${src}" alt="">` : '') + `<span>All Items${own ? '' : ' (auto)'}</span>`;
+}
+function setHomeAll(v) { homeDraft.allItemsImage = v; setHomeDirty(true); renderHomeAllPreview(); }
+function homeAllLink() {
+  const url = (prompt('Paste the photo link (https://...)') || '').trim();
+  if (!url) return;
+  if (!/^https:\/\//i.test(url)) return toast('❌ The link must start with https://', 'error');
+  setHomeAll(url);
+}
+// Upload a homepage photo through the checkout server (ImgBB), then hand the URL to `use`
+async function uploadHomeImage(input, maxSize, use, what) {
+  const file = input.files[0];
+  input.value = '';
+  if (!file) return;
+  toast(`⏳ Uploading ${what.toLowerCase()}...`);
+  try {
+    const fd = new FormData();
+    fd.append('image', await compressImage(file, maxSize, 0.88), file.name || 'photo.jpg');
+    const { url } = await HMI.callWorker('/admin/upload-image', fd);
+    use(url);
+    toast(`✅ ${what} uploaded. Tap "Save Homepage" to put it live.`);
+  } catch (e) { toast('❌ Upload failed: ' + e.message, 'error'); }
+}
 function renderHomeForm() {
+  renderHomeAllPreview();
   const hero = homeDraft.heroImage;
   const src = hero === 'none' ? '' : hero ? safeUrl(hero) : esc(HMI.cfg.heroImage || '');
   $('homeHeroPreview').innerHTML = src ? `<img src="${src}" alt="">`
@@ -846,19 +876,7 @@ function homeHeroLink() {
   if (!/^https:\/\//i.test(url)) return toast('❌ The link must start with https://', 'error');
   setHomeHero(url);
 }
-async function uploadHomeHero(input) {
-  const file = input.files[0];
-  input.value = '';
-  if (!file) return;
-  toast('⏳ Uploading banner...');
-  try {
-    const fd = new FormData();
-    fd.append('image', await compressImage(file, 2000, 0.88), file.name || 'banner.jpg');
-    const { url } = await HMI.callWorker('/admin/upload-image', fd);
-    setHomeHero(url);
-    toast('✅ Banner uploaded. Tap "Save Homepage" to put it live.');
-  } catch (e) { toast('❌ Upload failed: ' + e.message, 'error'); }
-}
+function uploadHomeHero(input) { return uploadHomeImage(input, 2000, setHomeHero, 'Banner'); }
 async function saveHomeSettings() {
   try {
     const data = { ...homeDraft, updatedAt: Date.now() };

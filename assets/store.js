@@ -7,7 +7,7 @@ const $ = (id) => document.getElementById(id);
 const WA = cfg.whatsapp;
 
 const state = {
-  products: [], categories: [], settings: readPay(), home: { heroImage: '', newArrivals: [] },
+  products: [], categories: [], settings: readPay(), home: { heroImage: '', allItemsImage: '', newArrivals: [] },
   user: null, profile: null,
   cart: [], wishlist: new Set(),
   activeCat: 'all', search: '', sort: 'new',
@@ -78,8 +78,10 @@ function startCatalogue() {
     const h = (d.exists && d.data()) || {};
     state.home = {
       heroImage: typeof h.heroImage === 'string' ? h.heroImage : '',
+      allItemsImage: typeof h.allItemsImage === 'string' ? h.allItemsImage : '',
       newArrivals: Array.isArray(h.newArrivals) ? h.newArrivals.map(String) : [],
     };
+    if (state.categories.length || state.products.length) renderCategories();
     // hero words from admin → Homepage; an empty field keeps the default
     Object.keys(HMI.HERO_TEXT).forEach((k) => {
       $(k).textContent = (typeof h[k] === 'string' && h[k].trim()) || HMI.HERO_TEXT[k];
@@ -119,7 +121,9 @@ function renderCategories() {
   if (state.activeCat !== 'all' && !state.categories.some((c) => c.id === state.activeCat)) state.activeCat = 'all';
   const card = (id, icon, name, sub) => {
     const product = state.products.find((p) => (id === 'all' || productInCat(p, id)) && p.images[0] && safeUrl(p.images[0]));
-    const src = product && safeUrl(product.images[0]);
+    // "All Items" can have its own photo, set in admin → Homepage
+    const own = id === 'all' && state.home.allItemsImage && safeUrl(state.home.allItemsImage);
+    const src = own || (product && safeUrl(product.images[0]));
     return `
     <div class="category-card ${state.activeCat === id ? 'active' : ''}" data-cat="${esc(id)}" role="button" tabindex="0">
       ${src ? `<img class="category-photo" src="${src}" alt="" loading="lazy">` : ''}

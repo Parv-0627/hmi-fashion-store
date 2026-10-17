@@ -103,6 +103,9 @@ textarea{resize:vertical;min-height:65px;}
 .img-upload-area input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
 .home-hero-preview{width:100%;max-width:640px;aspect-ratio:739/292;border-radius:10px;overflow:hidden;border:2px solid var(--pink-light);background:#f1decc;display:flex;align-items:center;justify-content:center;color:var(--gray);font-size:.85rem;}
 .home-hero-preview img{width:100%;height:100%;object-fit:cover;display:block;}
+.home-all-preview{width:120px;aspect-ratio:3/4;border-radius:8px;overflow:hidden;border:2px solid var(--pink-light);background:#f5f2f3;position:relative;}
+.home-all-preview img{width:100%;height:100%;object-fit:cover;object-position:center top;display:block;}
+.home-all-preview span{position:absolute;inset:auto 0 0;padding:14px 6px 6px;background:linear-gradient(transparent,rgba(25,15,20,.7));color:#fff;font-size:.72rem;font-weight:800;text-align:center;}
 .home-picked{display:flex;flex-direction:column;gap:8px;margin:10px 0 14px;}
 .home-pick-row{display:flex;align-items:center;gap:10px;padding:8px 10px;border:1.5px solid var(--pink-light);border-radius:10px;background:#fff9fb;}
 .home-pick-row .num{width:24px;height:24px;border-radius:50%;background:var(--pink-deep);color:#fff;font-weight:800;font-size:.75rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
@@ -555,6 +558,18 @@ input[type=email],input[type=password],input[type=url],input[type=tel]{padding:1
         </div>
       </div>
       <div class="card">
+        <div class="card-header"><div class="card-title">🛍️ "All Items" photo</div></div>
+        <p class="help" style="margin-bottom:10px;">The first card in "Shop by category". Automatic = the photo of the first product. A tall photo (3:4) looks best.</p>
+        <div style="display:flex;gap:14px;align-items:flex-end;flex-wrap:wrap;">
+          <div class="home-all-preview" id="homeAllPreview"></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <label class="btn btn-primary btn-sm" style="cursor:pointer;">📤 Upload photo<input type="file" accept="image/*" id="homeAllInput" hidden></label>
+            <button class="btn btn-outline btn-sm" type="button" onclick="homeAllLink()">🔗 Paste link</button>
+            <button class="btn btn-outline btn-sm" type="button" onclick="setHomeAll('')">↺ Automatic</button>
+          </div>
+        </div>
+      </div>
+      <div class="card">
         <div class="card-header"><div class="card-title">✍️ Hero text</div></div>
         <p class="help" style="margin-bottom:10px;">The words next to the banner on the front page. Leave a box empty to use the default.</p>
         <div class="form-grid">
@@ -600,9 +615,9 @@ input[type=email],input[type=password],input[type=url],input[type=tel]{padding:1
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-<script src="assets/config.js?v=20261017o"></script>
-<script src="assets/pricing.js?v=20261017o"></script>
-<script src="assets/common.js?v=20261017o"></script>
-<script src="assets/admin.js?v=20261017o"></script>
+<script src="assets/config.js?v=20261017p"></script>
+<script src="assets/pricing.js?v=20261017p"></script>
+<script src="assets/common.js?v=20261017p"></script>
+<script src="assets/admin.js?v=20261017p"></script>
 </body>
 </html>
