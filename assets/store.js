@@ -91,7 +91,7 @@ function startCatalogue() {
 }
 
 function renderCatalogue() {
-  renderCategories(); renderProducts(); renderKids();
+  renderCategories(); renderProducts();
   renderHeroImage(); renderHeroProducts();
 }
 
@@ -232,17 +232,6 @@ function renderProducts() {
     </div>`;
   }).join('');
   initGalleries(grid);
-}
-
-function renderKids() {
-  const list = state.products.filter((p) => productInCat(p, 'Kids') || /kid/i.test(p.category)).slice(0, 8);
-  $('kidsGrid').innerHTML = list.length ? list.map((p) => {
-    const src = p.images[0] && safeUrl(p.images[0]);
-    return `<div class="kids-card" data-pdp="${esc(p.id)}">
-      ${src ? `<img src="${src}" alt="${esc(p.name)}" loading="lazy">` : `<div class="kids-emoji" style="background:${esc(p.bg)}">${esc(p.emoji || '🧒')}</div>`}
-      ${p.badge ? `<div class="ktag">${esc(p.badge)}</div>` : ''}
-      <div class="koverlay"><h4>${esc(p.name)}</h4><p>${rs(p.price)}</p></div></div>`;
-  }).join('') : '<div class="kids-empty">Kids collection coming soon! 😍</div>';
 }
 
 // =====================================================================
