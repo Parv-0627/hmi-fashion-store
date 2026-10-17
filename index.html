@@ -739,6 +739,10 @@ nav ul li a{font-size:.84rem;white-space:nowrap}
 .cart-item-emoji{height:80px;width:60px;}
 /* Cart: totals sit right under the last item instead of at the bottom of the drawer */
 .cart-items-wrap{flex:none;}
+/* Checkout state picker looks like the other fields; grey until a state is chosen */
+.state-select{appearance:none;-webkit-appearance:none;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%239b8f95' stroke-width='1.6'/%3E%3C/svg%3E") no-repeat right 14px center;padding-right:36px;color:var(--dark);}
+.state-select:invalid{color:#9ca3af;}
+.state-select option{color:var(--dark);}
 .login-secure{font-size:.72rem;color:#8a7f85;margin-top:14px;}
 </style>
 </head>
@@ -846,7 +850,49 @@ window.addEventListener('load',function(){setTimeout(doHideSplash,500);});
       <input class="field-input" id="custLandmark" placeholder="Landmark (optional)" maxlength="120">
       <div class="field-row">
         <input class="field-input" id="custCity" placeholder="City *" autocomplete="address-level2" maxlength="80">
-        <input class="field-input" id="custState" placeholder="State *" autocomplete="address-level1" maxlength="80">
+        <select class="field-input state-select" id="custState" autocomplete="address-level1" required>
+          <option value="" disabled selected>State *</option>
+          <optgroup label="States">
+          <option>Andhra Pradesh</option>
+          <option>Arunachal Pradesh</option>
+          <option>Assam</option>
+          <option>Bihar</option>
+          <option>Chhattisgarh</option>
+          <option>Goa</option>
+          <option>Gujarat</option>
+          <option>Haryana</option>
+          <option>Himachal Pradesh</option>
+          <option>Jharkhand</option>
+          <option>Karnataka</option>
+          <option>Kerala</option>
+          <option>Madhya Pradesh</option>
+          <option>Maharashtra</option>
+          <option>Manipur</option>
+          <option>Meghalaya</option>
+          <option>Mizoram</option>
+          <option>Nagaland</option>
+          <option>Odisha</option>
+          <option>Punjab</option>
+          <option>Rajasthan</option>
+          <option>Sikkim</option>
+          <option>Tamil Nadu</option>
+          <option>Telangana</option>
+          <option>Tripura</option>
+          <option>Uttar Pradesh</option>
+          <option>Uttarakhand</option>
+          <option>West Bengal</option>
+          </optgroup>
+          <optgroup label="Union Territories">
+          <option>Andaman and Nicobar Islands</option>
+          <option>Chandigarh</option>
+          <option>Dadra and Nagar Haveli and Daman and Diu</option>
+          <option>Delhi</option>
+          <option>Jammu and Kashmir</option>
+          <option>Ladakh</option>
+          <option>Lakshadweep</option>
+          <option>Puducherry</option>
+          </optgroup>
+        </select>
       </div>
       <div class="field-row">
         <input class="field-input" id="custPincode" placeholder="Pincode *" type="tel" inputmode="numeric" maxlength="6" autocomplete="postal-code">
@@ -1061,9 +1107,9 @@ window.addEventListener('load',function(){setTimeout(doHideSplash,500);});
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-<script src="assets/config.js?v=20261017f"></script>
-<script src="assets/pricing.js?v=20261017f"></script>
-<script src="assets/common.js?v=20261017f"></script>
-<script src="assets/store.js?v=20261017f"></script>
+<script src="assets/config.js?v=20261017g"></script>
+<script src="assets/pricing.js?v=20261017g"></script>
+<script src="assets/common.js?v=20261017g"></script>
+<script src="assets/store.js?v=20261017g"></script>
 </body>
 </html>

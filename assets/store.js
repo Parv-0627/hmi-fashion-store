@@ -477,7 +477,7 @@ function addressError(a) {
   if (!/^[6-9]\d{9}$/.test(a.phone)) return 'Please enter a valid 10-digit mobile number';
   if (!a.line1 || a.line1.length < 3) return 'Please enter house / street';
   if (!a.city) return 'Please enter city';
-  if (!a.state) return 'Please enter state';
+  if (!a.state) return 'Please select your state';
   if (!/^[1-9]\d{5}$/.test(a.pincode)) return 'Please enter a valid 6-digit pincode';
   return '';
 }
