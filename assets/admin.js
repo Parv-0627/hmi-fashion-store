@@ -161,6 +161,7 @@ function startApp() {
   ['ps-shipping', 'ps-freeAbove', 'ps-codEnabled', 'ps-codCharge', 'ps-advanceType', 'ps-advanceValue']
     .forEach((id) => $(id).addEventListener('input', () => { payFormDirty = true; renderPayPreview(); }));
   $('imgInput').addEventListener('change', (e) => handleImageUpload(e.target));
+  $('p-name').addEventListener('input', showNameDup);
   $('homeHeroInput').addEventListener('change', (e) => uploadHomeHero(e.target));
   $('homeProductSearch').addEventListener('input', renderHomeForm);
 }
@@ -473,6 +474,7 @@ function newProduct() {
   document.querySelectorAll('#sizeCheckboxes input').forEach((cb) => { cb.checked = ['M', 'L', 'XL'].includes(cb.value); });
   document.querySelectorAll('#colorCheckboxes input').forEach((cb) => { cb.checked = false; });
   formImages = []; renderImagePreviews();
+  showNameDup();
   showSection('addProduct');
 }
 function editProduct(id) {
@@ -498,15 +500,31 @@ function editProduct(id) {
   document.querySelectorAll('#sizeCheckboxes input').forEach((cb) => { cb.checked = p.sizes.includes(cb.value); });
   document.querySelectorAll('#colorCheckboxes input').forEach((cb) => { cb.checked = p.colors.some((c) => c.name === cb.value); });
   formImages = [...p.images]; renderImagePreviews();
+  showNameDup();
+}
+
+// Two products may not share a name (ignoring capitals and extra spaces)
+const nameKey = (s) => String(s || '').trim().replace(/\s+/g, ' ').toLowerCase();
+function sameNameProduct(name) {
+  const k = nameKey(name);
+  return k ? products.find((p) => p.id !== editingId && nameKey(p.name) === k) : null;
+}
+function showNameDup() {
+  const dup = sameNameProduct($('p-name').value);
+  const el = $('p-nameDup');
+  el.style.display = dup ? 'block' : 'none';
+  el.textContent = dup ? `⚠️ "${dup.name}" already exists${dup.active ? '' : ' (hidden)'}. Please use a different name, or edit that product.` : '';
 }
 
 async function saveProduct() {
-  const name = $('p-name').value.trim();
+  const name = $('p-name').value.trim().replace(/\s+/g, ' ');
   const category = $('p-cat').value;
   const price = parseInt($('p-price').value, 10);
   const mrp = parseInt($('p-mrp').value, 10) || 0;
   const stock = parseInt($('p-stock').value, 10);
   if (!name) return toast('❌ Enter a product name', 'error');
+  const dup = sameNameProduct(name);
+  if (dup) { showNameDup(); return toast(`❌ A product named "${dup.name}" already exists. Use a different name.`, 'error'); }
   if (!category) return toast('❌ Select a category', 'error');
   if (!(price > 0)) return toast('❌ Enter a sale price', 'error');
   if (mrp && mrp < price) return toast('❌ MRP can\'t be lower than the sale price', 'error');
