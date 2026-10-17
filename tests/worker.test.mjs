@@ -357,3 +357,10 @@ test('Forgot PIN: only an admin can reset, then the customer generates a new PIN
   const fresh = await call('/pin/login', { body: { phone: '9812345678', pin: '7391', create: true } });
   assert.equal(pinUid(fresh.data.token), 'pin_9812345678');
 });
+
+test('the order keeps the district from the address', async () => {
+  await write('settings/payment', { codEnabled: true, advanceType: 'none', shipping: 0 });
+  const r = await call('/checkout/start', { uid: 'alice', body: { method: 'cod', address: { ...address, district: 'South Delhi' }, items: [{ productId: 'saree', qty: 1, color: 'Red' }] } });
+  assert.equal(r.status, 200, JSON.stringify(r.data));
+  assert.equal((await read(`orders/${r.data.orderNo}`)).address.district, 'South Delhi');
+});

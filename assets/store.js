@@ -468,7 +468,7 @@ function goStep(n) {
 
 // ---------- address ----------
 // Address form fields: checkout uses ids custName…, My Account uses accName…
-const ADDR_FIELDS = { name: 'Name', phone: 'Phone', line1: 'Addr1', line2: 'Addr2', landmark: 'Landmark', city: 'City', state: 'State', pincode: 'Pincode', altPhone: 'AltPhone' };
+const ADDR_FIELDS = { name: 'Name', phone: 'Phone', line1: 'Addr1', line2: 'Addr2', landmark: 'Landmark', city: 'City', district: 'District', state: 'State', pincode: 'Pincode', altPhone: 'AltPhone' };
 function readAddressForm(prefix = 'cust') {
   const a = {};
   for (const [k, id] of Object.entries(ADDR_FIELDS)) a[k] = $(prefix + id).value.trim();
@@ -526,13 +526,15 @@ function addressError(a) {
   if (!a.name || a.name.length < 2) return 'Please enter your name';
   if (!/^[6-9]\d{9}$/.test(a.phone)) return 'Please enter a valid 10-digit mobile number';
   if (!a.line1 || a.line1.length < 3) return 'Please enter house / street';
-  if (!a.city) return 'Please enter city';
+  if (!a.city) return 'Please enter city / town';
+  if (!a.district) return 'Please enter district';
   if (!a.state) return 'Please select your state';
   if (!/^[1-9]\d{5}$/.test(a.pincode)) return 'Please enter a valid 6-digit pincode';
   return pinStateError(a.pincode, a.state);
 }
 function addressText(a) {
-  return [a.line1, a.line2, a.landmark, a.city, a.state].filter(Boolean).join(', ') + ' - ' + a.pincode;
+  const district = a.district && a.district.toLowerCase() !== String(a.city || '').toLowerCase() ? a.district : '';
+  return [a.line1, a.line2, a.landmark, a.city, district && district + ' (Dist.)', a.state].filter(Boolean).join(', ') + ' - ' + a.pincode;
 }
 let selectedAddressIndex = -1;
 let addressPicked = false; // the customer chose a card themselves (e.g. "New address"): don't auto-select
@@ -1100,13 +1102,14 @@ function renderAddressesTab() {
       <input class="field-input" id="accAddr2" placeholder="Area, Colony" autocomplete="address-line2" maxlength="200">
       <input class="field-input" id="accLandmark" placeholder="Landmark (optional)" maxlength="120">
       <div class="field-row">
-        <input class="field-input" id="accCity" placeholder="City *" autocomplete="address-level2" maxlength="80">
-        <select class="field-input state-select" id="accState" autocomplete="address-level1" required>${$('custState').innerHTML}</select>
+        <input class="field-input" id="accCity" placeholder="City / Town *" autocomplete="address-level2" maxlength="80">
+        <input class="field-input" id="accDistrict" placeholder="District *" maxlength="80">
       </div>
       <div class="field-row">
+        <select class="field-input state-select" id="accState" autocomplete="address-level1" required>${$('custState').innerHTML}</select>
         <input class="field-input" id="accPincode" placeholder="Pincode *" type="tel" inputmode="numeric" maxlength="6" autocomplete="postal-code">
-        <input class="field-input" id="accAltPhone" placeholder="Alt. Phone (optional)" type="tel" inputmode="numeric" maxlength="10">
       </div>
+      <input class="field-input" id="accAltPhone" placeholder="Alt. Phone (optional)" type="tel" inputmode="numeric" maxlength="10">
       <div class="form-err" id="accAddrErr"></div>
       <div class="acc-addr-btns">
         <button type="button" class="cart-footer-btn btn-proceed" id="accAddrSave">💾 Save address</button>
@@ -1212,7 +1215,7 @@ document.addEventListener('change', (e) => {
   if (e.target.name === 'addrPick') {
     selectedAddressIndex = Number(e.target.value); addressPicked = true; editAddressIndex = -1;
     // a fresh form for the new address (name and mobile usually stay the same)
-    if (selectedAddressIndex === -1) ['custAddr1', 'custAddr2', 'custLandmark', 'custCity', 'custState', 'custPincode', 'custAltPhone'].forEach((id) => { $(id).value = ''; });
+    if (selectedAddressIndex === -1) ['custAddr1', 'custAddr2', 'custLandmark', 'custCity', 'custDistrict', 'custState', 'custPincode', 'custAltPhone'].forEach((id) => { $(id).value = ''; });
     renderAddressStep();
     if (selectedAddressIndex === -1) $('custAddr1').focus();
   }

@@ -855,7 +855,10 @@ window.addEventListener('load',function(){setTimeout(doHideSplash,500);});
       <input class="field-input" id="custAddr2" placeholder="Area, Colony" autocomplete="address-line2" maxlength="200">
       <input class="field-input" id="custLandmark" placeholder="Landmark (optional)" maxlength="120">
       <div class="field-row">
-        <input class="field-input" id="custCity" placeholder="City *" autocomplete="address-level2" maxlength="80">
+        <input class="field-input" id="custCity" placeholder="City / Town *" autocomplete="address-level2" maxlength="80">
+        <input class="field-input" id="custDistrict" placeholder="District *" maxlength="80">
+      </div>
+      <div class="field-row">
         <select class="field-input state-select" id="custState" autocomplete="address-level1" required>
           <option value="" disabled selected>State *</option>
           <optgroup label="States">
@@ -899,11 +902,9 @@ window.addEventListener('load',function(){setTimeout(doHideSplash,500);});
           <option>Puducherry</option>
           </optgroup>
         </select>
-      </div>
-      <div class="field-row">
         <input class="field-input" id="custPincode" placeholder="Pincode *" type="tel" inputmode="numeric" maxlength="6" autocomplete="postal-code">
-        <input class="field-input" id="custAltPhone" placeholder="Alt. Phone (optional)" type="tel" inputmode="numeric" maxlength="10">
       </div>
+      <input class="field-input" id="custAltPhone" placeholder="Alt. Phone (optional)" type="tel" inputmode="numeric" maxlength="10">
       <label class="check-line"><input type="checkbox" id="saveAddress" checked> Save this address for next time</label>
     </div>
     <div class="form-err" id="addrErr"></div>
@@ -1113,9 +1114,9 @@ window.addEventListener('load',function(){setTimeout(doHideSplash,500);});
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-<script src="assets/config.js?v=20261017i"></script>
-<script src="assets/pricing.js?v=20261017i"></script>
-<script src="assets/common.js?v=20261017i"></script>
-<script src="assets/store.js?v=20261017i"></script>
+<script src="assets/config.js?v=20261017j"></script>
+<script src="assets/pricing.js?v=20261017j"></script>
+<script src="assets/common.js?v=20261017j"></script>
+<script src="assets/store.js?v=20261017j"></script>
 </body>
 </html>

@@ -61,7 +61,7 @@ function cleanAddress(a) {
   const out = {
     name: str(a.name, 80), phone: str(a.phone, 20).replace(/\D/g, '').slice(-10),
     line1: str(a.line1, 200), line2: str(a.line2, 200), landmark: str(a.landmark, 120),
-    city: str(a.city, 80), state: str(a.state, 80), pincode: str(a.pincode, 6), altPhone: str(a.altPhone, 20),
+    city: str(a.city, 80), district: str(a.district, 80), state: str(a.state, 80), pincode: str(a.pincode, 6), altPhone: str(a.altPhone, 20),
   };
   if (out.name.length < 2) throw new HttpError(400, 'Please enter your name');
   if (!/^[6-9]\d{9}$/.test(out.phone)) throw new HttpError(400, 'Please enter a valid 10-digit mobile number');

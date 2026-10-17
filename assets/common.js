@@ -97,7 +97,7 @@
       customerPhone: o.customerPhone || (addr && addr.phone) || '',
       email: o.email || '',
       addressText: addr
-        ? [addr.line1, addr.line2, addr.landmark, addr.city, addr.state].filter(Boolean).join(', ') + (addr.pincode ? ' - ' + addr.pincode : '')
+        ? [addr.line1, addr.line2, addr.landmark, addr.city, addr.district && addr.district.toLowerCase() !== String(addr.city || '').toLowerCase() ? addr.district + ' (Dist.)' : '', addr.state].filter(Boolean).join(', ') + (addr.pincode ? ' - ' + addr.pincode : '')
         : (o.address || ''),
       items: (o.items || []).map((i) => ({
         productId: String(i.productId || i.id || ''),
