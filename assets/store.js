@@ -7,7 +7,7 @@ const $ = (id) => document.getElementById(id);
 const WA = cfg.whatsapp;
 
 const state = {
-  products: [], categories: [], settings: readPay(),
+  products: [], categories: [], settings: readPay(), home: { heroImage: '', newArrivals: [] },
   user: null, profile: null,
   cart: [], wishlist: new Set(),
   activeCat: 'all', search: '', sort: 'new',
@@ -74,6 +74,15 @@ function startCatalogue() {
     if (cats.length) { state.categories = cats; renderCatalogue(); } else loadLegacyCatalogue();
   }, (e) => console.error('Categories', e));
 
+  db.collection('settings').doc('home').onSnapshot((d) => {
+    const h = (d.exists && d.data()) || {};
+    state.home = {
+      heroImage: typeof h.heroImage === 'string' ? h.heroImage : '',
+      newArrivals: Array.isArray(h.newArrivals) ? h.newArrivals.map(String) : [],
+    };
+    renderHeroImage(); renderHeroProducts();
+  }, (e) => console.error('Homepage settings', e));
+
   db.collection('settings').doc('payment').onSnapshot((d) => {
     state.settings = readPay(d.exists ? d.data() : null);
     renderShipTexts(); renderCart();
@@ -123,19 +132,28 @@ function renderCategories() {
   });
 }
 
-// Hero: brand photo (config heroImage) on the left, newest products on the right
+// Hero: brand banner on the left, "New arrivals" on the right. Both can be set in
+// admin → Homepage (settings/home); otherwise config heroImage + the newest products.
+function heroSrc() {
+  const h = state.home.heroImage;
+  if (h === 'none') return '';
+  if (h) return safeUrl(h) ? h : '';
+  return cfg.heroImage || '';
+}
 function renderHeroImage() {
-  const img = $('heroBrandImg');
-  if (!cfg.heroImage || img.dataset.src === cfg.heroImage) return;
-  img.dataset.src = cfg.heroImage;
+  const img = $('heroBrandImg'), src = heroSrc();
+  if ((img.dataset.src || '') === src) return;
+  img.dataset.src = src;
+  if (!src) { img.hidden = true; img.removeAttribute('src'); $('heroBrand').classList.remove('has-photo'); return; }
   img.onload = () => { img.hidden = false; $('heroBrand').classList.add('has-photo'); };
   img.onerror = () => { img.hidden = true; $('heroBrand').classList.remove('has-photo'); };
-  img.src = cfg.heroImage;
+  img.src = src;
 }
 function renderHeroProducts() {
   const grid = $('heroProducts');
   if (!state.catalogueReady && !state.products.length) return;
-  const picks = [...state.products]
+  const chosen = state.home.newArrivals.map(findProduct).filter(Boolean);
+  const picks = chosen.length ? chosen.slice(0, 4) : [...state.products]
     .sort((a, b) => Number(outOfStock(a)) - Number(outOfStock(b)) || (b.createdAt || 0) - (a.createdAt || 0))
     .slice(0, 4);
   const cards = picks.map((p) => {

@@ -12,7 +12,7 @@ let paySettings = HMI.pricing.paySettings();
 let editingId = null;
 let formImages = [];
 const unsubs = [];
-const SECTIONS = ['dashboard', 'orders', 'products', 'addProduct', 'categories', 'customers', 'payment', 'data'];
+const SECTIONS = ['dashboard', 'orders', 'products', 'addProduct', 'categories', 'home', 'customers', 'payment', 'data'];
 
 // =====================================================================
 // LOGIN
@@ -95,6 +95,7 @@ function showSection(name) {
   SECTIONS.forEach((s) => { $('sec-' + s).style.display = s === name ? 'block' : 'none'; });
   document.querySelectorAll('.side-btn[data-sec]').forEach((b) => b.classList.toggle('active', b.dataset.sec === name));
   if (name === 'payment') fillPayForm();
+  if (name === 'home') fillHomeForm();
   if (name === 'data') renderImportStatus();
   window.scrollTo(0, 0);
 }
@@ -144,6 +145,11 @@ function startApp() {
     renderAll();
   }, onErr('Customers')));
 
+  unsubs.push(db.collection('settings').doc('home').onSnapshot((d) => {
+    homeSettings = readHome(d.exists ? d.data() : null);
+    if ($('sec-home').style.display !== 'none' && !homeDirty) fillHomeForm();
+  }, onErr('Homepage settings')));
+
   unsubs.push(db.collection('settings').doc('payment').onSnapshot((d) => {
     paySettings = HMI.pricing.paySettings(d.exists ? d.data() : null);
     if ($('sec-payment').style.display !== 'none' && !payFormDirty) fillPayForm();
@@ -155,10 +161,13 @@ function startApp() {
   ['ps-shipping', 'ps-freeAbove', 'ps-codEnabled', 'ps-codCharge', 'ps-advanceType', 'ps-advanceValue']
     .forEach((id) => $(id).addEventListener('input', () => { payFormDirty = true; renderPayPreview(); }));
   $('imgInput').addEventListener('change', (e) => handleImageUpload(e.target));
+  $('homeHeroInput').addEventListener('change', (e) => uploadHomeHero(e.target));
+  $('homeProductSearch').addEventListener('input', renderHomeForm);
 }
 
 function renderAll() {
   renderDashboard();
+  if ($('sec-home').style.display !== 'none') renderHomeForm();
   renderOrders();
   renderProducts();
   renderCategories();
@@ -736,6 +745,96 @@ async function savePaySettings() {
     await db.collection('settings').doc('payment').set({ ...s, updatedAt: Date.now() });
     payFormDirty = false;
     toast('✅ Settings saved — live on store now');
+  } catch (e) { toast('❌ ' + e.message, 'error'); }
+}
+
+// =====================================================================
+// HOMEPAGE: hero banner + the products shown under "New arrivals" (settings/home)
+// =====================================================================
+let homeSettings = readHome(null);
+let homeDraft = readHome(null);
+let homeDirty = false;
+function readHome(raw) {
+  const r = raw || {};
+  return {
+    heroImage: typeof r.heroImage === 'string' ? r.heroImage : '',   // '' = default banner, 'none' = no photo
+    newArrivals: Array.isArray(r.newArrivals) ? r.newArrivals.map(String).slice(0, 4) : [],
+  };
+}
+function setHomeDirty(on) {
+  homeDirty = on;
+  $('homeDirtyNote').textContent = on ? '⚠️ Not saved yet' : '';
+}
+function fillHomeForm() {
+  homeDraft = readHome(homeSettings);
+  setHomeDirty(false);
+  renderHomeForm();
+}
+function renderHomeForm() {
+  const hero = homeDraft.heroImage;
+  const src = hero === 'none' ? '' : hero ? safeUrl(hero) : esc(HMI.cfg.heroImage || '');
+  $('homeHeroPreview').innerHTML = src ? `<img src="${src}" alt="">`
+    : '<span>No photo: the front page shows the wine &amp; gold pattern</span>';
+
+  const pick = homeDraft.newArrivals;
+  const byId = (id) => products.find((p) => p.id === id);
+  const thumb = (p) => (p.images[0] && safeUrl(p.images[0]) ? `<img src="${safeUrl(p.images[0])}" alt="">` : `<span class="emo">${esc(p.emoji)}</span>`);
+  $('homePicked').innerHTML = pick.length ? pick.map((id, i) => {
+    const p = byId(id);
+    return `<div class="home-pick-row"><span class="num">${i + 1}</span>${p ? thumb(p) : '<span class="emo">❓</span>'}
+      <span class="name">${p ? esc(p.name) : 'Deleted product'}${p && !p.active ? ' <span class="help">(hidden)</span>' : ''}</span>
+      ${i > 0 ? `<button class="btn btn-outline btn-sm" type="button" title="Move up" onclick="homeMove(${i})">↑</button>` : ''}
+      <button class="btn btn-outline btn-sm" type="button" title="Remove" onclick="homeToggle('${esc(id)}')">✕</button></div>`;
+  }).join('') : '<p class="help">Automatic: the 4 newest products.</p>';
+
+  const q = $('homeProductSearch').value.trim().toLowerCase();
+  $('homeProductList').innerHTML = products.filter((p) => p.active && (!q || p.name.toLowerCase().includes(q))).map((p) => {
+    const n = pick.indexOf(p.id);
+    return `<button type="button" class="home-pick-item ${n >= 0 ? 'on' : ''}" onclick="homeToggle('${esc(p.id)}')">
+      <div class="ph">${p.images[0] && safeUrl(p.images[0]) ? `<img src="${safeUrl(p.images[0])}" alt="" loading="lazy">` : esc(p.emoji)}</div>
+      <div class="nm">${esc(p.name)}</div>${n >= 0 ? `<span class="badge">${n + 1}</span>` : ''}</button>`;
+  }).join('') || '<p class="help">No visible products yet.</p>';
+}
+function homeToggle(id) {
+  const list = homeDraft.newArrivals;
+  const i = list.indexOf(id);
+  if (i >= 0) list.splice(i, 1);
+  else if (list.length >= 4) return toast('❌ Up to 4 products. Remove one first.', 'error');
+  else list.push(id);
+  setHomeDirty(true); renderHomeForm();
+}
+function homeMove(i) {
+  const list = homeDraft.newArrivals;
+  [list[i - 1], list[i]] = [list[i], list[i - 1]];
+  setHomeDirty(true); renderHomeForm();
+}
+function setHomeHero(v) { homeDraft.heroImage = v; setHomeDirty(true); renderHomeForm(); }
+function homeHeroDefault() { setHomeHero(''); }
+function homeHeroNone() { setHomeHero('none'); }
+function homeHeroLink() {
+  const url = (prompt('Paste the photo link (https://...)') || '').trim();
+  if (!url) return;
+  if (!/^https:\/\//i.test(url)) return toast('❌ The link must start with https://', 'error');
+  setHomeHero(url);
+}
+async function uploadHomeHero(input) {
+  const file = input.files[0];
+  input.value = '';
+  if (!file) return;
+  toast('⏳ Uploading banner...');
+  try {
+    const fd = new FormData();
+    fd.append('image', await compressImage(file, 2000, 0.88), file.name || 'banner.jpg');
+    const { url } = await HMI.callWorker('/admin/upload-image', fd);
+    setHomeHero(url);
+    toast('✅ Banner uploaded. Tap "Save Homepage" to put it live.');
+  } catch (e) { toast('❌ Upload failed: ' + e.message, 'error'); }
+}
+async function saveHomeSettings() {
+  try {
+    await db.collection('settings').doc('home').set({ ...homeDraft, updatedAt: Date.now() });
+    setHomeDirty(false);
+    toast('✅ Homepage saved, live on the store now');
   } catch (e) { toast('❌ ' + e.message, 'error'); }
 }
 
