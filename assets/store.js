@@ -481,6 +481,47 @@ function fillAddressForm(prefix, a) {
 async function saveAddressList(list) {
   await db.collection('users').doc(state.user.uid).update({ addresses: list.slice(0, 10), updatedAt: Date.now() });
 }
+// Which state(s) a pincode belongs to, from its first 2 (or 3) digits (India Post zones).
+// Border ranges list every state they serve. 9xxxxx (Army post) is not checked.
+const PIN_STATES = (() => {
+  const UP = 'Uttar Pradesh', UK = 'Uttarakhand', PB = 'Punjab', HR = 'Haryana', AP = 'Andhra Pradesh', TG = 'Telangana',
+    TN = 'Tamil Nadu', KL = 'Kerala', WB = 'West Bengal', BR = 'Bihar', JH = 'Jharkhand', GJ = 'Gujarat', PY = 'Puducherry',
+    DD = 'Dadra and Nagar Haveli and Daman and Diu', JK = 'Jammu and Kashmir';
+  const m = {
+    11: ['Delhi'], 12: [HR], 13: [HR], 14: [PB], 15: [PB], 16: [PB], 160: ['Chandigarh', PB], 17: ['Himachal Pradesh'],
+    18: [JK], 19: [JK], 194: ['Ladakh', JK],
+    20: [UP], 21: [UP], 22: [UP], 23: [UP], 24: [UP], 244: [UP, UK], 246: [UK], 247: [UP, UK], 248: [UK], 249: [UK],
+    25: [UP], 26: [UP], 262: [UK], 263: [UK], 27: [UP], 28: [UP],
+    30: ['Rajasthan'], 31: ['Rajasthan'], 32: ['Rajasthan'], 33: ['Rajasthan'], 34: ['Rajasthan'],
+    36: [GJ], 362: [GJ, DD], 37: [GJ], 38: [GJ], 39: [GJ], 396: [GJ, DD],
+    40: ['Maharashtra'], 403: ['Goa'], 41: ['Maharashtra'], 42: ['Maharashtra'], 43: ['Maharashtra'], 44: ['Maharashtra'],
+    45: ['Madhya Pradesh'], 46: ['Madhya Pradesh'], 47: ['Madhya Pradesh'], 48: ['Madhya Pradesh'], 49: ['Chhattisgarh'],
+    50: [TG], 51: [AP], 52: [AP], 53: [AP], 533: [AP, PY],
+    56: ['Karnataka'], 57: ['Karnataka'], 58: ['Karnataka'], 59: ['Karnataka'],
+    60: [TN], 605: [PY, TN], 609: [TN, PY], 61: [TN], 62: [TN], 63: [TN], 64: [TN],
+    67: [KL], 673: [KL, PY], 68: [KL], 682: [KL, 'Lakshadweep'], 69: [KL],
+    70: [WB], 71: [WB], 72: [WB], 73: [WB], 737: ['Sikkim'], 74: [WB], 744: ['Andaman and Nicobar Islands'],
+    75: ['Odisha'], 76: ['Odisha'], 77: ['Odisha'], 78: ['Assam'],
+    790: ['Arunachal Pradesh'], 791: ['Arunachal Pradesh'], 792: ['Arunachal Pradesh'], 793: ['Meghalaya'], 794: ['Meghalaya'],
+    795: ['Manipur'], 796: ['Mizoram'], 797: ['Nagaland'], 798: ['Nagaland'], 799: ['Tripura'],
+    80: [BR], 81: [BR, JH], 82: [BR, JH], 83: [BR, JH], 84: [BR], 85: [BR],
+  };
+  return (pin) => m[pin.slice(0, 3)] || m[pin.slice(0, 2)] || null;
+})();
+function pinStateError(pin, st) {
+  if (!/^[1-8]\d{5}$/.test(pin) || !st) return '';
+  const states = PIN_STATES(pin);
+  if (!states || states.includes(st)) return '';
+  return `Pincode ${pin} is in ${states.join(' or ')}, not ${st}. Please check the pincode or the state.`;
+}
+// Typing a pincode fills in the state when it is still empty and the pincode has only one
+function autoStateFromPin(pinId, stateId) {
+  $(pinId).addEventListener('input', () => {
+    const pin = $(pinId).value.replace(/\D/g, '');
+    const states = pin.length === 6 ? PIN_STATES(pin) : null;
+    if (states && states.length === 1 && !$(stateId).value) $(stateId).value = states[0];
+  });
+}
 function addressError(a) {
   if (!a.name || a.name.length < 2) return 'Please enter your name';
   if (!/^[6-9]\d{9}$/.test(a.phone)) return 'Please enter a valid 10-digit mobile number';
@@ -488,7 +529,7 @@ function addressError(a) {
   if (!a.city) return 'Please enter city';
   if (!a.state) return 'Please select your state';
   if (!/^[1-9]\d{5}$/.test(a.pincode)) return 'Please enter a valid 6-digit pincode';
-  return '';
+  return pinStateError(a.pincode, a.state);
 }
 function addressText(a) {
   return [a.line1, a.line2, a.landmark, a.city, a.state].filter(Boolean).join(', ') + ' - ' + a.pincode;
@@ -1084,6 +1125,7 @@ function openAccAddressForm(i) {
   state.accAddrEdit = i;
   renderAccount();
   fillAddressForm('acc', i >= 0 ? list[i] : { name: (state.profile && state.profile.name) || '', phone: userPhone(state.user).replace(/^\+91/, '') });
+  autoStateFromPin('accPincode', 'accState');
   $(i >= 0 ? 'accAddr1' : 'accName').focus();
 }
 function closeAccAddressForm() { state.accAddrEdit = null; renderAccount(); }
@@ -1252,3 +1294,4 @@ renderShipTexts();
 renderCart();
 startCatalogue();
 completeEmailLinkLogin();
+autoStateFromPin('custPincode', 'custState');
