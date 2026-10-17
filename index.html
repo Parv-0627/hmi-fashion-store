@@ -829,6 +829,19 @@ footer{background:#2a0b18!important;}
 .footer-col h4{color:#f1dfb8!important;font-weight:500;letter-spacing:.5px;}
 .footer-col a:hover{color:#f1dfb8!important;}
 .footer-bottom{border-top-color:rgba(255,255,255,.12)!important;}
+/* About / story section */
+.story-section{padding:64px 5%;background:#fff;border-top:1px solid var(--line);}
+.story-head{max-width:760px;margin:0 auto 36px;text-align:center;}
+.story-eyebrow{font:600 .72rem 'Jost',system-ui,sans-serif;letter-spacing:2.5px;text-transform:uppercase;color:var(--gold-dark);margin-bottom:10px;}
+.story-head h2{font-family:'Playfair Display',serif;font-weight:600;font-size:clamp(1.7rem,3.2vw,2.4rem);line-height:1.2;color:var(--ink);margin-bottom:12px;}
+.story-head h2 em{color:var(--wine);}
+.story-head p{color:var(--gray);font-size:1rem;line-height:1.7;}
+.story-grid{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:28px 32px;}
+.story-item{border-top:2px solid var(--gold);padding-top:14px;}
+.story-item h3{font-family:'Playfair Display',serif;font-weight:600;font-size:1.05rem;color:var(--ink);margin-bottom:8px;}
+.story-item p{color:#5d5056;font-size:.9rem;line-height:1.7;}
+@media(max-width:1000px){.story-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}
+@media(max-width:600px){.story-section{padding:44px 5%;}.story-grid{grid-template-columns:1fr;gap:22px;}.story-head{margin-bottom:26px;}}
 </style>
 </head>
 <body>
@@ -1099,18 +1112,45 @@ window.addEventListener('load',function(){setTimeout(doHideSplash,500);});
   <div class="products-grid" id="productsGrid"><div class="empty-grid">⏳ Loading products...</div></div>
 </section>
 
+<!-- ABOUT / STORY -->
+<section class="story-section" id="story">
+  <div class="story-head">
+    <div class="story-eyebrow">The HMI Fashion promise</div>
+    <h2>Kurtis and suits, <em>chosen with care</em></h2>
+    <p>HMI Fashion Store is a ladies' ethnic wear shop from Sitarganj, Uttarakhand. We keep our collection small and fresh, so every piece you see is one we would happily wear ourselves.</p>
+  </div>
+  <div class="story-grid">
+    <div class="story-item"><h3>Handpicked, up-to-date designs</h3>
+      <p>We don't fill the shop with hundreds of look-alike pieces. Every kurti, kurta set and salwar suit is picked by hand, and new designs are added a few at a time so the collection always feels current.</p></div>
+    <div class="story-item"><h3>For every day and every occasion</h3>
+      <p>Find casual cotton kurtis for daily wear, designer and party-wear sets for functions, and complete suits with dupatta for festivals and weddings, all in one place, without going from shop to shop.</p></div>
+    <div class="story-item"><h3>Quality we check ourselves</h3>
+      <p>Each piece is checked for stitching, colour and damage before it is packed. Our kurtis come ready-stitched and are easy to alter. Not sure about your size? Ask us for the size chart of any product on WhatsApp.</p></div>
+    <div class="story-item"><h3>Fabrics and handwork</h3>
+      <p>Soft cotton, rayon, chiffon and silk-blend dupattas, with details like thread embroidery, mirror work and gota patti. Ask us on WhatsApp how to wash any piece, so its fabric and colour stay fresh for longer.</p></div>
+    <div class="story-item"><h3>Honest prices</h3>
+      <p>Fair prices with real discounts on the marked price. The price you see is in Indian Rupees and includes applicable taxes, and any delivery or COD charge is shown in your cart before you pay. No surprises at checkout.</p></div>
+    <div class="story-item"><h3>Delivery and tracking</h3>
+      <p>Orders are usually dispatched within 1–2 working days through trusted courier partners and reach you in about 5–10 working days, depending on your pin code. The tracking number appears in <b>My Account → My Orders</b>.</p></div>
+    <div class="story-item"><h3>Talk to a real person</h3>
+      <p>Questions about size, fabric, colour or availability? Tap the WhatsApp button on any product page and chat with us directly, every day from 10 AM to 9 PM. We would rather answer your questions before you order than after.</p></div>
+    <div class="story-item"><h3>Pay the way you like</h3>
+      <p>Pay securely online through Razorpay with UPI (Google Pay, PhonePe, Paytm), debit or credit card, net banking or wallets, or choose Cash on Delivery on eligible products.</p></div>
+  </div>
+</section>
+
 <!-- WHY US -->
 <section class="why-section" id="why">
   <div class="section-title">
     <h2>Why Choose <span>HMI Fashion?</span></h2>
     <div class="divider"></div>
-    <p>Quality, style, and trust — always</p>
+    <p>Shopping with us is simple and safe</p>
   </div>
   <div class="why-grid">
-    <div class="why-card"><div class="why-icon"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.6 6.6 19.5l1.2-6L3.3 9.3l6.1-.7z"/></svg></div><h3>Premium Quality</h3><p>Every piece carefully selected for finest fabric</p></div>
-    <div class="why-card"><div class="why-icon"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12V4h8l10 10-8 8L3 12z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg></div><h3>Best Prices</h3><p>Fashion-forward styles at unbeatable prices</p></div>
-    <div class="why-card"><div class="why-icon"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 6h12v10H2z"/><path d="M14 9h4l3 3v4h-7"/><circle cx="6.5" cy="18" r="2"/><circle cx="17.5" cy="18" r="2"/></svg></div><h3 id="whyShipTitle">Pan India Delivery</h3><p id="whyShipText">Fast & safe delivery across India</p></div>
-    <div class="why-card"><div class="why-icon"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div><h3>Secure Payment</h3><p>UPI, Card, Netbanking (Razorpay) or Cash on Delivery</p></div>
+    <div class="why-card"><div class="why-icon"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 6h12v10H2z"/><path d="M14 9h4l3 3v4h-7"/><circle cx="6.5" cy="18" r="2"/><circle cx="17.5" cy="18" r="2"/></svg></div><h3 id="whyShipTitle">Free Pan India Shipping</h3><p id="whyShipText">Shipping is on us</p></div>
+    <div class="why-card"><div class="why-icon"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14L4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/></svg></div><h3>7-Day Returns</h3><p>Easy return or exchange within 7 days of delivery</p></div>
+    <div class="why-card"><div class="why-icon"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></svg></div><h3>Quality Checked</h3><p>Every piece is checked before it is packed</p></div>
+    <div class="why-card"><div class="why-icon"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div><h3>100% Secure Checkout</h3><p>Razorpay · UPI · Cards · Net banking · COD</p></div>
   </div>
 </section>
 
@@ -1193,9 +1233,9 @@ window.addEventListener('load',function(){setTimeout(doHideSplash,500);});
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-<script src="assets/config.js?v=20261017m"></script>
-<script src="assets/pricing.js?v=20261017m"></script>
-<script src="assets/common.js?v=20261017m"></script>
-<script src="assets/store.js?v=20261017m"></script>
+<script src="assets/config.js?v=20261017n"></script>
+<script src="assets/pricing.js?v=20261017n"></script>
+<script src="assets/common.js?v=20261017n"></script>
+<script src="assets/store.js?v=20261017n"></script>
 </body>
 </html>

@@ -99,8 +99,8 @@ function renderShipTexts() {
   const { shipping, freeAbove } = state.settings;
   $('heroShip').textContent = shipping === 0 ? 'Free Pan India delivery'
     : freeAbove ? `Free delivery above ₹${freeAbove.toLocaleString('en-IN')}` : `Pan India delivery ₹${shipping}`;
-  $('whyShipTitle').textContent = shipping ? 'Delivery @ ₹' + shipping : 'Free Delivery';
-  $('whyShipText').textContent = freeAbove && shipping ? `FREE delivery above ₹${freeAbove.toLocaleString('en-IN')}` : 'Fast & safe Pan India delivery';
+  $('whyShipTitle').textContent = shipping ? (freeAbove ? 'Free Shipping above ₹' + freeAbove.toLocaleString('en-IN') : 'Pan India Delivery') : 'Free Pan India Shipping';
+  $('whyShipText').textContent = shipping ? (freeAbove ? `Below that, delivery is just ₹${shipping}` : `Delivery anywhere in India for ₹${shipping}`) : 'Shipping is on us';
   $('footShip').textContent = shipping ? `Pan India Delivery — ₹${shipping}` : 'Pan India Delivery — FREE';
 }
 
