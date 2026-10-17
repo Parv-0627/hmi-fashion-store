@@ -485,10 +485,11 @@ function addressText(a) {
   return [a.line1, a.line2, a.landmark, a.city, a.state].filter(Boolean).join(', ') + ' - ' + a.pincode;
 }
 let selectedAddressIndex = -1;
+let addressPicked = false; // the customer chose a card themselves (e.g. "New address"): don't auto-select
 function renderAddressStep() {
   const saved = (state.profile && state.profile.addresses) || [];
   if (selectedAddressIndex >= saved.length) selectedAddressIndex = -1;
-  if (selectedAddressIndex === -1 && saved.length && !$('custName').value) selectedAddressIndex = 0;
+  if (selectedAddressIndex === -1 && saved.length && !addressPicked && !$('custName').value) selectedAddressIndex = 0;
   $('savedAddresses').innerHTML = saved.length ? saved.map((a, i) => `
     <label class="addr-card ${selectedAddressIndex === i ? 'selected' : ''}">
       <input type="radio" name="addrPick" value="${i}" ${selectedAddressIndex === i ? 'checked' : ''}>
@@ -1095,7 +1096,13 @@ document.addEventListener('click', (e) => {
   }
 });
 document.addEventListener('change', (e) => {
-  if (e.target.name === 'addrPick') { selectedAddressIndex = Number(e.target.value); renderAddressStep(); }
+  if (e.target.name === 'addrPick') {
+    selectedAddressIndex = Number(e.target.value); addressPicked = true;
+    // a fresh form for the new address (name and mobile usually stay the same)
+    if (selectedAddressIndex === -1) ['custAddr1', 'custAddr2', 'custLandmark', 'custCity', 'custState', 'custPincode', 'custAltPhone'].forEach((id) => { $(id).value = ''; });
+    renderAddressStep();
+    if (selectedAddressIndex === -1) $('custAddr1').focus();
+  }
 });
 document.addEventListener('click', (e) => {
   if (e.target.id === 'profSave') {
