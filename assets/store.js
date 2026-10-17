@@ -422,7 +422,7 @@ function renderCart() {
     const src = p.images[0] && safeUrl(p.images[0]);
     const short = p.trackStock && p.stock < qtyInCart(p.id);
     return `<div class="cart-item">
-      ${src ? `<img src="${src}" style="width:56px;height:56px;border-radius:10px;object-fit:cover;flex-shrink:0;" alt="">` : `<div class="cart-item-emoji" style="background:${esc(p.bg)}">${esc(p.emoji)}</div>`}
+      ${src ? `<img src="${src}" class="cart-thumb" alt="">` : `<div class="cart-item-emoji" style="background:${esc(p.bg)}">${esc(p.emoji)}</div>`}
       <div class="cart-item-info">
         <h4>${esc(p.name)}</h4>
         ${l.size ? `<span class="cart-variant-tag">📐 ${esc(l.size)}</span>` : ''}${l.color ? `<span class="cart-variant-tag">🎨 ${esc(l.color)}</span>` : ''}

@@ -733,6 +733,10 @@ nav ul li a{font-size:.84rem;white-space:nowrap}
 .pc-dots button.on{width:20px;background:#fff;}
 .hero2-card-img .pc-gallery{position:absolute;inset:0;}
 .hero2-card-img .pc-track img{position:static;inset:auto;}
+/* Product photos are portrait: when a box crops them, keep the top (face + neckline) */
+.product-img img,.pc-track img,.hero2-card-img img,.category-photo,.kids-card img,.order-line img,.pdp-thumb{object-position:center top!important;}
+.cart-thumb{width:60px;height:80px;border-radius:10px;object-fit:cover;object-position:center top;flex-shrink:0;background:#f5f2f3;}
+.cart-item-emoji{height:80px;width:60px;}
 .login-secure{font-size:.72rem;color:#8a7f85;margin-top:14px;}
 </style>
 </head>
@@ -1067,9 +1071,9 @@ window.addEventListener('load',function(){setTimeout(doHideSplash,500);});
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-<script src="assets/config.js?v=20261017b"></script>
-<script src="assets/pricing.js?v=20261017b"></script>
-<script src="assets/common.js?v=20261017b"></script>
-<script src="assets/store.js?v=20261017b"></script>
+<script src="assets/config.js?v=20261017c"></script>
+<script src="assets/pricing.js?v=20261017c"></script>
+<script src="assets/common.js?v=20261017c"></script>
+<script src="assets/store.js?v=20261017c"></script>
 </body>
 </html>
