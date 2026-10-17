@@ -749,6 +749,10 @@ nav ul li a{font-size:.84rem;white-space:nowrap}
 .acc-addr-btns{display:flex;gap:8px;}
 .acc-addr-btns .cart-footer-btn{margin-top:4px;}
 .form-err{line-height:1.4;margin-bottom:10px;}
+/* Shop by category slides on its own: no snapping, no scrollbar */
+.categories-grid.sliding{scroll-snap-type:none;scrollbar-width:none;justify-content:flex-start;}
+.categories-grid.sliding::-webkit-scrollbar{display:none;}
+.categories-grid.sliding .category-card{scroll-snap-align:none;}
 .login-secure{font-size:.72rem;color:#8a7f85;margin-top:14px;}
 </style>
 </head>
@@ -1114,9 +1118,9 @@ window.addEventListener('load',function(){setTimeout(doHideSplash,500);});
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-<script src="assets/config.js?v=20261017j"></script>
-<script src="assets/pricing.js?v=20261017j"></script>
-<script src="assets/common.js?v=20261017j"></script>
-<script src="assets/store.js?v=20261017j"></script>
+<script src="assets/config.js?v=20261017k"></script>
+<script src="assets/pricing.js?v=20261017k"></script>
+<script src="assets/common.js?v=20261017k"></script>
+<script src="assets/store.js?v=20261017k"></script>
 </body>
 </html>

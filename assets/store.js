@@ -122,14 +122,59 @@ function renderCategories() {
       <div class="category-fallback" ${src ? 'hidden' : ''}>${esc(icon)}</div>
       <div class="category-label"><h3>${esc(name)}</h3></div></div>`;
   };
-  grid.innerHTML = card('all', '🛍️', 'All Items', 'Full Collection')
+  const html = card('all', '🛍️', 'All Items', 'Full Collection')
     + state.categories.map((c) => card(c.id, c.icon || '🏷️', c.name, c.sub)).join('');
+  grid.innerHTML = html;
+  startCategorySlide(grid, html, state.categories.length + 1);
   grid.querySelectorAll('.category-photo').forEach((img) => {
     img.addEventListener('error', () => {
       img.hidden = true;
       img.nextElementSibling.hidden = false;
     }, { once: true });
   });
+}
+
+// "Shop by category" keeps sliding slowly in a loop (the cards are repeated so
+// the loop has no jump). A swipe, scroll or mouse over pauses it for a moment.
+const catSlide = { raf: 0 };
+function startCategorySlide(grid, html, count) {
+  cancelAnimationFrame(catSlide.raf);
+  grid.classList.remove('sliding');
+  if (count < 2 || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  // enough copies that two of them are wider than the screen
+  const oneSet = grid.scrollWidth;
+  const copies = Math.max(2, Math.ceil((grid.clientWidth * 2) / Math.max(1, oneSet)) + 1);
+  grid.innerHTML = html.repeat(copies);
+  grid.classList.add('sliding');
+  const cards = grid.children;
+  const setWidth = cards[count].offsetLeft - cards[0].offsetLeft;
+  let pos = 0, last = performance.now(), pausedUntil = 0;
+  grid.scrollLeft = 0;
+  const pause = (ms) => { pausedUntil = performance.now() + ms; };
+  if (!grid.dataset.slideHooks) {
+    grid.dataset.slideHooks = '1';
+    ['pointerdown', 'touchstart', 'wheel'].forEach((ev) => grid.addEventListener(ev, () => catSlide.pause && catSlide.pause(3000), { passive: true }));
+    grid.addEventListener('mouseenter', () => catSlide.pause && catSlide.pause(1e9));
+    grid.addEventListener('mouseleave', () => catSlide.pause && catSlide.pause(800));
+    grid.addEventListener('scroll', () => catSlide.onScroll && catSlide.onScroll(), { passive: true });
+  }
+  catSlide.pause = pause;
+  catSlide.onScroll = () => {
+    if (Math.abs(grid.scrollLeft - pos) < 2) return; // our own move
+    // the customer scrolled: carry on from there, wrapping inside the copies
+    pos = grid.scrollLeft;
+    if (pos >= setWidth * (copies - 1)) { pos -= setWidth; grid.scrollLeft = pos; }
+  };
+  const tick = (now) => {
+    const dt = Math.min(64, now - last); last = now;
+    if (now >= pausedUntil && !document.hidden) {
+      pos += dt * 0.035; // px per ms
+      if (pos >= setWidth) pos -= setWidth;
+      grid.scrollLeft = pos;
+    }
+    catSlide.raf = requestAnimationFrame(tick);
+  };
+  catSlide.raf = requestAnimationFrame(tick);
 }
 
 // Hero: brand banner on the left, "New arrivals" on the right. Both can be set in
