@@ -840,7 +840,24 @@ section[id]{scroll-margin-top:70px;}
 .kids-card .koverlay{background:linear-gradient(transparent,rgba(40,8,20,.82))!important;}
 .kids-card .koverlay p{font-weight:600!important;}
 .kids-card .ktag{background:var(--wine)!important;border-radius:2px!important;font-weight:600!important;font-size:.6rem!important;letter-spacing:1px;text-transform:uppercase;}
-.kids-empty{font-size:.95rem;}
+.kids-feature{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);gap:28px;align-items:stretch;}
+.kids-photo{border-radius:10px;overflow:hidden;background:#f3e6e3;min-height:420px;}
+.kids-photo img{width:100%;height:100%;object-fit:cover;object-position:center 20%;display:block;}
+.kids-side{display:flex;align-items:center;}
+.kids-feature .kids-grid{width:100%;grid-template-columns:repeat(2,minmax(0,1fr))!important;max-width:none;align-content:start;}
+.kids-feature .kids-card img,.kids-feature .kids-emoji{height:260px;}
+.kids-empty{grid-column:1/-1;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;text-align:left!important;padding:30px 6px!important;min-height:100%;}
+.kids-empty h3{font-family:'Playfair Display',serif;font-weight:600;font-size:1.8rem;color:var(--ink);margin-bottom:10px;}
+.kids-empty p{color:var(--gray);font-size:1rem;line-height:1.7;max-width:420px;margin-bottom:20px;}
+.kids-btn{display:inline-flex;align-items:center;gap:8px;background:var(--wine);color:#fff;text-decoration:none;padding:13px 22px;border-radius:6px;font-weight:600;letter-spacing:.3px;}
+.kids-btn:hover{background:var(--wine-deep);}
+@media(max-width:760px){
+  .kids-feature{grid-template-columns:1fr;gap:18px;}
+  .kids-photo{min-height:0;aspect-ratio:4/5;}
+  .kids-feature .kids-card img,.kids-feature .kids-emoji{height:220px;}
+  .kids-empty{align-items:center;text-align:center!important;padding:6px!important;}
+  .kids-empty h3{font-size:1.5rem;}
+}
 .story-section{padding:64px 5%;background:#fff;border-top:1px solid var(--line);}
 .story-head{max-width:760px;margin:0 auto 36px;text-align:center;}
 .story-eyebrow{font:600 .72rem 'Jost',system-ui,sans-serif;letter-spacing:2.5px;text-transform:uppercase;color:var(--gold-dark);margin-bottom:10px;}
@@ -1131,7 +1148,10 @@ window.addEventListener('load',function(){setTimeout(doHideSplash,500);});
     <div class="divider"></div>
     <p>Pretty, comfortable outfits for the little ones</p>
   </div>
-  <div class="kids-grid" id="kidsGrid"></div>
+  <div class="kids-feature">
+    <div class="kids-photo"><img src="assets/img/little-stars.jpg" alt="Baby girl in a pink embroidered party frock" loading="lazy"></div>
+    <div class="kids-side"><div class="kids-grid" id="kidsGrid"></div></div>
+  </div>
 </section>
 
 <!-- ABOUT / STORY -->
@@ -1256,9 +1276,9 @@ window.addEventListener('load',function(){setTimeout(doHideSplash,500);});
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-<script src="assets/config.js?v=20261018a"></script>
-<script src="assets/pricing.js?v=20261018a"></script>
-<script src="assets/common.js?v=20261018a"></script>
-<script src="assets/store.js?v=20261018a"></script>
+<script src="assets/config.js?v=20261018b"></script>
+<script src="assets/pricing.js?v=20261018b"></script>
+<script src="assets/common.js?v=20261018b"></script>
+<script src="assets/store.js?v=20261018b"></script>
 </body>
 </html>
