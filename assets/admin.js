@@ -164,6 +164,7 @@ function startApp() {
   $('p-name').addEventListener('input', showNameDup);
   $('homeHeroInput').addEventListener('change', (e) => uploadHomeHero(e.target));
   $('homeAllInput').addEventListener('change', (e) => uploadHomeImage(e.target, 1200, setHomeAll, 'Photo'));
+  $('homeKidsInput').addEventListener('change', (e) => uploadHomeImage(e.target, 1400, setHomeKids, 'Photo'));
   $('homeProductSearch').addEventListener('input', renderHomeForm);
   HERO_TEXT_KEYS.forEach((k) => $('hm-' + k).addEventListener('input', (e) => { homeDraft[k] = e.target.value.trim() ? e.target.value : ''; setHomeDirty(true); }));
 }
@@ -779,6 +780,7 @@ function readHome(raw) {
   return {
     heroImage: typeof r.heroImage === 'string' ? r.heroImage : '',   // '' = default banner, 'none' = no photo
     allItemsImage: typeof r.allItemsImage === 'string' ? r.allItemsImage : '', // '' = first product's photo
+    kidsImage: typeof r.kidsImage === 'string' ? r.kidsImage : '',           // '' = assets/img/little-stars.jpg
     newArrivals: Array.isArray(r.newArrivals) ? r.newArrivals.map(String).slice(0, 4) : [],
     ...Object.fromEntries(Object.keys(HMI.HERO_TEXT).map((k) => [k, typeof r[k] === 'string' ? r[k] : ''])),
   };
@@ -808,6 +810,18 @@ function renderHomeAllPreview() {
   $('homeAllPreview').innerHTML = (src ? `<img src="${src}" alt="">` : '') + `<span>All Items${own ? '' : ' (auto)'}</span>`;
 }
 function setHomeAll(v) { homeDraft.allItemsImage = v; setHomeDirty(true); renderHomeAllPreview(); }
+const KIDS_DEFAULT_IMAGE = 'assets/img/little-stars.jpg';
+function renderHomeKidsPreview() {
+  const own = homeDraft.kidsImage && safeUrl(homeDraft.kidsImage);
+  $('homeKidsPreview').innerHTML = `<img src="${own || KIDS_DEFAULT_IMAGE}" alt=""><span>Little Stars${own ? '' : ' (default)'}</span>`;
+}
+function setHomeKids(v) { homeDraft.kidsImage = v; setHomeDirty(true); renderHomeKidsPreview(); }
+function homeKidsLink() {
+  const url = (prompt('Paste the photo link (https://...)') || '').trim();
+  if (!url) return;
+  if (!/^https:\/\//i.test(url)) return toast('❌ The link must start with https://', 'error');
+  setHomeKids(url);
+}
 function homeAllLink() {
   const url = (prompt('Paste the photo link (https://...)') || '').trim();
   if (!url) return;
@@ -830,6 +844,7 @@ async function uploadHomeImage(input, maxSize, use, what) {
 }
 function renderHomeForm() {
   renderHomeAllPreview();
+  renderHomeKidsPreview();
   const hero = homeDraft.heroImage;
   const src = hero === 'none' ? '' : hero ? safeUrl(hero) : esc(HMI.cfg.heroImage || '');
   $('homeHeroPreview').innerHTML = src ? `<img src="${src}" alt="">`

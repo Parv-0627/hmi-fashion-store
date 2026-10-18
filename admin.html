@@ -570,6 +570,18 @@ input[type=email],input[type=password],input[type=url],input[type=tel]{padding:1
         </div>
       </div>
       <div class="card">
+        <div class="card-header"><div class="card-title">⭐ "Our Little Stars" photo</div></div>
+        <p class="help" style="margin-bottom:10px;">The big photo in the kids section. A tall photo (2:3 or 3:4) looks best.</p>
+        <div style="display:flex;gap:14px;align-items:flex-end;flex-wrap:wrap;">
+          <div class="home-all-preview" id="homeKidsPreview"></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <label class="btn btn-primary btn-sm" style="cursor:pointer;">📤 Upload photo<input type="file" accept="image/*" id="homeKidsInput" hidden></label>
+            <button class="btn btn-outline btn-sm" type="button" onclick="homeKidsLink()">🔗 Paste link</button>
+            <button class="btn btn-outline btn-sm" type="button" onclick="setHomeKids('')">↺ Default photo</button>
+          </div>
+        </div>
+      </div>
+      <div class="card">
         <div class="card-header"><div class="card-title">✍️ Hero text</div></div>
         <p class="help" style="margin-bottom:10px;">The words next to the banner on the front page. Leave a box empty to use the default.</p>
         <div class="form-grid">
@@ -615,9 +627,9 @@ input[type=email],input[type=password],input[type=url],input[type=tel]{padding:1
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-<script src="assets/config.js?v=20261018b"></script>
-<script src="assets/pricing.js?v=20261018b"></script>
-<script src="assets/common.js?v=20261018b"></script>
-<script src="assets/admin.js?v=20261018b"></script>
+<script src="assets/config.js?v=20261018c"></script>
+<script src="assets/pricing.js?v=20261018c"></script>
+<script src="assets/common.js?v=20261018c"></script>
+<script src="assets/admin.js?v=20261018c"></script>
 </body>
 </html>

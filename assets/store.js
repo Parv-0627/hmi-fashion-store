@@ -79,9 +79,13 @@ function startCatalogue() {
     state.home = {
       heroImage: typeof h.heroImage === 'string' ? h.heroImage : '',
       allItemsImage: typeof h.allItemsImage === 'string' ? h.allItemsImage : '',
+      kidsImage: typeof h.kidsImage === 'string' ? h.kidsImage : '',
       newArrivals: Array.isArray(h.newArrivals) ? h.newArrivals.map(String) : [],
     };
     if (state.categories.length || state.products.length) renderCategories();
+    // "Our Little Stars" photo, set in admin → Homepage (empty = the default photo)
+    const kids = (state.home.kidsImage && safeUrl(state.home.kidsImage) && state.home.kidsImage) || 'assets/img/little-stars.jpg';
+    if ($('kidsPhoto').getAttribute('src') !== kids) $('kidsPhoto').src = kids;
     // hero words from admin → Homepage; an empty field keeps the default
     Object.keys(HMI.HERO_TEXT).forEach((k) => {
       $(k).textContent = (typeof h[k] === 'string' && h[k].trim()) || HMI.HERO_TEXT[k];
