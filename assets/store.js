@@ -97,7 +97,7 @@ function startCatalogue() {
 }
 
 function renderCatalogue() {
-  renderCategories(); renderProducts();
+  renderCategories(); renderProducts(); renderKids();
   renderHeroImage(); renderHeroProducts();
 }
 
@@ -225,6 +225,19 @@ function renderHeroProducts() {
   grid.dataset.count = cards.length;
   grid.innerHTML = cards.join('');
   initGalleries(grid);
+}
+
+// "Our Little Stars": products whose category is a kids one ("Kids", "Kids Wear", "Little Stars"...)
+const isKidsProduct = (p) => /kid|little/i.test(p.category) || /kid|little/i.test(catName(p.category));
+function renderKids() {
+  const list = state.products.filter(isKidsProduct).slice(0, 8);
+  $('kidsGrid').innerHTML = list.length ? list.map((p) => {
+    const src = p.images[0] && safeUrl(p.images[0]);
+    return `<div class="kids-card" data-pdp="${esc(p.id)}" role="button" tabindex="0">
+      ${src ? `<img src="${src}" alt="${esc(p.name)}" loading="lazy">` : `<div class="kids-emoji" style="background:${esc(p.bg)}">${esc(p.emoji || '🧒')}</div>`}
+      ${p.badge ? `<div class="ktag">${esc(p.badge)}</div>` : ''}
+      <div class="koverlay"><h4>${esc(p.name)}</h4><p>${rs(p.price)}</p></div></div>`;
+  }).join('') : '<div class="kids-empty">Our kids collection is coming soon.</div>';
 }
 
 function visibleProducts() {

@@ -830,6 +830,17 @@ footer{background:#2a0b18!important;}
 .footer-col a:hover{color:#f1dfb8!important;}
 .footer-bottom{border-top-color:rgba(255,255,255,.12)!important;}
 /* About / story section */
+/* menu links land below the sticky header */
+section[id]{scroll-margin-top:70px;}
+/* Little Stars (kids) */
+.kids-section{background:#fbf3ef!important;padding:64px 5%!important;border-top:1px solid var(--line);}
+.kids-card{border-radius:8px!important;box-shadow:none!important;border:1px solid var(--line);background:#fff!important;}
+.kids-card:hover{transform:translateY(-3px)!important;box-shadow:0 10px 24px rgba(61,12,32,.12)!important;}
+.kids-card img{object-position:center top!important;}
+.kids-card .koverlay{background:linear-gradient(transparent,rgba(40,8,20,.82))!important;}
+.kids-card .koverlay p{font-weight:600!important;}
+.kids-card .ktag{background:var(--wine)!important;border-radius:2px!important;font-weight:600!important;font-size:.6rem!important;letter-spacing:1px;text-transform:uppercase;}
+.kids-empty{font-size:.95rem;}
 .story-section{padding:64px 5%;background:#fff;border-top:1px solid var(--line);}
 .story-head{max-width:760px;margin:0 auto 36px;text-align:center;}
 .story-eyebrow{font:600 .72rem 'Jost',system-ui,sans-serif;letter-spacing:2.5px;text-transform:uppercase;color:var(--gold-dark);margin-bottom:10px;}
@@ -889,6 +900,7 @@ window.addEventListener('load',function(){setTimeout(doHideSplash,500);});
     <li><a href="#home">Home</a></li>
     <li><a href="#categories">Categories</a></li>
     <li><a href="#products">New Arrivals</a></li>
+    <li><a href="#kids">Little Stars</a></li>
     <li><a href="#" data-account="orders">My Orders</a></li>
     <li><a href="https://wa.me/919560291565" target="_blank" rel="noopener">Contact</a></li>
   </ul>
@@ -1112,6 +1124,16 @@ window.addEventListener('load',function(){setTimeout(doHideSplash,500);});
   <div class="products-grid" id="productsGrid"><div class="empty-grid">⏳ Loading products...</div></div>
 </section>
 
+<!-- KIDS -->
+<section class="kids-section" id="kids">
+  <div class="section-title">
+    <h2>Our Little <span>Stars</span></h2>
+    <div class="divider"></div>
+    <p>Pretty, comfortable outfits for the little ones</p>
+  </div>
+  <div class="kids-grid" id="kidsGrid"></div>
+</section>
+
 <!-- ABOUT / STORY -->
 <section class="story-section" id="story">
   <div class="story-head">
@@ -1170,6 +1192,7 @@ window.addEventListener('load',function(){setTimeout(doHideSplash,500);});
       <a href="#home">Home</a>
       <a href="#categories">Categories</a>
       <a href="#products">Products</a>
+      <a href="#kids">Little Stars</a>
       <a href="#" data-account="orders">My Orders</a>
       <a href="about.html">About Us</a>
     </div>
@@ -1233,9 +1256,9 @@ window.addEventListener('load',function(){setTimeout(doHideSplash,500);});
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-<script src="assets/config.js?v=20261017p"></script>
-<script src="assets/pricing.js?v=20261017p"></script>
-<script src="assets/common.js?v=20261017p"></script>
-<script src="assets/store.js?v=20261017p"></script>
+<script src="assets/config.js?v=20261018a"></script>
+<script src="assets/pricing.js?v=20261018a"></script>
+<script src="assets/common.js?v=20261018a"></script>
+<script src="assets/store.js?v=20261018a"></script>
 </body>
 </html>
